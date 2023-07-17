@@ -1,0 +1,6 @@
+__pycache__/
+.vscode/
+nuitka.*
+sql.py
+x.py
+notion-*.log
