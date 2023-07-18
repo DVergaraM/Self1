@@ -26,28 +26,31 @@ class Stray:
         self.image: Img = image
 
     def create_menu(self):
+        '''
+        Creates the system tray with custom buttons and actions
+        '''        
         icon = Icon(self.icon_name, self.image, menu=Menu(
             MenuItem("RPC", Menu(
-                MenuItem("Start Status", self.helper),
-                MenuItem("Stop Status", self.helper)
+                MenuItem("Start Status", self._helper),
+                MenuItem("Stop Status", self._helper)
             )),
             MenuItem("Notifier", Menu(
-                MenuItem("Start Pop-Ups", self.helper),
-                MenuItem("Stop Pop-Ups", self.helper)
+                MenuItem("Start Pop-Ups", self._helper),
+                MenuItem("Stop Pop-Ups", self._helper)
             )),
             MenuItem("Apps", Menu(
-                MenuItem("Notion", self.helper),
-                MenuItem("Code", self.helper),
-                MenuItem("Life At", self.helper),
+                MenuItem("Notion", self._helper),
+                MenuItem("Code", self._helper),
+                MenuItem("Life At", self._helper),
             )),
-            MenuItem("Duolingo", self.helper),
-            MenuItem("Edx", self.helper),
-            MenuItem("Book", self.helper),
-            MenuItem("Exit", self.helper)
+            MenuItem("Duolingo", self._helper),
+            MenuItem("Edx", self._helper),
+            MenuItem("Book", self._helper),
+            MenuItem("Exit", self._helper)
         ), title="Second Brain")
         icon.run()
 
-    def helper(self, icon, item):
+    def _helper(self, icon, item):
         '''
 
         Args:

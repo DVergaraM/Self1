@@ -1,10 +1,11 @@
 from threading import Thread as _Thread
 from typing import Optional as _Optional
 from sqlite3 import (Connection as _Connection, connect as _connect, Error as _SQLITE3Error)
+from os import getcwd as _getcwd
 
-
-db_path = r"C:\Users\DANIEL\Desktop\rqaw\Documentos\Dev\Python\SelfCopy\brain_mine.db"
-image_path = r"C:\Users\DANIEL\Desktop\rqaw\Documentos\Dev\Python\Self\images\aries.png"
+cwd = _getcwd()
+db_path = fr"{cwd}\brain.db"
+image_path = fr"{cwd}\images\aries.png"
 
 
 otuple_str = _Optional[tuple[str]]

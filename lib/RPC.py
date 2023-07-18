@@ -61,27 +61,33 @@ with conn:
         activities_dict[key]["Description"] = sql.get_description(key+1)
         activities_dict[key]["Small_text"] = sql.get_smalltext(key+1)
 
+del (sql, conn)
+
+
+def update_rpc(activities: dict[int, dict]) -> None:
+    global status
+    while True:
+        current_activity = choice(activities)
+        detail = "True progress comes not through action, but through awakening."
+
+        # https://i.imgur.com/N1fuUn8.jpg
+        try:
+            RPC.update(state=current_activity["Description"], details=detail,
+                       start=cwt, large_image="https://i.imgur.com/N1fuUn8.jpg",
+                       large_text="Second Brain", small_image=current_activity["Image_URL"],
+                       small_text=current_activity["Small_text"],
+                       buttons=[{'label': "Linktree", 'url': "https://linktr.ee/dvergaram"}])
+            time.sleep(5)
+            if status:
+                break
+        except KeyboardInterrupt:
+            pass
+
 
 def mainRPC():
     try:
-        global status
         Pop.run()
-        while True:
-            current_activity = choice(activities_dict)
-            detail = "True progress comes not through action, but through awakening."
-
-            # https://i.imgur.com/N1fuUn8.jpg
-            try:
-                RPC.update(state=current_activity["Description"], details=detail,
-                           start=cwt, large_image="https://i.imgur.com/N1fuUn8.jpg",
-                           large_text="Second Brain", small_image=current_activity["Image_URL"],
-                           small_text=current_activity["Small_text"],
-                           buttons=[{'label': "Linktree", 'url': "https://linktr.ee/dvergaram"}])
-                time.sleep(5)
-                if status:
-                    break
-            except KeyboardInterrupt:
-                pass
+        update_rpc(activities_dict)
 
     except (pypresence.exceptions.DiscordNotFound, struct.error, pypresence.exceptions.ServerError, RuntimeError or RuntimeWarning) as e:
         Error.run()
