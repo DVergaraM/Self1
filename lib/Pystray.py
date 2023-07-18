@@ -1,16 +1,15 @@
 import time
 from datetime import datetime
 import os
-from typing import Any
 from pystray import Menu, MenuItem, Icon
 import webbrowser as wb
 import PIL.Image as Img
-from lib.Threads import ThreadRPC, ThreadNotifier, ThreadNotion
-from lib.RPC import RPC
+from .Threads import ThreadRPC, ThreadNotifier, ThreadNotion
+from .RPC import RPC
 from core.SQL import Urls
+from core import image_path
 
-aries = Img.open(
-    r"C:\Users\DANIEL\Desktop\rqaw\Documentos\Dev\Python\Self\images\aries.png")
+aries = Img.open(image_path)
 
 sql = Urls()
 conn = sql.create_connection()
@@ -19,13 +18,14 @@ with conn:
     Book = sql.get_url(sql.get_id("Book"))
     Edx = sql.get_url(sql.get_id("Edx"))
 
+del (sql, conn)
 
 class Stray:
-    def __init__(self, icon_name: str, image: Img):     
+    def __init__(self, icon_name: str, image: Img):
         self.icon_name: str = icon_name
         self.image: Img = image
 
-    def create_menu(self):        
+    def create_menu(self):
         icon = Icon(self.icon_name, self.image, menu=Menu(
             MenuItem("RPC", Menu(
                 MenuItem("Start Status", self.helper),
@@ -53,7 +53,7 @@ class Stray:
         Args:
             icon (Any): The current thread for the stray
             item (str): Button to be clicked by the user
-        '''        
+        '''
         item = str(item)
         notifier = ThreadNotifier()
         rpc = ThreadRPC()

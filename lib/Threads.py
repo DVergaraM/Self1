@@ -1,9 +1,9 @@
-from lib.RPC import mainRPC, stopRPC
-from lib.Pop_Ups import main as mainNotifier
-from lib.Schedule import stop as stopNotifier
+from .RPC import mainRPC, stopRPC
+from .Pop_Ups import main as mainNotifier
+from . import stop as stopNotifier
 import os
 from datetime import datetime
-from core.config import mainThread
+from core import mainThread
 
 class ThreadRPC(mainThread):
     def __init__(self) -> None:

@@ -1,6 +1,6 @@
 import pypresence
 import struct
-from lib.Notification import Notification
+from . import Notification
 import time
 from pypresence import Presence
 from random import choice
