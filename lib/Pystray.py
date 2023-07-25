@@ -14,18 +14,16 @@ aries = Img.open(image_path)
 sql = Urls()
 conn = sql.create_connection()
 with conn:
-    Duolingo = sql.get_url(sql.get_id("Duolingo"))
-    Book = sql.get_url(sql.get_id("Book"))
-    Edx = sql.get_url(sql.get_id("Edx"))
+    urls = sql.get_all()
 
 del (sql, conn)
 
 class Stray:
-    def __init__(self, icon_name: str, image: Img):
+    def __init__(self, icon_name: str, image: Img) -> None:
         self.icon_name: str = icon_name
         self.image: Img = image
 
-    def create_menu(self):
+    def create_menu(self) -> None:
         '''
         Creates the system tray with custom buttons and actions
         '''        
@@ -50,7 +48,7 @@ class Stray:
         ), title="Second Brain")
         icon.run()
 
-    def _helper(self, icon, item):
+    def _helper(self, icon, item) -> None:
         '''
 
         Args:
@@ -91,19 +89,19 @@ class Stray:
                 date = datetime.now()
                 print(
                     f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - Opening Duolingo...")
-                wb.open(Duolingo)
+                wb.open(urls[1][2])
             case 'Edx':
                 date = datetime.now()
                 print(
                     f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - Opening Youtube...")
-                wb.open(Edx)
+                wb.open(urls[5][2])
                 # wb.open(self.playlists["C++"])
                 os.system("code")
             case 'Book':
                 date = datetime.now()
                 print(
                     f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - Opening Notion and Freda...")
-                wb.open(Book)
+                wb.open(urls[2][2])
                 os.system("FREDA_W10")
             case 'Notion':
                 date = datetime.now()

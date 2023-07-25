@@ -1,7 +1,7 @@
-from winotify import Notification as Notifier
-from winotify import audio
-from datetime import datetime
-from typing import Callable
+from winotify import Notification as _Notifier
+from winotify import audio as _audio
+from datetime import datetime as _datetime
+from typing import (Any, Callable as _Callable, Union as _Union, List as _List)
 import schedule as _schedule
 from core.SQL import Icons
 
@@ -13,37 +13,37 @@ with _conn:
 del _sql, _conn
 
 
-class Notification(Notifier):
-    def __init__(self, app_id: str, title: str, msg: str, icon: str, launch: str | Callable | None = "",  duration='long', sound=audio.Reminder):
+class Notification(_Notifier):
+    def __init__(self, app_id: str, title: str, msg: str, icon: str, launch: str | _Callable | None = "",  duration='long', sound=_audio.Reminder) -> None:
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
         if launch is not None:
             self.add_actions("Click Here!", launch)
 
-    def run(self):
+    def run(self) -> None:
         self.show()
-        date = datetime.now()
+        date = _datetime.now()
         print(f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - Task: '{self.msg}'")
 
 
 class Schedule:
-    def __init__(self, time: str, task: Callable):
+    def __init__(self, time: str, task: _Callable) -> None:
         _schedule.every().day.at(time, "America/Bogota").do(task)
 
 
-def run_pending():
+def run_pending() -> None:
     _schedule.run_pending()
 
 
-def get_next_run():
+def get_next_run() -> _Union[_datetime, None]:
     return _schedule.next_run()
 
 
-def get_jobs():
+def get_jobs() -> _List[_schedule.Job]:
     return _schedule.get_jobs()
 
 
-def stop():
+def stop() -> None:
     _Stop = Notification("Second Brain", "Notifier", "Closing Notifier",
                          Second_Brain, None, "short")
     _Stop.run()

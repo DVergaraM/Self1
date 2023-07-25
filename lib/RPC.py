@@ -14,7 +14,6 @@ with conn:
 
 del sql, conn
 
-__all__ = ["mainRPC", "stopRPC"]
 
 RPC = Presence('1126179074130321508')
 
@@ -84,7 +83,7 @@ def update_rpc(activities: dict[int, dict]) -> None:
             pass
 
 
-def mainRPC():
+def mainRPC() -> None:
     try:
         Pop.run()
         update_rpc(activities_dict)
@@ -99,7 +98,7 @@ def mainRPC():
         pass
 
 
-def stopRPC():
+def stopRPC() -> None:
     try:
         global status
         status = True

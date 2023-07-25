@@ -1,8 +1,8 @@
-__pycache__/
-.vscode/
-nuitka.*
-sql1.py
-x.py
-notion-*.log
-brain_*.db
-*.exe
+__*/
+.*/
+sql[0-9]*.py
+?.py
+*.??*
+*mine*.*
+*old*.*
+*copy*.*

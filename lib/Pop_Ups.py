@@ -6,43 +6,36 @@ from core.SQL import Icons, Urls
 sql = Icons()
 conn = sql.create_connection()
 with conn:
-    Duolingo = sql.get_path(sql.get_id("Duolingo"))
-    CPP = sql.get_path(sql.get_id("CPP"))
-    Book = sql.get_path(sql.get_id("Book"))
-    Second_Brain = sql.get_path(sql.get_id("Second_Brain"))
-    Zoom = sql.get_path(sql.get_id("Zoom"))
-    Edx = sql.get_path(sql.get_id("Edx"))
+    all_Icons = sql.get_all()
 del (sql, conn)
 
 sql = Urls()
 conn = sql.create_connection()
 with conn:
-    Duo_URL = sql.get_url(sql.get_id("Duolingo"))
-    CPP_URL = sql.get_url(sql.get_id("CPP"))
-    Book_URL = sql.get_url(sql.get_id("Book"))
-    Zoom_URL = sql.get_url(sql.get_id("Zoom"))
-    Edx_URL = sql.get_url(sql.get_id("Edx"))
+    all_Urls = sql.get_all()
 
 del (sql, conn)
 
 
+
+
 Duolingo_Task: Notification = Notification("Second Brain", "Habit Tracker",
-                                           "Time to practice Japanese!", Duolingo, Duo_URL)
+                                           "Time to practice Japanese!", all_Icons[1][2], all_Urls[1][2])
 
 Programming_Task: Notification = Notification("Second Brain", "Habit Tracker",
-                                              "Time to practice C++ Skills!", CPP, CPP_URL)
+                                              "Time to practice C++ Skills!", all_Icons[0][2], all_Urls[0][2])
 
 Book_Task: Notification = Notification("Second Brain", "Habit Tracker",
-                                       "Time to read 'How to Talk to Anyone - Leil Lowndes'", Book, Book_URL)
+                                       "Time to read 'How to Talk to Anyone - Leil Lowndes'", all_Icons[2][2], all_Urls[2][2])
 
 Notifier_Enabled: Notification = Notification("Second Brain", "Notifier",
-                                              "Notifier pop-ups enabled", Second_Brain, None)
+                                              "Notifier pop-ups enabled", all_Icons[7][2], None)
 
 UR_Zoom: Notification = Notification("Second Brain", "Zoom Meeting",
-                                     "Unete a la reunión del PFA", Zoom, Zoom_URL)
+                                     "Unete a la reunión del PFA", all_Icons[4][2], all_Urls[4][2])
 
 Edx_Course: Notification = Notification("Second Brain", "EDx Course",
-                                        "Follow up with the AI course", Edx, Edx_URL)
+                                        "Follow up with the AI course", all_Icons[5], all_Urls[5][2])
 
 
 Tasks: dict[str, _Callable] = {
@@ -52,7 +45,7 @@ Tasks: dict[str, _Callable] = {
     # "Zoom": UR_Zoom.run
 }
 Error: Notification = Notification("Second Brain", "Notifier",
-                                   "Runtime Error | Warning", Second_Brain, None)
+                                   "Runtime Error | Warning", all_Icons[7][2], None)
 
 
 def main() -> None:
