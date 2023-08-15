@@ -1,10 +1,13 @@
 from .RPC import mainRPC, stopRPC
 from .Pop_Ups import main as mainNotifier
 from . import stop as stopNotifier
-import os
+from os import (system as _system, getcwd as _getcwd)
 from datetime import datetime
 from typing import NoReturn as _NoReturn
 from core import Thread
+
+_cwd = _getcwd()
+
 
 class ThreadRPC(Thread):
     def __init__(self) -> None:
@@ -34,8 +37,8 @@ class ThreadNotion(Thread):
 
     def run(self) -> None:
         cwt = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        os.system(
-            fr"notion > C:\Users\DANIEL\Desktop\rqaw\Documentos\Dev\Python\SelfCopy\notion-{cwt}.log")
-    
+        _system(
+            fr"notion > {_cwd}notion-{cwt}.log")
+
     def stop(self) -> _NoReturn:
         raise KeyboardInterrupt

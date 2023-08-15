@@ -1,5 +1,4 @@
 from typing import Callable as _Callable
-from sqlite3 import Connection as _Connection
 from . import Notification, Schedule, run_pending
 from core.SQL import Icons, Urls
 
@@ -15,8 +14,6 @@ with conn:
     all_Urls = sql.get_all()
 
 del (sql, conn)
-
-
 
 
 Duolingo_Task: Notification = Notification("Second Brain", "Habit Tracker",
@@ -38,7 +35,7 @@ Edx_Course: Notification = Notification("Second Brain", "EDx Course",
                                         "Follow up with the AI course", all_Icons[5], all_Urls[5][2])
 
 
-Tasks: dict[str, _Callable] = {
+Tasks: dict[str, _Callable[[], None]] = {
     "Duolingo": Duolingo_Task.run,
     "Edx Course": Edx_Course.run,
     "Book": Book_Task.run,
@@ -57,7 +54,6 @@ def main() -> None:
 
         Notifier_Enabled.run()
 
-        while True:
-            run_pending()
+        run_pending()
     except (RuntimeError or RuntimeWarning):
         Error.run()

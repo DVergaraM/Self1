@@ -1,21 +1,26 @@
 import pypresence
 import struct
+from typing import Any as _Any
 from . import Notification
 import time
-from pypresence import Presence
+from pypresence import Presence, DiscordNotFound, DiscordError
 from random import choice
-from core.SQL import Activities, Icons
+from core import PRESENCE_ID, dict_tuple, ICON
+from core.SQL import Icons
 
 
-sql = Icons()
-conn = sql.create_connection()
-with conn:
-    Discord = sql.get_path(sql.get_id("Discord"))
+_sql = Icons()
+_conn = _sql.create_connection()
+with _conn:
+    Discord = _sql.get_path(_sql.get_id("Discord"))
 
-del sql, conn
+del _sql, _conn
 
-
-RPC = Presence('1126179074130321508')
+try:
+    rpc = Presence(PRESENCE_ID)
+    rpc.connect()
+except DiscordNotFound or DiscordError:
+    pass
 
 Pop = Notification("Second Brain", "Notifier",
                    "Discord RPC Enabled", Discord, None, 'short')
@@ -28,56 +33,66 @@ Error = Notification("Second Brain", "Notifier",
 Stop = Notification("Second Brain", "Notifier", "Closing Discord RPC",
                     Discord, None, "short")
 
-status = False
+_status = False
+"Something"
 
-""" {
+
+""" _activities_dict: dict[int, dict] = {
+    0: {},
+    1: {},
+    2: {},
+} """
+
+_activities_dict_1: dict[int, dict[str, str]] = {
+    0: {
         "Image_URL": "https://i.imgur.com/J6LeoUb.png",
         "Description": "@DVergaraM",
         "Small_text": "DVergaraM"
     },
-    {
-        "Image_URL": "https://i.imgur.com/PstvzgE.png", 
+    1: {
+        "Image_URL": "https://i.imgur.com/PstvzgE.png",
         "Description": "Programming a Notifier",
         "Small_text": "Learning CPython"
     },
-    {
-        "Image_URL": "https://i.imgur.com/M6yBwxS.png",
-        "Description": "@dan.v.m_137",
-        "Small_text": "@dan.v.m_137"
-    }"""
-
-
-activities_dict: dict[int, dict] = {
-    0: {},
-    1: {},
-    2: {},
+    2: {
+        "Image_URL": "https://i.imgur.com/VFpxiwx.png",
+        "Description": "@dvergaram_",
+        "Small_text": "@dvergaram_"
+    }
 }
-sql = Activities()
-conn = sql.create_connection()
-with conn:
-    for key, value in activities_dict.items():
-        activities_dict[key]["Image_URL"] = sql.get_imageurl(key+1)
-        activities_dict[key]["Description"] = sql.get_description(key+1)
-        activities_dict[key]["Small_text"] = sql.get_smalltext(key+1)
 
-del (sql, conn)
+_activities_tuple: tuple[tuple[str]] = (("https://i.imgur.com/J6LeoUb.png", "@DVergaraM", "DVergaraM"),
+                                        ("https://i.imgur.com/PstvzgE.png",
+                                         "Programming a Notifier", "Learning CPython"),
+                                        ("https://i.imgur.com/VFpxiwx.png", "@dvergaram_", "@dvergaram_"))
+"Database like tuple"
 
 
-def update_rpc(activities: dict[int, dict]) -> None:
-    global status
+def update_rpc(activities: dict_tuple) -> None:
+    global _status
     while True:
         current_activity = choice(activities)
         detail = "True progress comes not through action, but through awakening."
 
-        # https://i.imgur.com/N1fuUn8.jpg
         try:
-            RPC.update(state=current_activity["Description"], details=detail,
-                       start=cwt, large_image="https://i.imgur.com/N1fuUn8.jpg",
-                       large_text="Second Brain", small_image=current_activity["Image_URL"],
-                       small_text=current_activity["Small_text"],
-                       buttons=[{'label': "Linktree", 'url': "https://linktr.ee/dvergaram"}])
+            if isinstance(activities, dict):
+                rpc.update(state=current_activity["Description"], details=detail,
+                           start=cwt, large_image=ICON,
+                           large_text="Second Brain", small_image=current_activity["Image_URL"],
+                           small_text=current_activity["Small_text"],
+                           buttons=[{'label': "Linktree", 'url': "https://linktr.ee/dvergaram"}])
+
+            elif isinstance(activities, tuple):
+                rpc.update(state=current_activity[1], details=detail,
+                           start=cwt, large_image=ICON,
+                           large_text="Second Brain", small_image=current_activity[0],
+                           small_text=current_activity[2],
+                           buttons=[{'label': "Linktree", 'url': "https://linktr.ee/dvergaram"}])
+            else:
+                raise ValueError("'activities' must be a dict or a tuple.")
+
             time.sleep(5)
-            if status:
+            if _status:
                 break
         except KeyboardInterrupt:
             pass
@@ -86,12 +101,13 @@ def update_rpc(activities: dict[int, dict]) -> None:
 def mainRPC() -> None:
     try:
         Pop.run()
-        update_rpc(activities_dict)
+        update_rpc(_activities_tuple)
 
-    except (pypresence.exceptions.DiscordNotFound, struct.error, pypresence.exceptions.ServerError, RuntimeError or RuntimeWarning) as e:
+    except (pypresence.exceptions.DiscordNotFound, struct.error, pypresence.exceptions.ServerError, RuntimeError or RuntimeWarning, RuntimeError, RuntimeWarning) as ExceptionV1:
         Error.run()
         time.sleep(2)
-        print(e)
+        raise ExceptionV1()
+        # print(e)
         return
 
     except (KeyboardInterrupt, ValueError):
@@ -100,10 +116,10 @@ def mainRPC() -> None:
 
 def stopRPC() -> None:
     try:
-        global status
-        status = True
+        global _status
+        _status = True
         time.sleep(2)
-        RPC.close()
+        rpc.close()
         Stop.run()
     except:
         Error.run()

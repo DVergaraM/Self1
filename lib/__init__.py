@@ -1,7 +1,8 @@
 from winotify import Notification as _Notifier
-from winotify import audio as _audio
+from winotify import audio as sounds
 from datetime import datetime as _datetime
-from typing import (Any, Callable as _Callable, Union as _Union, List as _List)
+from typing import (Optional as _Optional,
+                    Callable as _Callable, List as _List)
 import schedule as _schedule
 from core.SQL import Icons
 
@@ -14,7 +15,7 @@ del _sql, _conn
 
 
 class Notification(_Notifier):
-    def __init__(self, app_id: str, title: str, msg: str, icon: str, launch: str | _Callable | None = "",  duration='long', sound=_audio.Reminder) -> None:
+    def __init__(self, app_id: str = "Second Brain", title: str = "Notifier", msg: str = "", icon: str = "", launch: str | _Callable | None = "",  duration='long', sound=sounds.Reminder) -> None:
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
         if launch is not None:
@@ -27,15 +28,16 @@ class Notification(_Notifier):
 
 
 class Schedule:
-    def __init__(self, time: str, task: _Callable) -> None:
-        _schedule.every().day.at(time, "America/Bogota").do(task)
+    def __init__(self, time: str, task: _Callable, tz: _Optional[str] = "America/Bogota") -> None:
+        _schedule.every().day.at(time, tz).do(task)
 
 
 def run_pending() -> None:
-    _schedule.run_pending()
+    while True:
+        _schedule.run_pending()
 
 
-def get_next_run() -> _Union[_datetime, None]:
+def get_next_run() -> (_datetime | None):
     return _schedule.next_run()
 
 
@@ -44,7 +46,7 @@ def get_jobs() -> _List[_schedule.Job]:
 
 
 def stop() -> None:
-    _Stop = Notification("Second Brain", "Notifier", "Closing Notifier",
+    _stop = Notification("Second Brain", "Notifier", "Closing Notifier",
                          Second_Brain, None, "short")
-    _Stop.run()
+    _stop.run()
     return _schedule.clear()

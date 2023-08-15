@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any as _Any
 from . import oint, otuple_str, Table
 
 
@@ -20,7 +20,7 @@ class Activities(Table):
         db.commit()
         return cur.lastrowid
 
-    def get_imageurl(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_imageurl(self, log_id: oint = None, log: otuple_str = None) -> _Any:
         if log is None:
             log = self._log
 
@@ -42,7 +42,7 @@ class Activities(Table):
         else:
             return value[0]
 
-    def get_description(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_description(self, log_id: oint = None, log: otuple_str = None) -> _Any:
         if log is None:
             log = self._log
 
@@ -64,7 +64,7 @@ class Activities(Table):
         else:
             return value[0]
 
-    def get_smalltext(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_smalltext(self, log_id: oint = None, log: otuple_str = None) -> _Any:
         if log is None:
             log = self._log
 
@@ -106,7 +106,7 @@ class Icons(Table):
         db.commit()
         return cur.lastrowid
 
-    def get_app(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_app(self, log_id: oint = None, log: otuple_str = None) -> _Any:
 
         if log is None:
             log = self._log
@@ -129,7 +129,7 @@ class Icons(Table):
         else:
             return value[0]
 
-    def get_path(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_path(self, log_id: oint = None, log: otuple_str = None) -> _Any:
 
         if log is None:
             log = self._log
@@ -152,7 +152,7 @@ class Icons(Table):
         else:
             return value[0]
 
-    def get_id(self, app_query: str) -> Any:
+    def get_id(self, app_query: str) -> _Any:
 
         db = self._conn
 
@@ -188,7 +188,7 @@ class Urls(Table):
         db.commit()
         return cur.lastrowid
 
-    def get_app(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_app(self, log_id: oint = None, log: otuple_str = None) -> _Any:
 
         if log is None:
             log = self._log
@@ -211,7 +211,7 @@ class Urls(Table):
         else:
             return query_id[0]
 
-    def get_url(self, log_id: oint = None, log: otuple_str = None) -> Any:
+    def get_url(self, log_id: oint = None, log: otuple_str = None) -> _Any:
 
         if log is None:
             log = self._log
@@ -234,7 +234,7 @@ class Urls(Table):
         else:
             return value[0]
 
-    def get_id(self, app_query: str) -> Any:
+    def get_id(self, app_query: str) -> _Any:
 
         db = self._conn
 
