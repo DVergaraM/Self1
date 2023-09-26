@@ -51,10 +51,20 @@ class Gui(QMainWindow):
         self.config_menu.show()
         #connect(self.config_menu, d)
     def _config_menu_icon_selector(self):
-        print("Icon selector")
+        path = "C:/Users"
+        realpath = os.path.realpath(path)
+        if QDesktopServices.openUrl(QUrl.fromLocalFile(realpath)):
+            print("Icon selector")
+        else:
+            print("Error")
     
     def _config_menu_title_selector(self):
-        print("Title selector")
+        path = "C:/Users"
+        realpath = os.path.realpath(path)
+        if QDesktopServices.openUrl(QUrl.fromLocalFile(realpath)):
+            print("Title selector")
+        else:
+            print("Error 2")
 
     def _notification_menu(self):
         uic.loadUi(fr"{cwd}ui\notification_menu.ui",
