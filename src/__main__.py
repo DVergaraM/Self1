@@ -33,7 +33,7 @@ class Gui(QMainWindow):
             "apps_menu_button": self._apps_menu,
             "exit_button": sys.exit,
             "create_menu_button": self._create_menu,
-            "config_button": lambda: print("Config button")
+            "config_button": self._config_menu
         }
         connect(self, d)
         self.notifier: ThreadNotifier = ThreadNotifier()
@@ -42,7 +42,19 @@ class Gui(QMainWindow):
 
     def _config_menu(self):
         uic.loadUi(fr"{cwd}ui\config_menu.ui", self.config_menu)
-        setConfig(self.config_menu, "Config Menu", self.icon, (760, 680))
+        setConfig(self.config_menu, "Config Menu", self.icon, (510, 460))
+        d = {
+            "icon_selector_button": self._config_menu_icon_selector,
+            "title_selector_button": self._config_menu_title_selector
+        }
+        connect(self.config_menu, d)
+        self.config_menu.show()
+        #connect(self.config_menu, d)
+    def _config_menu_icon_selector(self):
+        print("Icon selector")
+    
+    def _config_menu_title_selector(self):
+        print("Title selector")
 
     def _notification_menu(self):
         uic.loadUi(fr"{cwd}ui\notification_menu.ui",
@@ -64,7 +76,7 @@ class Gui(QMainWindow):
         setConfig(self.apps_menu, "Apps Menu", self.icon, (760, 680))
 
         actual: Any = self.db.get_current_apps_path_apps()[0]
-        self.apps_menu.path_line.setText(fr'"{actual}"')
+        setText(self.apps_menu, ("path_line", fr'"{actual}"'))
         d = {
             "exit_button": self.apps_menu.close,
             "right_button": self._apps_menu_path_avanzar,

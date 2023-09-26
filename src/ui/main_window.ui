@@ -92,10 +92,10 @@
    <widget class="QPushButton" name="config_button">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>620</y>
-      <width>75</width>
-      <height>23</height>
+      <x>660</x>
+      <y>610</y>
+      <width>80</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="text">

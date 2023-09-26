@@ -220,7 +220,7 @@ class LoginSystem(QDialog):
 
         login = self.db.fetch_all_logins(iusername, ipassword)
 
-        if 0 < len(login) < 2:
+        if 0 < len(login) < 3:
             self.accept()
             updateWindow(self)
         else:
