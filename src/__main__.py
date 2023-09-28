@@ -1,9 +1,8 @@
+from datetime import datetime
 import os
 from typing import Self, Union, Any, Callable, List, overload
-# from logic.organizador_materias import Organizador_Materias
 from logic.threads import ThreadNotifier, OSThread
-# from gui.visor_materias import Aplicacion_Gui
-from logic import SubWindow, LoginSystem, Database, setConfig, connect, setText, updateWindow, MyCallable
+from logic import SubWindow, LoginSystem, Database, setConfig, connect, setText, updateWindow, getText
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
@@ -20,9 +19,12 @@ class Gui(QMainWindow):
         super(Gui, self).__init__()
         uic.loadUi(fr'{cwd}ui\main_window.ui', self)
         self.db: Database = Database(DB_PATH)
+        self.config = self.db.get_config()
         self.connection = self.db.connection
-        self.icon: QIcon = QIcon(ICON_PATH)
-        setConfig(self, "Second Brain", self.icon, (760, 680))
+        icon, self.title = self.config
+        self.icon: QIcon = QIcon(icon)
+        print(self.config)
+        setConfig(self, str(self.title), self.icon, (760, 680))
         self.notification_menu: SubWindow = SubWindow()
         self.apps_menu: SubWindow = SubWindow()
         self.create_menu: SubWindow = SubWindow()
@@ -36,35 +38,56 @@ class Gui(QMainWindow):
             "config_button": self._config_menu
         }
         connect(self, d)
-        self.notifier: ThreadNotifier = ThreadNotifier()
-        self.othread: OSThread = OSThread()
+        self.notifier = ThreadNotifier()
+        self.othread = QProcess()
+        self._config = []
         self.show()
 
     def _config_menu(self):
         uic.loadUi(fr"{cwd}ui\config_menu.ui", self.config_menu)
         setConfig(self.config_menu, "Config Menu", self.icon, (510, 460))
         d = {
-            "icon_selector_button": self._config_menu_icon_selector,
-            "title_selector_button": self._config_menu_title_selector
+            "browse_button": self._config_menu_browse_icon,
+            "save_title_button": self._config_menu_save_title,
+            "save_all_button": self._config_menu_add_to_db
         }
         connect(self.config_menu, d)
         self.config_menu.show()
-        #connect(self.config_menu, d)
-    def _config_menu_icon_selector(self):
+        # connect(self.config_menu, d)
+
+    def _config_menu_browse_icon(self):
         path = "C:/Users"
         realpath = os.path.realpath(path)
-        if QDesktopServices.openUrl(QUrl.fromLocalFile(realpath)):
-            print("Icon selector")
-        else:
-            print("Error")
-    
-    def _config_menu_title_selector(self):
-        path = "C:/Users"
-        realpath = os.path.realpath(path)
-        if QDesktopServices.openUrl(QUrl.fromLocalFile(realpath)):
-            print("Title selector")
-        else:
-            print("Error 2")
+        supportedFormats = QImageReader.supportedImageFormats()
+        text_filter = "Images ({})".format(
+            " ".join(["*.{}".format(fo.data().decode()) for fo in supportedFormats]))
+        image_path, filter = QFileDialog.getOpenFileName(
+            self.config_menu, "Open an image", realpath, text_filter)
+        print(image_path)
+        self._config.append(image_path)
+        setText(self.config_menu, ("path_input", image_path))
+        updateWindow(self.config_menu)
+
+    def _config_menu_save_title(self):
+        title = str(getText(self.config_menu, "title_input"))
+        self._config.append(title)
+        updateWindow(self.config_menu)
+
+        # setConfig(self.config_menu)
+
+    def _config_menu_add_to_db(self):
+        if isinstance(self._config, tuple):
+            if len(self._config) == 2:
+                self.db.set_config(self.config_menu, self._config)
+                setConfig(self)
+            else:
+                raise ValueError("'Config' only need 2 items inside")
+        elif isinstance(self._config, list):
+            if len(self._config) == 2:
+                new_config = tuple(self._config)
+                self.db.set_config(self.config_menu, new_config)
+            else:
+                raise ValueError("'Config' only need 2 items inside")
 
     def _notification_menu(self):
         uic.loadUi(fr"{cwd}ui\notification_menu.ui",
@@ -109,8 +132,20 @@ class Gui(QMainWindow):
             self.apps_menu.path_line.setText(fr'"{actual}"')
 
     def _apps_menu_path_run(self):
-        self.othread.path: Any = self.apps_menu.path_line.text()
-        self.othread.start()
+        path = fr"{self.apps_menu.path_line.text()}"
+        date = datetime.now()
+        cwd = os.getcwd()
+        name = path.split(
+            "\\")[-1].removesuffix('.exe"').title().lstrip().rstrip().strip()
+        self.othread.setProgram(path)
+        self.othread.program()
+        if name == "Code":
+            self.othread.start(self.othread.program())
+        else:
+            self.othread.start(self.othread.program(), [
+                               fr"> {cwd}\logs\log-{date.year}-{date.month}-{date.day}_{date.hour}-{date.minute}.log"])
+        print(
+            f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
 
     def _create_menu(self):
         uic.loadUi(fr"{cwd}ui\create_menu.ui", self.create_menu)
