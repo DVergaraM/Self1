@@ -178,7 +178,6 @@ class RegisterSystem(QDialog):
         super(RegisterSystem, self).__init__()
         uic.loadUi(fr"{cwdui}ui\register_window.ui", self)
         self.DB_PATH: str = fr"{cwdui}login.db"
-        ICON_PATH: str = fr"{cwdui}images\aries.png"
         self.db: Database = Database(self.DB_PATH)
         icon, _ = self.db.get_config()
         self.icon: QtGui.QIcon = QtGui.QIcon(icon)
@@ -215,9 +214,10 @@ class LoginSystem(QDialog):
         super(LoginSystem, self).__init__()
         uic.loadUi(fr'{cwdui}ui\login_window.ui', self)
         self.DB_PATH = fr"{cwdui}login.db"
-        ICON_PATH = fr"{cwdui}images\aries.png"
         self.db = Database(self.DB_PATH)
-        self.icon = QtGui.QIcon(ICON_PATH)
+        self.config = self.db.get_config()
+        icon, _ = self.config
+        self.icon = QtGui.QIcon(icon)
         self.connection = self.db.connection
         # self.setStyleSheet('background-color: black')
         updateWindow(self)
