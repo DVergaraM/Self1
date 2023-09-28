@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
-from typing import Self, Union, Any, Callable, List, overload
-from logic.threads import ThreadNotifier, OSThread
+from typing import Any
+from logic.threads import ThreadNotifier
 from logic import SubWindow, LoginSystem, Database, setConfig, connect, setText, updateWindow, getText
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
