@@ -139,6 +139,22 @@ def setText(element: elementType, objs: dict[str, int | str] | tuple[str, int | 
             fr"'objs' and/or 'data' params must have the correct type")
 
 
+def getText(element: elementType, attrs: tuple[str] | str):
+    if isinstance(attrs, tuple):
+        getter = ()
+        for attr in attrs:
+            if hasattr(element, attr):
+                obj = getattr(element, attr)
+                getter += (obj.text(), )
+            else:
+                continue
+        return getter
+    elif isinstance(attrs, str):
+        if hasattr(element, attrs):
+            obj = getattr(element, attrs)
+            return obj.text()
+
+
 def updateWindow(element: elementType):
     try:
         if hasattr(element, "db") and hasattr(element, "DB_PATH"):
@@ -150,11 +166,9 @@ def updateWindow(element: elementType):
                 element.db = Database(DB_PATH)
                 element.connection = connection
             else:
-                raise AttributeError(
-                    f"Attribute 'connection' not found in '{db.__name__}' class")
+                element.update()
         else:
-            raise AttributeError(
-                f"Attribute 'db' or 'DB_PATH' not found in '{element.__name__}' class")
+            element.update()
     except Exception as e:
         raise Exception(e)
 
@@ -166,7 +180,8 @@ class RegisterSystem(QDialog):
         self.DB_PATH: str = fr"{cwdui}login.db"
         ICON_PATH: str = fr"{cwdui}images\aries.png"
         self.db: Database = Database(self.DB_PATH)
-        self.icon: QtGui.QIcon = QtGui.QIcon(ICON_PATH)
+        icon, _ = self.db.get_config()
+        self.icon: QtGui.QIcon = QtGui.QIcon(icon)
         self.connection = self.db.connection
         setConfig(self, "Register", self.icon, (650, 400))
         d = {
@@ -269,6 +284,8 @@ class Database:
                 cur.execute("DROP TABLE IF EXISTS Urls")
                 cur.execute("DROP TABLE IF EXISTS Apps")
                 cur.execute("DROP TABLE IF EXISTS Notifications")
+                cur.execute("DROP TABLE IF EXISTS Config")
+                conn.commit()
                 cur.close()
                 del cur
                 if isinstance(conn, self.__Connection__):
@@ -278,6 +295,11 @@ class Database:
             else:
                 conn = self.__connect__(self.DB_PATH)
                 cur = conn.cursor()
+                cur.execute("""CREATE TABLE IF NOT EXISTS Config(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    image_path TEXT NOT NULL,
+                    title VARCHAR(30) NOT NULL
+                    )""")
                 cur.execute("""CREATE TABLE IF NOT EXISTS Activities(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Image_URL VARCHAR(120) NOT NULL,
@@ -480,3 +502,61 @@ class Database:
         conn.close()
         QMessageBox.information(
             element, "Password changed", "Your password has been updated")
+
+    def set_config(self, element: elementType, config: tuple[str, str]):
+        assert len(config) == 2, "Config length must be 2"
+        conn = self.connection
+        cur = conn.cursor()
+
+        sql = f"""
+        INSERT INTO Config(image_path, title)
+        VALUES(?, ?)
+        """
+        cur.execute(sql, config)
+        conn.commit()
+        QMessageBox.information(element, "Information",
+                                "Your config has been saved")
+        return cur.lastrowid
+
+    def update_config_icon(self, element: elementType, new_icon: str, title: str):
+        conn = self.connection
+        cur = conn.cursor()
+
+        sql = f"""
+        UPDATE Config SET image_path = ? WHERE title = ?
+        """
+
+        cur.execute(sql, (new_icon, title))
+        conn.commit()
+        conn.close()
+        QMessageBox.information(element, "Information", "Icon changed")
+
+    def update_config_title(self, element: elementType, new_title: str, icon: str):
+        conn = self.connection
+        cur = conn.cursor()
+
+        sql = """
+        UPDATE Config SET title = ? WHERE icon = ?
+        """
+        cur.execute(sql, (new_title, icon))
+        conn.commit()
+        conn.close()
+        QMessageBox.information(element, "Information", "Title changed")
+
+    def delete_config(self, element: elementType):
+        conn = self.connection
+        cur = conn.cursor()
+
+        cur.execute("""
+                    DELETE FROM Config
+                    """)
+        conn.commit()
+        QMessageBox.information(element, "Information",
+                                "All config has been reseted")
+
+    def get_config(self):
+        conn = self.connection
+        cur = conn.cursor()
+        sql = "SELECT image_path, title FROM Config"
+        l = cur.execute(sql)
+        return l.fetchone()
