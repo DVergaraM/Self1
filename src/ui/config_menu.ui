@@ -18,7 +18,7 @@
     <rect>
      <x>310</x>
      <y>100</y>
-     <width>100</width>
+     <width>130</width>
      <height>30</height>
     </rect>
    </property>
@@ -35,11 +35,14 @@
    </property>
   </widget>
   <widget class="QPushButton" name="save_title_button">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>310</x>
      <y>180</y>
-     <width>100</width>
+     <width>130</width>
      <height>30</height>
     </rect>
    </property>
@@ -104,6 +107,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="save_all_button">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>210</x>

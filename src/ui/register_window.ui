@@ -69,6 +69,9 @@
      <pointsize>10</pointsize>
     </font>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
   </widget>
   <widget class="QLineEdit" name="password_input">
    <property name="geometry">
@@ -92,6 +95,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="register_button">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>510</x>
