@@ -1,12 +1,18 @@
+from pystray import (Menu, MenuItem as Item, Icon)
 from winotify import Notification as _Notifier
 from winotify import audio as sounds
 from datetime import datetime as _datetime
 import schedule as _schedule
-from typing import Optional, Callable, Any, Union, List, TypeVar, Self, TypeAlias
+from typing import Optional, Callable, Any, Union, List, TypeVar, TypeAlias
 import os
+from datetime import datetime
 from hashlib import sha256
 from PyQt5.QtWidgets import QLabel, QWidget, QDialog,  QMainWindow, QMessageBox
 from PyQt5 import uic, QtGui
+from PyQt5.QtCore import (QEvent, QThread as QThread, QSize)
+from itertools import count
+import PIL.Image as Img
+import time
 
 
 QIcon: TypeAlias = QtGui.QIcon
@@ -54,6 +60,113 @@ class Schedule:
                 "'time' and 'task' params must have the correct type")
 
 
+class MQThread(QThread):
+    def __init__(self, target: Callable = None, bucle: bool = True) -> None:
+        super().__init__()
+        self.target = target
+        self.name = target.__name__ if isinstance(target, Callable) else ""
+        self.counter = count()
+        self.bucle = bucle
+
+    def run(self) -> None:
+        if self.bucle:
+            if self.target:
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+
+                while not self.isFinished():
+                    self.target()
+        else:
+            if self.target:
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+
+                self.target()
+
+
+class Stray:
+    def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]):
+        self.icon_name = icon_name
+        self._image = image
+        self.methods = methods
+        self.icon = None
+
+    @property
+    def title(self):
+        return self.icon_name
+
+    @title.setter
+    def title(self, value: str):
+        if isinstance(value, str) and value != self.icon_name:
+            self.icon_name = value
+        else:
+            raise ValueError(
+                "'value' is not an instance of str or is the same")
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, value: Img):
+        if isinstance(value, Img) and value != self._image:
+            self._image = value
+        else:
+            raise ValueError(
+                "'value' is not an instance of PIL.Image or is the same")
+
+    def create_menu(self):
+        self.icon = Icon(self.title, self.image, menu=Menu(
+            Item("Notifier", Menu(
+                Item("Start System", self.__helper__),
+                Item("Stop System", self.__helper__)
+            )),
+            Item("Config", self.__helper__),
+            Item("Open UI", self.__helper__),
+            Item("Close UI", self.__helper__),
+            Item("Exit", self.__helper__)
+        ), title=self.title)
+        self.icon.run()
+
+    def __helper__(self, icon, item):
+        notifier_start, notifier_stop, open_config, show_ui, close_ui, exit = self.methods
+        item = str(item)
+        match item:
+            case "Start System":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Starting Notification System")
+                notifier_start()
+            case "Stop System":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Stopping Notification System")
+                notifier_stop()
+            case "Config":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Opening Config UI")
+                open_config()
+            case "Open UI":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Opening UI")
+                show_ui()
+            case "Close UI":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Closing UI")
+                close_ui()
+            case "Exit":
+                date = datetime.now()
+                print(
+                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Closing {self.icon_name}")
+                time.sleep(5)
+                icon.stop()
+
+
 def run_pending() -> None:
     _schedule.run_pending()
 
@@ -63,19 +176,23 @@ def stop() -> None:
 
 
 class SubWindow(QWidget):
-    def __init__(self, parent: Any = None):
+    "Subclass of `PyQt5.QtWidgets.QWidget`"
+
+    def __init__(self, parent: Any = None, size: tuple[int, int] = None):
         super(SubWindow, self).__init__(parent)
-        label: QLabel = QLabel(self)
+        if size is not None and len(size) == 2:
+            self.setFixedSize(size[0], size[1])
+        label = QLabel(self)
         label.setGeometry(0, 0, 760, 680)
 
 
 elementType = TypeVar("elementType", QMainWindow, SubWindow, QWidget, QDialog)
 """
 `TypeVar` of:
-- `QMainWindow`
-- `SubWindow`
-- `QWidget`
-- `QDialog`
+- `PyQt5.QtWidgets.QMainWindow`
+- `PyQt5.QtWidgets.QWidget`
+- `PyQt5.QtWidgets.QDialog`
+- `src.logic.SubWindow`
 """
 
 
@@ -84,9 +201,13 @@ def sha(element: elementType, objs: tuple[str]) -> tuple[str, str]:
         if len(objs) == 2:
             objs_in_sha = ()
             for i in range(len(objs)):
-                obj: Any = getattr(element, objs[i])
-                objsha: str = sha256(obj.text().encode('utf-8')).hexdigest()
-                objs_in_sha += (objsha, )
+                if hasattr(element, objs[i]):
+                    obj: Any = getattr(element, objs[i])
+                    objsha: str = sha256(
+                        str(obj.text()).encode('utf-8')).hexdigest()
+                    objs_in_sha += (objsha, )
+                else:
+                    continue
             return objs_in_sha
         else:
             raise IndexError("Only 2 items are allowed in the tuple")
@@ -94,17 +215,17 @@ def sha(element: elementType, objs: tuple[str]) -> tuple[str, str]:
         raise TypeError("'objs' param must be str or tuple of str")
 
 
-def connect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[str, Callable[[], Any]]):
+def connect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[str, Callable[[], Any]]) -> None:
     if isinstance(objs, tuple) and len(objs) == 2:
         attribute, method = objs
         if (isinstance(attribute, str) and isinstance(method, Callable)) and hasattr(element, attribute):
             obj = getattr(element, attribute)
             obj.clicked.connect(method)
     elif isinstance(objs, dict) and all(isinstance(key, str) and isinstance(value, Callable) for key, value in objs.items()):
-        for key, value in objs.items():
-            if hasattr(element, key):
-                obj = getattr(element, key)
-                obj.clicked.connect(value)
+        for attr, meth in objs.items():
+            if hasattr(element, attr):
+                obj = getattr(element, attr)
+                obj.clicked.connect(meth)
             else:
                 continue
     else:
@@ -112,16 +233,52 @@ def connect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[str
             fr"'obj' and/or 'method' params must have the correct type")
 
 
-def setConfig(element: elementType, title: str, icon: QtGui.QIcon, size: tuple[int, int]) -> None:
+def textChangedConnect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[Callable[[], Any], list[str]]) -> None:
+    if isinstance(objs, tuple) and len(objs) == 2:
+        attribute, method = objs
+        if (isinstance(attribute, str) and isinstance(method, Callable)) and hasattr(element, attribute):
+            obj = getattr(element, attribute)
+            obj.textChanged.connect(method)
+    elif isinstance(objs, dict) and all(isinstance(meth, Callable) and isinstance(lst, list) for meth, lst in objs.items()):
+        for meth, lst in objs.items():
+            for attr in lst:
+                if hasattr(element, attr):
+                    obj = getattr(element, attr)
+                    obj.textChanged.connect(meth)
+                else:
+                    continue
+    else:
+        raise TypeError(
+            fr"'obj' and/or 'method' params must have the correct type")
+
+
+def setConfig(element: elementType, title: str, icon: QtGui.QIcon, size: QSize | tuple[int, int]) -> None:
     element.setWindowTitle(title)
     element.setWindowIcon(icon)
-    if len(size) == 2:
-        element.setFixedSize(size[0], size[1])
+    if isinstance(size, tuple):
+        if len(size) == 2:
+            element.setFixedSize(size[0], size[1])
+        else:
+            element.setFixedSize(760, 680)
+    elif isinstance(size, QSize):
+        element.setFixedSize(size)
     else:
-        element.setFixedSize(760, 680)
+        raise TypeError(
+            "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 
-def setText(element: elementType, objs: dict[str, int | str] | tuple[str, int | str]):
+def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: QtGui.QIcon, sizes: tuple[QSize]) -> None:
+    if len(elements) == len(titles) == len(sizes):
+        for i in range(len(elements)):
+            elements[i].setWindowTitle(titles[i])
+            elements[i].setWindowIcon(icon)
+            elements[i].setFixedSize(sizes[i])
+    else:
+        raise ValueError(
+            "'elements', 'titles' and 'sizes' parameters must have the same amount of items")
+
+
+def setText(element: elementType, objs: dict[str, int | str] | tuple[str, (int | str, ...)]) -> None:
     if isinstance(objs, tuple) and len(objs) == 2:
         attribute, data = objs
         if (isinstance(attribute, str) and (isinstance(data, int) or isinstance(data, str))) and hasattr(element, attribute):
@@ -139,7 +296,7 @@ def setText(element: elementType, objs: dict[str, int | str] | tuple[str, int | 
             fr"'objs' and/or 'data' params must have the correct type")
 
 
-def getText(element: elementType, attrs: tuple[str] | str):
+def getText(element: elementType, attrs: tuple[str] | str) -> tuple[()] | tuple[Any] | Any | None:
     if isinstance(attrs, tuple):
         getter = ()
         for attr in attrs:
@@ -155,34 +312,67 @@ def getText(element: elementType, attrs: tuple[str] | str):
             return obj.text()
 
 
-def updateWindow(element: elementType):
+def updateWindow(element: elementType) -> None:
     try:
         if hasattr(element, "db") and hasattr(element, "DB_PATH"):
             db: Database = getattr(element, "db")
             DB_PATH: str = getattr(element, "DB_PATH")
             if hasattr(db, "connection"):
                 connection: Any = getattr(db, "connection")
-                element.update()
+
                 element.db = Database(DB_PATH)
                 element.connection = connection
+                setConfig(element, element.title, element.icon, element.size())
+                element.update()
             else:
+                setConfig(element, element.windowTitle(),
+                          element.windowIcon(), element.size())
                 element.update()
         else:
+            setConfig(element, element.windowTitle(),
+                      element.windowIcon(), element.size())
             element.update()
     except Exception as e:
         raise Exception(e)
+
+
+def enableButton(element: elementType, data: dict[str, bool] | tuple[str, bool]) -> None:
+    if isinstance(data, tuple) and len(data) == 2:
+        attr_name, value = data
+        if hasattr(element, attr_name):
+            attr = getattr(element, attr_name)
+            attr.setEnabled(value)
+    elif isinstance(data, dict) and (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
+        for attr_name, value in data.items():
+            if hasattr(element, attr_name):
+                attr = getattr(element, attr_name)
+                attr.setEnabled(value)
+            else:
+                continue
+    else:
+        raise TypeError(
+            fr"'data' param must have the correct type")
 
 
 class RegisterSystem(QDialog):
     def __init__(self) -> None:
         super(RegisterSystem, self).__init__()
         uic.loadUi(fr"{cwdui}ui\register_window.ui", self)
-        self.DB_PATH: str = fr"{cwdui}login.db"
-        self.db: Database = Database(self.DB_PATH)
+        self.DB_PATH_CONFIG = fr"{cwdui}brain_mine.db"
+        self.DB_PATH_LOGIN = fr"{cwdui}login.db"
+        self.db = Database(self.DB_PATH_CONFIG)
+        self.db_login = Database(self.DB_PATH_LOGIN)
         icon, _ = self.db.get_config()
         self.icon: QtGui.QIcon = QtGui.QIcon(icon)
         self.connection = self.db.connection
         setConfig(self, "Register", self.icon, (650, 400))
+        d = {
+            self.validate: [
+                "username_input",
+                "password_input"
+            ]
+        }
+        textChangedConnect(self, d)
         d = {
             "register_button": self._add_to_db,
             "exit_button": self.close
@@ -190,22 +380,29 @@ class RegisterSystem(QDialog):
         connect(self, d)
         updateWindow(self)
 
+    def validate(self, e: QEvent):
+        if all([getText(self, "username_input") != "", getText(self, "password_input") != ""]):
+            enableButton(self, ("register_button", True))
+        else:
+            enableButton(self, ("register button", False))
+        updateWindow(self)
+
     def _add_to_db(self):
         attrs = ("username_input", "password_input")
         result = sha(self, attrs)
         iusername, ipassword = result
 
-        login = self.db.fetch_all_logins(iusername, ipassword)
+        login = self.db_login.fetch_all_logins(iusername, ipassword)
 
         if len(login) >= 1:
-            self._update_window(self)
+            updateWindow(self)
             QMessageBox.warning(
                 self, "Error", "Username already exists\nTry a new one")
         else:
             self.db.add_user_logins(iusername, ipassword)
             QMessageBox.information(
                 self, "Success", "Username and password created.")
-            self._update_window(self)
+            updateWindow(self)
             self.accept()
 
 
@@ -213,15 +410,24 @@ class LoginSystem(QDialog):
     def __init__(self) -> None:
         super(LoginSystem, self).__init__()
         uic.loadUi(fr'{cwdui}ui\login_window.ui', self)
-        self.DB_PATH = fr"{cwdui}login.db"
-        self.db = Database(self.DB_PATH)
-        self.config = self.db.get_config()
-        icon, _ = self.config
+        self.DB_PATH_CONFIG = fr"{cwdui}brain_mine.db"
+        self.DB_PATH_LOGIN = fr"{cwdui}login.db"
+        self.db_config = Database(self.DB_PATH_CONFIG)
+        self.db_login = Database(self.DB_PATH_LOGIN)
+        icon, _ = self.db_config.get_config()
         self.icon = QtGui.QIcon(icon)
-        self.connection = self.db.connection
+        self.connection_config = self.db_config.connection
+        self.connection_login = self.db_login.connection
         # self.setStyleSheet('background-color: black')
         updateWindow(self)
         setConfig(self, "Login", self.icon, (760, 680))  # )(1240, 780))
+        d = {
+            self.validate: [
+                "username_input",
+                "password_input"
+            ]
+        }
+        textChangedConnect(self, d)
         d = {
             "login_button": self._handle_login,
             "create_form": self._open_register
@@ -229,11 +435,18 @@ class LoginSystem(QDialog):
         connect(self, d)
         # self.show()
 
+    def validate(self, e: QEvent):
+        if all([getText(self, "username_input") != "", getText(self, "password_input") != ""]):
+            enableButton(self, ("login_button", True))
+        else:
+            enableButton(self, ("login_button", False))
+        updateWindow(self)
+
     def _handle_login(self):
         attrs = ("username_input", "password_input")
         iusername, ipassword = sha(self, attrs)
 
-        login = self.db.fetch_all_logins(iusername, ipassword)
+        login = self.db_login.fetch_all_logins(iusername, ipassword)
 
         if 0 < len(login) < 3:
             self.accept()
@@ -516,6 +729,7 @@ class Database:
         conn.commit()
         QMessageBox.information(element, "Information",
                                 "Your config has been saved")
+        updateWindow(element)
         return cur.lastrowid
 
     def update_config_icon(self, element: elementType, new_icon: str, title: str):
@@ -543,7 +757,7 @@ class Database:
         conn.close()
         QMessageBox.information(element, "Information", "Title changed")
 
-    def delete_config(self, element: elementType):
+    def delete_config(self):  # , element: elementType):
         conn = self.connection
         cur = conn.cursor()
 
@@ -551,12 +765,14 @@ class Database:
                     DELETE FROM Config
                     """)
         conn.commit()
-        QMessageBox.information(element, "Information",
-                                "All config has been reseted")
+        # QMessageBox.information(element, "Information",
+        #                        "All config has been reseted")
 
     def get_config(self):
         conn = self.connection
         cur = conn.cursor()
-        sql = "SELECT image_path, title FROM Config"
-        l = cur.execute(sql)
-        return l.fetchone()
+        sql = """
+        SELECT image_path, title FROM Config
+        """
+        cur.execute(sql)
+        return cur.fetchone()
