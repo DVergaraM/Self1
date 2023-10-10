@@ -366,18 +366,16 @@ class RegisterSystem(QDialog):
         self.icon: QtGui.QIcon = QtGui.QIcon(icon)
         self.connection = self.db.connection
         setConfig(self, "Register", self.icon, (650, 400))
-        d = {
+        textChangedConnect(self, {
             self.validate: [
                 "username_input",
                 "password_input"
             ]
-        }
-        textChangedConnect(self, d)
-        d = {
+        })
+        connect(self, {
             "register_button": self._add_to_db,
             "exit_button": self.close
-        }
-        connect(self, d)
+        })
         updateWindow(self)
 
     def validate(self, e: QEvent):
@@ -421,18 +419,16 @@ class LoginSystem(QDialog):
         # self.setStyleSheet('background-color: black')
         updateWindow(self)
         setConfig(self, "Login", self.icon, (760, 680))  # )(1240, 780))
-        d = {
+        textChangedConnect(self, {
             self.validate: [
                 "username_input",
                 "password_input"
             ]
-        }
-        textChangedConnect(self, d)
-        d = {
+        })
+        connect(self, {
             "login_button": self._handle_login,
             "create_form": self._open_register
-        }
-        connect(self, d)
+        })
         # self.show()
 
     def validate(self, e: QEvent):
@@ -457,7 +453,7 @@ class LoginSystem(QDialog):
                 self, 'Error', 'Bad user or password')
 
     def _open_register(self):
-        register: RegisterSystem = RegisterSystem()
+        register = RegisterSystem()
         updateWindow(self)
         if register.exec_() == QDialog.DialogCode.Accepted:
             updateWindow(self)
@@ -757,7 +753,7 @@ class Database:
         conn.close()
         QMessageBox.information(element, "Information", "Title changed")
 
-    def delete_config(self):  # , element: elementType):
+    def delete_config(self):
         conn = self.connection
         cur = conn.cursor()
 
@@ -765,8 +761,6 @@ class Database:
                     DELETE FROM Config
                     """)
         conn.commit()
-        # QMessageBox.information(element, "Information",
-        #                        "All config has been reseted")
 
     def get_config(self):
         conn = self.connection
