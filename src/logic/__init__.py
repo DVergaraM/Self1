@@ -3,7 +3,7 @@ from winotify import Notification as _Notifier
 from winotify import audio as sounds
 from datetime import datetime as _datetime
 import schedule as _schedule
-from typing import Optional, Callable, Any, Union, List, TypeVar, TypeAlias
+from typing import Optional, Callable, Any, overload, Union, List, TypeVar, TypeAlias
 import os
 from datetime import datetime
 from hashlib import sha256
@@ -17,11 +17,11 @@ import time
 
 QIcon: TypeAlias = QtGui.QIcon
 
-MyCallable: TypeAlias = Callable[[], Any]
-
 cwdui = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)
 cwddb = fr"{os.getcwd()}\src\login.db"
+attribute: TypeAlias = str
+method: TypeAlias = Callable
 
 db: tuple[tuple[int, str, str, str]] = (
     (1, "https:/i.imgur.com/J6LeoUb.png", "@DVergaraM", "DVergaraM"),
@@ -41,7 +41,7 @@ class Notification(_Notifier):
     def run(self) -> None:
         self.show()
         date = _datetime.now()
-        print(f"[{date.year}-{date.month}-{date.day} {date.hour}:{date.minute}:{date.second}] - Task: '{self.msg}'")
+        print(f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Task: '{self.msg}'")
 
 
 class Schedule:
@@ -61,29 +61,75 @@ class Schedule:
 
 
 class MQThread(QThread):
-    def __init__(self, target: Callable = None, bucle: bool = True) -> None:
+    def __init__(self, targets: Callable | tuple[Callable], bucles: bool | tuple[bool]) -> None:
         super().__init__()
-        self.target = target
-        self.name = target.__name__ if isinstance(target, Callable) else ""
+        self.tuple = False
+        if isinstance(targets, Callable) and isinstance(bucles, bool):
+            self.target = targets
+            self.name = targets.__name__
+            self.tuple = False
+            self.bucle = bucles
+        else:
+            self.targets = targets
+            self.names = tuple()
+            for target in targets:
+                if isinstance(target, Callable):
+                    self.names += (target.__name__, )
+                else:
+                    self.names += ("", )
+            self.tuple = True
+            self.bucles = bucles
         self.counter = count()
-        self.bucle = bucle
 
     def run(self) -> None:
-        if self.bucle:
-            if self.target:
-                date = datetime.now()
-                print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+        if not self.tuple:
+            if self.bucle:
+                if self.target:
+                    date = datetime.now()
+                    print(
+                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
 
-                while not self.isFinished():
+                    while not self.isFinished():
+                        self.target()
+            else:
+                if self.target:
+                    date = datetime.now()
+                    print(
+                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+
                     self.target()
         else:
-            if self.target:
-                date = datetime.now()
-                print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
-
-                self.target()
+            for bucle in self.bucles:
+                for target in self.targets:
+                    if bucle:
+                        if target:
+                            date = datetime.now()
+                            for name in self.names:
+                                if name != "":
+                                    print(
+                                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    while not self.isFinished():
+                                        target()
+                                else:
+                                    name = f"Thread {next(self.counter)}"
+                                    print(
+                                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    self.start()
+                                    while not self.isFinished():
+                                        target()
+                    else:
+                        if target:
+                            date = datetime.now()
+                            for name in self.names:
+                                if name != "":
+                                    print(
+                                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    target()
+                                else:
+                                    name = f"Thread {next(self.counter)}"
+                                    print(
+                                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    target()
 
 
 class Stray:
@@ -196,7 +242,7 @@ elementType = TypeVar("elementType", QMainWindow, SubWindow, QWidget, QDialog)
 """
 
 
-def sha(element: elementType, objs: tuple[str]) -> tuple[str, str]:
+def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, str]:
     if isinstance(objs, tuple):
         if len(objs) == 2:
             objs_in_sha = ()
@@ -215,13 +261,13 @@ def sha(element: elementType, objs: tuple[str]) -> tuple[str, str]:
         raise TypeError("'objs' param must be str or tuple of str")
 
 
-def connect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[str, Callable[[], Any]]) -> None:
+def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None:
     if isinstance(objs, tuple) and len(objs) == 2:
-        attribute, method = objs
-        if (isinstance(attribute, str) and isinstance(method, Callable)) and hasattr(element, attribute):
-            obj = getattr(element, attribute)
-            obj.clicked.connect(method)
-    elif isinstance(objs, dict) and all(isinstance(key, str) and isinstance(value, Callable) for key, value in objs.items()):
+        attr, meth = objs
+        if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
+            obj = getattr(element, attr)
+            obj.clicked.connect(meth)
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and isinstance(value, method) for key, value in objs.items()):
         for attr, meth in objs.items():
             if hasattr(element, attr):
                 obj = getattr(element, attr)
@@ -233,13 +279,13 @@ def connect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[str
             fr"'obj' and/or 'method' params must have the correct type")
 
 
-def textChangedConnect(element: elementType, objs: tuple[str, Callable[[], Any]] | dict[Callable[[], Any], list[str]]) -> None:
+def textChangedConnect(element: elementType, objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
     if isinstance(objs, tuple) and len(objs) == 2:
-        attribute, method = objs
-        if (isinstance(attribute, str) and isinstance(method, Callable)) and hasattr(element, attribute):
-            obj = getattr(element, attribute)
-            obj.textChanged.connect(method)
-    elif isinstance(objs, dict) and all(isinstance(meth, Callable) and isinstance(lst, list) for meth, lst in objs.items()):
+        attr, meth = objs
+        if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
+            obj = getattr(element, attr)
+            obj.textChanged.connect(meth)
+    elif isinstance(objs, dict) and all(isinstance(meth, method) and isinstance(lst, list) for meth, lst in objs.items()):
         for meth, lst in objs.items():
             for attr in lst:
                 if hasattr(element, attr):
@@ -252,7 +298,13 @@ def textChangedConnect(element: elementType, objs: tuple[str, Callable[[], Any]]
             fr"'obj' and/or 'method' params must have the correct type")
 
 
-def setConfig(element: elementType, title: str, icon: QtGui.QIcon, size: QSize | tuple[int, int]) -> None:
+def setConfig(element: elementType, title: str | None = None, icon: QtGui.QIcon | None = None, size: QSize | tuple[int, int] | None = None) -> None:
+    if title is None:
+        title = element.windowTitle()
+    if icon is None:
+        icon = element.windowIcon()
+    if size is None:
+        size = element.size()
     element.setWindowTitle(title)
     element.setWindowIcon(icon)
     if isinstance(size, tuple):
@@ -278,13 +330,13 @@ def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: Qt
             "'elements', 'titles' and 'sizes' parameters must have the same amount of items")
 
 
-def setText(element: elementType, objs: dict[str, int | str] | tuple[str, (int | str, ...)]) -> None:
+def setText(element: elementType, objs: dict[attribute, int | str] | tuple[attribute, int | str]) -> None:
     if isinstance(objs, tuple) and len(objs) == 2:
-        attribute, data = objs
-        if (isinstance(attribute, str) and (isinstance(data, int) or isinstance(data, str))) and hasattr(element, attribute):
-            obj = getattr(element, attribute)
+        attr, data = objs
+        if (isinstance(attr, str) and (isinstance(data, int) or isinstance(data, str))) and hasattr(element, attr):
+            obj = getattr(element, attr)
             obj.setText(f"{data}")
-    elif isinstance(objs, dict) and all(isinstance(key, str) and (isinstance(value, int) or isinstance(value, str))for key, value in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and (isinstance(value, int) or isinstance(value, str))for key, value in objs.items()):
         for key, value in objs.items():
             if hasattr(element, key):
                 obj = getattr(element, key)
@@ -296,7 +348,7 @@ def setText(element: elementType, objs: dict[str, int | str] | tuple[str, (int |
             fr"'objs' and/or 'data' params must have the correct type")
 
 
-def getText(element: elementType, attrs: tuple[str] | str) -> tuple[()] | tuple[Any] | Any | None:
+def getText(element: elementType, attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
     if isinstance(attrs, tuple):
         getter = ()
         for attr in attrs:
@@ -319,10 +371,27 @@ def updateWindow(element: elementType) -> None:
             DB_PATH: str = getattr(element, "DB_PATH")
             if hasattr(db, "connection"):
                 connection: Any = getattr(db, "connection")
-
                 element.db = Database(DB_PATH)
                 element.connection = connection
-                setConfig(element, element.title, element.icon, element.size())
+                setConfig(element, element.windowTitle(),
+                          element.windowIcon(), element.size())
+                element.update()
+            else:
+                setConfig(element, element.windowTitle(),
+                          element.windowIcon(), element.size())
+                element.update()
+        elif hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG") and hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
+            db: Database = getattr(element, "db")
+            db_login: Database = getattr(element, "db_login")
+            DB_PATH_CONFIG: str = getattr(element, "DB_PATH_CONFIG")
+            DB_PATH_LOGIN: str = getattr(element, "DB_PATH_LOGIN")
+            if hasattr(db, "connection"):
+                connection: Any = getattr(db, "connection")
+                element.db = Database(DB_PATH_CONFIG)
+                element.db_login = Database(DB_PATH_LOGIN)
+                element.connection = connection
+                setConfig(element, element.windowTitle(),
+                          element.windowIcon(), element.size())
                 element.update()
             else:
                 setConfig(element, element.windowTitle(),
@@ -336,16 +405,16 @@ def updateWindow(element: elementType) -> None:
         raise Exception(e)
 
 
-def enableButton(element: elementType, data: dict[str, bool] | tuple[str, bool]) -> None:
+def enableButton(element: elementType, data: dict[attribute, bool] | tuple[attribute, bool]) -> None:
     if isinstance(data, tuple) and len(data) == 2:
-        attr_name, value = data
-        if hasattr(element, attr_name):
-            attr = getattr(element, attr_name)
+        attr, value = data
+        if hasattr(element, attr):
+            attr = getattr(element, attr)
             attr.setEnabled(value)
     elif isinstance(data, dict) and (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
-        for attr_name, value in data.items():
-            if hasattr(element, attr_name):
-                attr = getattr(element, attr_name)
+        for attr, value in data.items():
+            if hasattr(element, attr):
+                attr = getattr(element, attr)
                 attr.setEnabled(value)
             else:
                 continue
@@ -380,16 +449,13 @@ class RegisterSystem(QDialog):
 
     def validate(self, e: QEvent):
         if all([getText(self, "username_input") != "", getText(self, "password_input") != ""]):
-            enableButton(self, ("register_button", True))
+            enableButton(self, {"register_button": True})
         else:
-            enableButton(self, ("register button", False))
+            enableButton(self, {"register button": False})
         updateWindow(self)
 
     def _add_to_db(self):
-        attrs = ("username_input", "password_input")
-        result = sha(self, attrs)
-        iusername, ipassword = result
-
+        iusername, ipassword = sha(self, ("username_input", "password_input"))
         login = self.db_login.fetch_all_logins(iusername, ipassword)
 
         if len(login) >= 1:
@@ -397,7 +463,7 @@ class RegisterSystem(QDialog):
             QMessageBox.warning(
                 self, "Error", "Username already exists\nTry a new one")
         else:
-            self.db.add_user_logins(iusername, ipassword)
+            self.db_login.add_user_logins(iusername, ipassword)
             QMessageBox.information(
                 self, "Success", "Username and password created.")
             updateWindow(self)
