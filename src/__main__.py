@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 from typing import Any
 from logic import (SubWindow, LoginSystem, Database, setConfig, connect, setText,
-                   updateWindow, getText, textChangedConnect, enableButton, MQThread, run_pending, Stray, setMultipleConfig)
+                   updateWindow, getText, textChangedConnect, enableButton, MQThread, run_pending, Stray, setMultipleConfig, Notification)
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDialog, QFileDialog, QMessageBox
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
@@ -11,7 +11,6 @@ import PIL.Image as Img
 
 cwd = fr"{os.getcwd()}\src\\"
 DB_PATH = fr"{cwd}brain_mine.db"
-ICON_PATH = fr"{cwd}images\aries.png"
 
 
 class Gui(QMainWindow):
@@ -40,10 +39,20 @@ class Gui(QMainWindow):
         self.notifier = MQThread(run_pending, True)
         self.othread = QProcess()
         self._config = []
-        self.stray = Stray(str(self.title), Pil, (self.notifier.start,
+        Start_Notifications = Notification(self.title, "Pop-Ups", "Notification System ON", icon, duration="short")
+        Stop_Notifications = Notification(self.title, "Pop-Ups", "Notification System OFF", icon, duration='short')
+        self.start_thread = MQThread(Start_Notifications.run, False)
+        self.stop_thread = MQThread(Stop_Notifications.run, False)
+        self.stray = Stray(str(self.title), Pil, (self._start_thread,
                            self._stop_popups, self._config_menu, self.show, self.hide, sys.exit))
         self.stray.create_menu()
         sys.exit()
+    
+    def _start_thread(self):
+        self.notifier.start()
+        print('self.notifier.start()')
+        self.start_thread.start()
+        print('self.start_thread.start()')
 
     def _config_menu(self):
         uic.loadUi(fr"{cwd}ui\config_menu.ui", self.config_menu)
@@ -63,8 +72,7 @@ class Gui(QMainWindow):
         self.config_menu.show()
 
     def _config_menu_browse_icon(self):
-        path = "C:/Users"
-        realpath = os.path.realpath(path)
+        realpath = os.path.realpath("C:/Users")
         supportedFormats = QImageReader.supportedImageFormats()
         formats = []
         for sF in supportedFormats:
@@ -139,6 +147,7 @@ class Gui(QMainWindow):
         self.notification_menu.show()
 
     def _stop_popups(self):
+        self.stop_thread.start()
         self.notifier.finished = True
         date = datetime.now()
         print(
