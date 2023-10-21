@@ -14,7 +14,16 @@ from logic import database
 
 
 class AppsMenu(SubWindow):
+    "Subclass of `SubWindow`"
     def __init__(self, parent: Any , icon: QIcon, db: database.Database, thread: QProcess):
+        '''
+
+        Args:
+            parent (Self): Different of of `self` but to implement inside other class with `self`
+            icon (QIcon): Icon to be setted up in the GUI
+            db (database.Database): Db where is going to look for items
+            thread (QProcess): Thread where the programs will run from db
+        '''        
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -24,11 +33,14 @@ class AppsMenu(SubWindow):
         uic.loadUi(fr"{cwd}logic\apps\apps_menu.ui", self)
         setConfig(self, "Apps Menu", self.icon, (760, 680))
 
-        self.actual: Any = self.db.get_current_apps_path_apps()[0]
+        self.actual: str = self.db.get_current_apps_path_apps()[0]
 
 
     def loadShow(self):
-        setText(self, {"path_line": fr'"{self.actual}"'})
+        "Loads, connects, sets and show GUI"
+        setText(self, {
+            "path_line": fr'"{self.actual}"'
+            })
         connect(self, {
             "exit_button": self.close,
             "right_button": self.avanzar,

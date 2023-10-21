@@ -12,6 +12,7 @@ from logic.apps import cls as apps
 
 
 class CreateAppsMenu(SubWindow):
+    "Subclass of `SubWindow`"
     def __init__(self, parent: Any , icon: QIcon, db: database.Database, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
@@ -26,6 +27,7 @@ class CreateAppsMenu(SubWindow):
 
 
     def loadShow(self):
+        "Loads, connects buttons with methods, sets text in path lines and shows it"
         setText(self, {
             "name_input": self.actual_name,
             "path_input": self.actual_path
@@ -62,6 +64,7 @@ class CreateAppsMenu(SubWindow):
             })
     
     def add_to_db(self):
+        "Adds info to database"
         cn = getText(self, "name_input")
         cp = getText(self, "path_input")
         current_name: str = f"{cn}"
@@ -72,6 +75,7 @@ class CreateAppsMenu(SubWindow):
         updateWindow(self.appsMenu)
     
     def delete_from_db(self):
+        "Deletes info from database."
         cn = getText(self, "name_input")
         cp = getText(self, "path_input")
         current_name: str = f"{cn}"
@@ -82,6 +86,7 @@ class CreateAppsMenu(SubWindow):
         updateWindow(self.appsMenu)
         
     def update_from_db(self):
+        "Updates info to database"
         cn = getText(self, "name_input")
         cp = getText(self, "path_input")
         current_name: str = f"{cn}"

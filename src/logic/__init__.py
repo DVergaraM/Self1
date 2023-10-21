@@ -3,26 +3,21 @@ from winotify import Notification as _Notifier
 from winotify import audio as sounds
 from datetime import datetime as _datetime
 import schedule as _schedule
-from typing import Optional, Callable, Any, Union, List, TypeVar, TypeAlias
+from typing import Optional, Callable, Any, Union, List
 import os
 from datetime import datetime
-from PyQt5.QtCore import (QEvent, QThread as QThread, QSize)
+from PyQt5.QtCore import QThread as QThread
+from PyQt5.QtWidgets import QMessageBox, QApplication
+from PyQt5.QtGui import QIcon, QPixmap
 from itertools import count
 import PIL.Image as Img
 import time
 
-
-
-
-db: tuple[tuple[int, str, str, str]] = (
-    (1, "https:/i.imgur.com/J6LeoUb.png", "@DVergaraM", "DVergaraM"),
-    (2, "https://i.imgur.com/AX1yx9x.png",
-     "Programming a Notifier", "Creating a Desktop App"),
-    (3, "https://i.imgur.com/6QzKhtx.png", "@dvergaram_", "@dvergaram_")
-)
+from logic.login import cls as login
 
 
 class Notification(_Notifier):
+    "Subclass of `winotify.Notification`"
     def __init__(self, app_id: str = "Second Brain", title: str = "Notifier", msg: str = "", icon: str = "", launch: str | Callable | None = "",  duration='long', sound=sounds.Reminder) -> None:
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
@@ -36,7 +31,10 @@ class Notification(_Notifier):
 
 
 class Schedule:
-    def __init__(self, time: Union[str, List[str]], task: Union[Callable[[], Any], List[Callable[[], Any]]], tz: Optional[str] = "America/Bogota") -> None:
+    """
+    Class that allows the user to schedule tasks according to a time and timezone
+    """
+    def __init__(self, time: Union[str, List[str]], task: Union[Callable[[], Any], List[Callable[[], Any]]], tz: Optional[str] = "America/Bogota") -> None:        
         if isinstance(time, str) and isinstance(task, Callable):
             _schedule.every().day.at(time, tz).do(task)
         elif isinstance(time, list) and all(isinstance(t, str) for t in time) and isinstance(task, list) and all(isinstance(t, Callable) for t in task):
@@ -50,15 +48,19 @@ class Schedule:
             raise TypeError(
                 "'time' and 'task' params must have the correct type")
 
+
 def run_pending() -> None:
+    "Runs the tasks that are pending."
     _schedule.run_pending()
 
 
 def stop() -> None:
+    "Clears the tasks in Queue"
     _schedule.clear()
 
 
 class MQThread(QThread):
+    "Subclass of `PyQt5.QtCore.QThread`"
     def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]], bucles: bool | tuple[bool]) -> None:
         super().__init__()
         self.isTuple = False
@@ -192,3 +194,30 @@ class Stray:
                     f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Closing {self.icon_name}")
                 time.sleep(5)
                 icon.stop()
+
+
+def msgBox(login: login.LoginSystem):
+    """
+    Creates a QMessageBox instance with some addons
+    """
+    msg = QMessageBox()
+    msg.setWindowIcon(login.icon)
+    msg.setWindowTitle("System Tray")
+    msg.setText("Look at your Task Bar")
+    msg.show()
+    return msg
+
+
+def App(argv: list[str]):
+    """
+    Creates a QApplication instance with default values.
+    """
+    cwd = fr"{os.getcwd()}\src\\"
+    app = QApplication(argv)
+    icon = QIcon()
+    icon.addPixmap(QPixmap(fr"{cwd}\assets\aries.png"),
+                   QIcon.Mode.Selected, QIcon.State.On)
+    app.setWindowIcon(icon)
+    app.setDesktopFileName("Second Brain")
+    app.setQuitOnLastWindowClosed(True)
+    return app

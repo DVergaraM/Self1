@@ -11,6 +11,7 @@ from utils.setters import textChangedConnect, connect, enableButton
 from utils.others import updateWindow, getText, sha, compare
 
 class RegisterSystem(QDialog):
+    "Subclass of `PyQt5.QtWidgets.QDialog`"
     def __init__(self) -> None:
         super(RegisterSystem, self).__init__()
         uic.loadUi(fr"{cwd}logic\register\register_window.ui", self)

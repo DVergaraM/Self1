@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon, QImageReader
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5 import uic
 
-from utils import elementType, cwd, SubWindow
+from utils import cwd, SubWindow
 from utils.config import setConfig, setMultipleConfig
 from utils.setters import setText, textChangedConnect, connect, enableButton
 from utils.others import updateWindow, getText
@@ -13,7 +13,15 @@ from logic import database
 
 
 class ConfigMenu(SubWindow):
-    def __init__(self, parent: Any | None, icon: QIcon, db: database.Database):
+    "Subclass of `SubWindow`"
+    def __init__(self, parent: Any , icon: QIcon, db: database.Database):
+        '''
+
+        Args:
+            parent (Self): Different of of `self` but to implement inside other class with `self`
+            icon (QIcon): Icon to be setted up in the GUI
+            db (database.Database): Db where is going to look for items
+        '''        
         super().__init__(size=(510, 460))
         self.icon = icon
         self.mp = parent
@@ -23,6 +31,7 @@ class ConfigMenu(SubWindow):
         setConfig(self, "Config Menu", self.icon)
 
     def loadShow(self):
+        "Loads, connects buttons with methods and shows GUI"
         textChangedConnect(self, {
             self.validate_all: [
                 "title_input",
@@ -80,6 +89,5 @@ class ConfigMenu(SubWindow):
                 ), self.mp.create_apps_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.notification_menu.windowTitle()),
                 icon,
                 (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size()))
-            # setConfig(self.config_menu, self.config_menu.windowTitle(), icon, self.config_menu.size())
         else:
             raise ValueError("'Config' only need 2 items inside")

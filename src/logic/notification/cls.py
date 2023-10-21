@@ -13,6 +13,7 @@ from logic.apps import cls as apps
 
 
 class NotificationMenu(SubWindow):
+    "Subclass of `SubWindow`"
     def __init__(self, parent: Any , icon: QIcon, db: database.Database, notifier: MQThread, startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
@@ -29,6 +30,7 @@ class NotificationMenu(SubWindow):
 
 
     def loadShow(self):
+        "Loads, connects and shows the buttons with methods"
         connect(self, {
             "start_popups_button": self._start_thread,
             "stop_popups_button": self._stop_popups,

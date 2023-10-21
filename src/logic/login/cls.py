@@ -11,6 +11,7 @@ from utils.others import compare, updateWindow, getText, sha
 from utils.setters import textChangedConnect, connect, enableButton
 
 class LoginSystem(QDialog):
+    "Subclass of `PyQt5.QtWidgets.QDialog`"
     def __init__(self) -> None:
         super(LoginSystem, self).__init__()
         uic.loadUi(fr'{cwd}logic\login\login_window.ui', self)
