@@ -1,13 +1,13 @@
 import os
 from typing import Any
 from PyQt5.QtGui import QIcon, QImageReader
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5 import uic
 
 from utils import cwd, SubWindow
 from utils.config import setConfig, setMultipleConfig
 from utils.setters import setText, textChangedConnect, connect, enableButton
-from utils.others import updateWindow, getText
+from utils.others import updateWindow, getText, remove
 
 from logic import database
 
@@ -54,6 +54,7 @@ class ConfigMenu(SubWindow):
         updateWindow(self)
 
     def browse_icon(self):
+        "Looks for an image to set up as App Icon"
         realpath = os.path.realpath("C:/Users")
         supportedFormats = QImageReader.supportedImageFormats()
         formats = []
@@ -63,20 +64,22 @@ class ConfigMenu(SubWindow):
         text_filter = f"Images ({formated})"
         image_path, _ = QFileDialog.getOpenFileName(
             self, "Open an image", realpath, text_filter)
-        print(image_path)
-        self._config = tuple(set(self._config))
+        # print(image_path)
+        self._config = remove(self._config)
         self._config += (image_path, )
         setText(self, ("path_input", image_path))
         updateWindow(self)
 
     def save_title(self):
+        "Saves the title displayed in QLineEdit"
         title = str(getText(self, "title_input"))
-        self._config = tuple(set(self._config))
+        self._config = remove(self._config)
         self._config += (title, )
         updateWindow(self)
 
     def add_to_db(self):
-        self._config = tuple(set(self._config))
+        "Adds the information to Database and raises ValueError if the config length is different of 2"
+        self._config = remove(self._config)
         if len(self._config) == 2:
             self.db.delete_config()
             self.db.set_config(self, self._config)
@@ -90,4 +93,5 @@ class ConfigMenu(SubWindow):
                 icon,
                 (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size()))
         else:
-            raise ValueError("'Config' only need 2 items inside")
+            QMessageBox.warning(self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")
+            #raise ValueError("'Config' only need 2 items inside")

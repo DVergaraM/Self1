@@ -50,18 +50,21 @@ class AppsMenu(SubWindow):
         self.show()
     
     def avanzar(self):
+        "Loops front through the paths in database and sets it up in QLineEdit"        
         with self.connection:
             self.db.right_path()
             self.actual: Any = self.db.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
     
     def retroceder(self):
+        "Loops back through the paths in database and sets it up in QLineEdit"
         with self.connection:
             self.db.left_path()
             self.actual: Any = self.db.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
     
     def run(self):
+        "Runs the program displayed in QLineEdit"
         text = getText(self, "path_line")
         path = fr"{text}"
         date = datetime.now()
