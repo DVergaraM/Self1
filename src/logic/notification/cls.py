@@ -40,15 +40,15 @@ class NotificationMenu(SubWindow):
         self.show()
 
     def _stop_popups(self):
-            self.stopT.start()
-            self.notifier.finished = True
-            date = datetime.now()
-            print(
-                f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.notifier.name if self.notifier.name != '' else f'Thread {next(self.notifier.counter)}')} (stop)")
-            self.notifier.exit()
+        "Stops Notification System"
+        self.stopT.start()
+        self.notifier.finished = True
+        date = datetime.now()
+        print(
+            f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.notifier.name if self.notifier.name != '' else f'Thread {next(self.notifier.counter)}')} (stop)")
+        self.notifier.exit()
             
     def _start_thread(self):
+        "Starts Notification System"
         self.notifier.start()
-        print('self.notifier.start()')
         self.startT.start()
-        print('self.start_thread.start()')

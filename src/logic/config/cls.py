@@ -94,4 +94,3 @@ class ConfigMenu(SubWindow):
                 (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size()))
         else:
             QMessageBox.warning(self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")
-            #raise ValueError("'Config' only need 2 items inside")

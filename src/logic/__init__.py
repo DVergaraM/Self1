@@ -79,6 +79,7 @@ class MQThread(QThread):
         self.counter = count()
 
     def run(self) -> None:
+        "Runs the target(s) method(s) according to some variables initialized in __init__"
         if not self.isTuple:
             if self.bucle:
                 if self.target:
@@ -116,6 +117,7 @@ class MQThread(QThread):
 
 
 class Stray:
+    "This class slows the user to create a Windows Stray Icon with some methods, icon and title"
     def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]):
         self.icon_name = icon_name
         self._image = image
@@ -147,6 +149,7 @@ class Stray:
                 "'value' is not an instance of PIL.Image or is the same")
 
     def create_menu(self):
+        "Creates the menu for the Stray with some buttons and run it"
         self.icon = Icon(self.title, self.image, menu=Menu(
             Item("Notifier", Menu(
                 Item("Start System", self.__helper__),

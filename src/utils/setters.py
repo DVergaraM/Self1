@@ -2,6 +2,7 @@ from utils import elementType, attribute, method
 
 
 def setText(element: elementType, objs: dict[attribute, int | str] | tuple[attribute, int | str]) -> None:
+    "Sets the text of a QLineEdit with some value"
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, data = objs
         if (isinstance(attr, str) and (isinstance(data, int) or isinstance(data, str))) and hasattr(element, attr):
@@ -20,6 +21,7 @@ def setText(element: elementType, objs: dict[attribute, int | str] | tuple[attri
 
 
 def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None:
+    "Connects a/some button(s) with a/some method(s)"
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
@@ -38,6 +40,7 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
 
 
 def textChangedConnect(element: elementType, objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
+    "Connects a button with a method depending of a QLineEdit"
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
@@ -57,6 +60,7 @@ def textChangedConnect(element: elementType, objs: tuple[attribute, method] | di
 
 def enableButton(element: elementType, data: dict[attribute, bool] | tuple[attribute, bool]) -> None:
     '''
+    Enables or disables a button
 
     Args:
         element (elementType): object to check if it has the attributes

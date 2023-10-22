@@ -4,6 +4,7 @@ from PyQt5.QtCore import QSize
 from utils import elementType, others
 
 def setConfig(element: elementType, title: str | None = None, icon: QIcon | None = None, size: QSize | tuple[int, int] | None = None) -> None:
+    "Sets the config of an element with ease"
     if title is None:
         title = element.windowTitle()
     if icon is None:
@@ -26,6 +27,7 @@ def setConfig(element: elementType, title: str | None = None, icon: QIcon | None
             "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: QIcon, sizes: tuple[QSize]) -> None:
+    "Sets the config of multiple elements with ease"
     if len(elements) == len(titles) == len(sizes):
         for i in range(len(elements)):
             elements[i].setWindowTitle(titles[i])

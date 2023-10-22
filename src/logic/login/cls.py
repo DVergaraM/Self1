@@ -38,6 +38,7 @@ class LoginSystem(QDialog):
         })
 
     def validate(self, e: QEvent):
+        "Checks if the values of both QLineEdit are different from \"\", and enables a button if so."
         if all(compare(getText(self, ("username_input", "password_input")), ("", ""))):
             enableButton(self, ("login_button", True))
         else:
@@ -45,6 +46,7 @@ class LoginSystem(QDialog):
         updateWindow(self)
 
     def _handle_login(self):
+        "Fetchs database to look for the username and password and if they are there, closes window and continues with the App"
         attrs = ("username_input", "password_input")
         iusername, ipassword = sha(self, attrs)
 
@@ -59,6 +61,7 @@ class LoginSystem(QDialog):
                 self, 'Error', 'Bad user or password')
 
     def _open_register(self):
+        "Opens Register Window if needed by the user."
         register = reg.RegisterSystem()
         updateWindow(self)
         if register.exec_() == QDialog.DialogCode.Accepted:

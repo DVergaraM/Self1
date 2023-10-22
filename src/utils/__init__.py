@@ -21,8 +21,8 @@ elementType = TypeVar("elementType", QMainWindow, SubWindow, QWidget, QDialog)
 - `src.logic.SubWindow`
 """
 
-attribute: TypeAlias = str
-method: TypeAlias = Callable
+attribute = TypeVar("attribute", str)
+method = TypeVar("method", Callable)
 
 cwd = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)

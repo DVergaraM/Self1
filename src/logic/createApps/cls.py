@@ -43,6 +43,7 @@ class CreateAppsMenu(SubWindow):
         self.show()
     
     def avanzar(self):
+        "Loops front through the paths in database and sets it up in QLineEdit"
         with self.connection:
             self.db.right_create_apps_menu()
             self.actual_name = str(self.db.get_current_apps_name()[0])
@@ -54,6 +55,7 @@ class CreateAppsMenu(SubWindow):
 
     
     def retroceder(self):
+        "Loops back through the paths in database and sets it up in QLineEdit"
         with self.connection:
             self.db.left_create_apps_menu()
             self.actual_name = str(self.db.get_current_apps_name()[0])

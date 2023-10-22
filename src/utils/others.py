@@ -6,6 +6,7 @@ from logic.database import Database
 
 
 def getText(element: elementType, attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
+    "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
         getter = ()
         for attr in attrs:
