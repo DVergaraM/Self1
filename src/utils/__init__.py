@@ -1,4 +1,4 @@
-from typing import Any, Callable, TypeAlias, TypeVar
+from typing import Any, Callable, Type, TypeAlias, TypeVar
 import os
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel
 
@@ -21,8 +21,8 @@ elementType = TypeVar("elementType", QMainWindow, SubWindow, QWidget, QDialog)
 - `src.logic.SubWindow`
 """
 
-attribute = TypeVar("attribute", str)
-method = TypeVar("method", Callable)
+attribute: TypeAlias = str
+method: TypeAlias = Callable
 
 cwd = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)

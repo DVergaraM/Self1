@@ -30,10 +30,17 @@ class Gui(QMainWindow):
         self.db = Database(DB_PATH)
         self.connection = self.db.connection
         icon, self.title = self.db.get_config()
-        Pil = Img.open(icon)
-        self.icon = QIcon(icon)
+        self.title = str(self.title)
+        if os.path.exists(icon):
+            Pil = Img.open(icon)
+            self.icon = QIcon(icon)
+            print("With Icon")
+        else: 
+            Pil = Img.open(fr"{os.getcwd()}\assets\default.png")
+            self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
+            print("With path")
         # Sets title, icon and fixed size for GUI
-        setConfig(self, str(self.title), self.icon, (760, 680))
+        setConfig(self, self.title, self.icon, (760, 680))
 
         # # # # # # # #
         #   Threads   #
@@ -82,7 +89,7 @@ class Gui(QMainWindow):
         })
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
-        stray = Stray(str(self.title), Pil, (self.notification_menu._start_thread, self.notification_menu._stop_popups,
+        stray = Stray(self.title, Pil, (self.notification_menu._start_thread, self.notification_menu._stop_popups,
                                              self.config_menu.loadShow, self.show,
                                              self.hide, sys.exit))
         stray.create_menu()

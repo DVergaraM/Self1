@@ -27,6 +27,7 @@ class ConfigMenu(SubWindow):
         self.mp = parent
         self.db = db
         self._config = ()
+        self.image_path = str()
         uic.loadUi(fr"{cwd}logic\config\config_menu.ui", self)
         setConfig(self, "Config Menu", self.icon)
 
@@ -44,6 +45,7 @@ class ConfigMenu(SubWindow):
             "save_all_button": self.add_to_db,
             "exit_button": self.close
         })
+        self._config = ()
         self.show()
 
     def validate_all(self):
@@ -62,19 +64,31 @@ class ConfigMenu(SubWindow):
             formats.append(f"*.{sF.data().decode()}")
         formated = " ".join(formats)
         text_filter = f"Images ({formated})"
-        image_path, _ = QFileDialog.getOpenFileName(
+        self.image_path, _ = QFileDialog.getOpenFileName(
             self, "Open an image", realpath, text_filter)
-        # print(image_path)
-        self._config = remove(self._config)
-        self._config += (image_path, )
-        setText(self, ("path_input", image_path))
+        print(self.image_path)
+        if (len(self._config)%2 == 1 or len(self._config) >= 3) and self.image_path != "":
+            self._config = remove(self._config)
+            self._config += (self.image_path, )
+        else:
+            self._config = ()
+            self._config += (self.image_path, )
+        print(self._config)
+        setText(self, {"path_input": self.image_path})
         updateWindow(self)
 
     def save_title(self):
         "Saves the title displayed in QLineEdit"
         title = str(getText(self, "title_input"))
-        self._config = remove(self._config)
-        self._config += (title, )
+        if (len(self._config)%2 == 1 or len(self._config) >= 3) and title != "" and os.path.exists(self._config[0]):
+        #self._config = ()
+            self._config = remove(self._config)
+            self._config += (title, )
+        else: 
+            self._config = ()
+            self._config += (self.image_path, title)
+        print(title)
+        print(self._config)
         updateWindow(self)
 
     def add_to_db(self):

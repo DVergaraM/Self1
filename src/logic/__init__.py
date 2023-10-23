@@ -215,10 +215,10 @@ def App(argv: list[str]):
     """
     Creates a QApplication instance with default values.
     """
-    cwd = fr"{os.getcwd()}\src\\"
+    cwdAssets = fr"{os.getcwd()}\assets"
     app = QApplication(argv)
     icon = QIcon()
-    icon.addPixmap(QPixmap(fr"{cwd}\assets\aries.png"),
+    icon.addPixmap(QPixmap(fr"{cwdAssets}\default.png"),
                    QIcon.Mode.Selected, QIcon.State.On)
     app.setWindowIcon(icon)
     app.setDesktopFileName("Second Brain")
