@@ -15,9 +15,9 @@ The `src/` folder contains the following files and subfolders:
 
 - `utils/`: A subfolder containing utility modules for setting configuration options and making connections between GUI elements and methods.
 
-- `assets/`: A subfolder containing image assets used by the application.
-
 - `ui/`: A subfolder containing UI files for the various GUI menus and dialogs.
+
+The `assets/` folder contains the following files
 
   
 ## Dependencies

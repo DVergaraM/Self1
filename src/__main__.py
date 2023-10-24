@@ -5,8 +5,9 @@ from datetime import datetime
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 import PIL.Image as Img
+import requests
 
 from logic import Notification, Stray, MQThread, run_pending, App, msgBox
 from logic.database import Database
@@ -26,22 +27,36 @@ DB_PATH = fr"{cwd}brain_mine.db"
 
 class Gui(QMainWindow):
     "Subclass of `PyQt5.QtWidgets.QMainWindow`"
+
     def __init__(self) -> None:
         super(Gui, self).__init__()
         # Loads Main GUI
+        icon_url = "https://daniel-vergara-m.github.io/images/media/default.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = Database(DB_PATH)
         self.connection = self.database.connection
+        icon, self.__title = None, None
         icon, self.__title = self.database.get_config()
         self.__title = str(self.__title)
-        if os.path.exists(icon):
+        if self.__title and os.path.exists(self.__title):
+            self.__title = "Second Brain"
+        if icon and os.path.exists(icon):
             pil = Img.open(icon)
             self.icon = QIcon(icon)
             print("With Icon")
         else:
-            pil = Img.open(fr"{os.getcwd()}\assets\default.png")
-            self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
-            print("With path")
+            try:
+                response = requests.get(icon_url, timeout=5000)
+                pil = Img.open(response.content)
+                pix = QPixmap()
+                pix.loadFromData(response.content)
+                self.icon = QIcon(pix)
+                print("With URL")
+            except requests.ConnectTimeout:
+                pil = Img.open(fr"{os.getcwd()}\assets\default.png")
+                self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
+                print("With path")
+
         # Sets title, icon and fixed size for GUI
         setConfig(self, self.title, self.icon, (760, 680))
 
@@ -95,8 +110,8 @@ class Gui(QMainWindow):
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
         stray = Stray(self.title, pil, (self.notification_menu._start_thread,
                                         self.notification_menu._stop_popups,
-                                             self.config_menu.loadShow, self.show,
-                                             self.hide, sys.exit))
+                                        self.config_menu.loadShow, self.show,
+                                        self.hide, sys.exit))
         stray.create_menu()
         sys.exit()
 
