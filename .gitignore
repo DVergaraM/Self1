@@ -14,3 +14,4 @@ help.txt
 *.cpp
 .vscode/*
 *???.py
+d*/
