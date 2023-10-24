@@ -12,17 +12,16 @@ def getText(element: elementType,
     if isinstance(attrs, tuple):
         getter = ()
         for attr in attrs:
-            if hasattr(element, attr):
+            if isinstance(attr, attribute) and hasattr(element, attr):
                 obj = getattr(element, attr)
                 getter += (obj.text(), )
             else:
                 continue
         return getter
-    if isinstance(attrs, str):
+    if isinstance(attrs, attribute):
         if hasattr(element, attrs):
             obj = getattr(element, attrs)
             return obj.text()
- 
     return None
 
 
@@ -64,8 +63,8 @@ def updateWindow(element: elementType) -> None:
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-    except Exception as excep:
-        raise Exception(excep) from excep
+    except AttributeError as excep:
+        raise AttributeError(excep) from excep
 
 
 def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, str]:

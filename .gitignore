@@ -13,4 +13,4 @@ help.txt
 *.exe
 *.cpp
 .vscode/*
-donut.py
+*???.py
