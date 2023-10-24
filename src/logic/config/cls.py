@@ -21,11 +21,11 @@ class ConfigMenu(SubWindow):
             parent (Self): Different of of `self` but to implement inside other class with `self`
             icon (QIcon): Icon to be setted up in the GUI
             db (database.Database): Db where is going to look for items
-        '''        
+        '''
         super().__init__(size=(510, 460))
         self.icon = icon
         self.mp = parent
-        self.db = db
+        self.database = db
         self._config = ()
         self.image_path = str()
         uic.loadUi(fr"{cwd}logic\config\config_menu.ui", self)
@@ -80,11 +80,12 @@ class ConfigMenu(SubWindow):
     def save_title(self):
         "Saves the title displayed in QLineEdit"
         title = str(getText(self, "title_input"))
-        if (len(self._config)%2 == 1 or len(self._config) >= 3) and title != "" and os.path.exists(self._config[0]):
+        if (len(self._config)%2 == 1 or len(self._config) >= 3) and\
+            title != "" and os.path.exists(self._config[0]):
         #self._config = ()
             self._config = remove(self._config)
             self._config += (title, )
-        else: 
+        else:
             self._config = ()
             self._config += (self.image_path, title)
         print(title)
@@ -92,12 +93,13 @@ class ConfigMenu(SubWindow):
         updateWindow(self)
 
     def add_to_db(self):
-        "Adds the information to Database and raises ValueError if the config length is different of 2"
+        """Adds the information to Database and 
+        raises ValueError if the config length is different of 2"""
         self._config = remove(self._config)
         if len(self._config) == 2:
-            self.db.delete_config()
-            self.db.set_config(self, self._config)
-            icon, title = self.db.get_config()
+            self.database.delete_config()
+            self.database.set_config(self, self._config)
+            icon, title = self.database.get_config()
             icon = QIcon(icon)
             setMultipleConfig(
                 (self.mp, self, self.mp.apps_menu, self.mp.create_menu,

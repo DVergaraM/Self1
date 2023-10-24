@@ -1,4 +1,7 @@
+"Main File of Second Brain"
 import os
+import sys
+from datetime import datetime
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
@@ -22,21 +25,21 @@ DB_PATH = fr"{cwd}brain_mine.db"
 
 
 class Gui(QMainWindow):
+    "Subclass of `PyQt5.QtWidgets.QMainWindow`"
     def __init__(self) -> None:
-        import sys
         super(Gui, self).__init__()
         # Loads Main GUI
         uic.loadUi(fr'{cwd}main_window.ui', self)
-        self.db = Database(DB_PATH)
-        self.connection = self.db.connection
-        icon, self.title = self.db.get_config()
-        self.title = str(self.title)
+        self.database = Database(DB_PATH)
+        self.connection = self.database.connection
+        icon, self.__title = self.database.get_config()
+        self.__title = str(self.__title)
         if os.path.exists(icon):
-            Pil = Img.open(icon)
+            pil = Img.open(icon)
             self.icon = QIcon(icon)
             print("With Icon")
-        else: 
-            Pil = Img.open(fr"{os.getcwd()}\assets\default.png")
+        else:
+            pil = Img.open(fr"{os.getcwd()}\assets\default.png")
             self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
             print("With path")
         # Sets title, icon and fixed size for GUI
@@ -49,15 +52,15 @@ class Gui(QMainWindow):
         # Creates a Thread for 'run_pending' method with a while loop
         self.notifier = MQThread(run_pending, True)
         # Creates a Windows Pop-Up that displays that the system is on
-        Start_Notifications = Notification(
+        start_notifications = Notification(
             self.title, "Pop-Ups", "Notification System ON", icon, duration="short")
         # Creates a Windows Pop-Up that displays that the system is off
-        Stop_Notifications = Notification(
+        stop_notifications = Notification(
             self.title, "Pop-Ups", "Notification System OFF", icon, duration='short')
         # Thread for running the "Start Notifications" Pop-Up
-        self.start_thread = MQThread(Start_Notifications.run, False)
+        self.start_thread = MQThread(start_notifications.run, False)
         # Thread for running the "Stop Notifications" Pop-Up
-        self.stop_thread = MQThread(Stop_Notifications.run, False)
+        self.stop_thread = MQThread(stop_notifications.run, False)
         # Creates a Thread for running executables that are in Database
         self.othread = QProcess()
 
@@ -66,18 +69,19 @@ class Gui(QMainWindow):
         # # # # # # # #
 
         # Loads Config Menu GUI
-        self.config_menu = ConfigMenu(self, self.icon, self.db)
+        self.config_menu = ConfigMenu(self, self.icon, self.database)
         # Loads Apps Menu GUI
-        self.apps_menu = AppsMenu(self, self.icon, self.db, self.othread)
+        self.apps_menu = AppsMenu(self, self.icon, self.database, self.othread)
         # Loads Create Apps Menu GUI
         self.create_apps_menu = CreateAppsMenu(
-            self, self.icon, self.db, self.apps_menu)
+            self, self.icon, self.database, self.apps_menu)
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
-            self, self.icon, self.db, self.notifier, self.start_thread, self.stop_thread, self.apps_menu)
+            self, self.icon, self.database, self.notifier,
+            self.start_thread, self.stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
-            self, self.icon, self.db, self.create_apps_menu)
+            self, self.icon, self.database, self.create_apps_menu)
 
         # Makes the connections between buttons and methods
         connect(self, {
@@ -89,22 +93,33 @@ class Gui(QMainWindow):
         })
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
-        stray = Stray(self.title, Pil, (self.notification_menu._start_thread, self.notification_menu._stop_popups,
+        stray = Stray(self.title, pil, (self.notification_menu._start_thread,
+                                        self.notification_menu._stop_popups,
                                              self.config_menu.loadShow, self.show,
                                              self.hide, sys.exit))
         stray.create_menu()
         sys.exit()
 
+    @property
+    def title(self):
+        "Title"
+        return self.__title
+
+    def __repr__(self):
+        return "Gui()"
+
 
 def main(argv: list[str]):
-    import sys
-    from datetime import datetime
+    "Main function"
     app = App(argv)
     login = LoginSystem()
     if login.exec_() == QDialog.DialogCode.Accepted:
         date = datetime.now()
+        format_date = f"[{date.day}-{date.month}-{date.year} "
+        format_time = f"{date.hour}:{date.minute}:{date.second}]"
+        format_date_all = format_date + format_time
         print(
-            f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Opening Stray...")
+            f"{format_date_all} - Opening Stray...")
 
         msg = msgBox(login)
         QTimer.singleShot(3*1000, lambda: msg.done(0))
@@ -113,5 +128,4 @@ def main(argv: list[str]):
 
 
 if __name__ == '__main__':
-    import sys
     main(sys.argv[1:])

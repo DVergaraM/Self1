@@ -1,9 +1,12 @@
-from typing import Any, Callable, Type, TypeAlias, TypeVar
+"Utils Module"
+from typing import Any, Callable, Literal, TypeAlias, TypeVar
 import os
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel
 
+
 class SubWindow(QWidget):
     "Subclass of `PyQt5.QtWidgets.QWidget`"
+
     def __init__(self, parent: Any = None, size: tuple[int, int] = None):
         super(SubWindow, self).__init__(parent)
         if size is not None and len(size) == 2:
@@ -24,6 +27,6 @@ elementType = TypeVar("elementType", QMainWindow, SubWindow, QWidget, QDialog)
 attribute: TypeAlias = str
 method: TypeAlias = Callable
 
-cwd = fr"{os.getcwd()}\src\\"
+cwd: Literal[r"\src\\"] = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)
-cwddb = fr"{os.getcwd()}\src\login.db"
+cwddb: Literal[r"\src\login.db"] = fr"{os.getcwd()}\src\login.db"

@@ -1,11 +1,13 @@
+"Others module from Utils module"
 from hashlib import sha256
-from typing import Any, overload
+from typing import Any
 
 from utils import elementType, attribute, config
-from logic import database as db
+from logic import database
 
 
-def getText(element: elementType, attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
+def getText(element: elementType,
+            attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
         getter = ()
@@ -16,21 +18,23 @@ def getText(element: elementType, attrs: tuple[attribute] | attribute) -> tuple[
             else:
                 continue
         return getter
-    elif isinstance(attrs, str):
+    if isinstance(attrs, str):
         if hasattr(element, attrs):
             obj = getattr(element, attrs)
             return obj.text()
+ 
+    return None
 
 
 def updateWindow(element: elementType) -> None:
     "Updates a window and reloads variables"
     try:
         if hasattr(element, "db") and hasattr(element, "DB_PATH"):
-            db: db.Database = getattr(element, "db")
+            db: database.Database = getattr(element, "db")
             DB_PATH: str = getattr(element, "DB_PATH")
             if hasattr(db, "connection"):
                 connection: Any = getattr(db, "connection")
-                element.db = db.Database(DB_PATH)
+                element.db = database.Database(DB_PATH)
                 element.connection = connection
                 config.setConfig(element, element.windowTitle(),
                                  element.windowIcon(), element.size())
@@ -39,15 +43,15 @@ def updateWindow(element: elementType) -> None:
                 config.setConfig(element, element.windowTitle(),
                                  element.windowIcon(), element.size())
                 element.update()
-        elif hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG") and hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
-            db: db.Database = getattr(element, "db")
-            db_login: db.Database = getattr(element, "db_login")
+        elif hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG") and\
+            hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
+            db: database.Database = getattr(element, "db")
             DB_PATH_CONFIG: str = getattr(element, "DB_PATH_CONFIG")
             DB_PATH_LOGIN: str = getattr(element, "DB_PATH_LOGIN")
             if hasattr(db, "connection"):
                 connection: Any = getattr(db, "connection")
-                element.db = db.Database(DB_PATH_CONFIG)
-                element.db_login = db.Database(DB_PATH_LOGIN)
+                element.db = database.Database(DB_PATH_CONFIG)
+                element.db_login = database.Database(DB_PATH_LOGIN)
                 element.connection = connection
                 config.setConfig(element, element.windowTitle(),
                                  element.windowIcon(), element.size())
@@ -60,8 +64,8 @@ def updateWindow(element: elementType) -> None:
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-    except Exception as e:
-        raise Exception(e)
+    except Exception as excep:
+        raise Exception(excep) from excep
 
 
 def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, str]:
@@ -69,27 +73,25 @@ def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, s
     if isinstance(objs, tuple):
         if len(objs) == 2:
             objs_in_sha = ()
-            for i in range(len(objs)):
-                if hasattr(element, objs[i]):
-                    obj: Any = getattr(element, objs[i])
+            for _, obj in enumerate(objs):
+                if hasattr(element, obj):
+                    obj: Any = getattr(element, obj)
                     objsha: str = sha256(
                         str(obj.text()).encode('utf-8')).hexdigest()
                     objs_in_sha += (objsha, )
                 else:
                     continue
             return objs_in_sha
-        else:
-            raise IndexError("Only 2 items are allowed in the tuple")
-    else:
-        raise TypeError("'objs' param must be str or tuple of str")
+        raise IndexError("Only 2 items are allowed in the tuple")
+    raise TypeError("'objs' param must be str or tuple of str")
 
 
 def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
     "Compares the items inside 2 tuples and checks if they are the same"
     if len(result) == len(comparation):
         j: tuple[bool] = tuple()
-        for i in range(len(result)):
-            if result[i] != comparation[i]:
+        for _, (element, comp) in enumerate(zip(result, comparation)):
+            if element != comp:
                 j += (True, )
             else:
                 j += (False, )

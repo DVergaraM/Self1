@@ -1,3 +1,4 @@
+"Login Module"
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
@@ -10,8 +11,10 @@ from utils.config import setConfig
 from utils.others import compare, updateWindow, getText, sha
 from utils.setters import textChangedConnect, connect, enableButton
 
+
 class LoginSystem(QDialog):
     "Subclass of `PyQt5.QtWidgets.QDialog`"
+
     def __init__(self) -> None:
         super(LoginSystem, self).__init__()
         uic.loadUi(fr'{cwd}logic\login\login_window.ui', self)
@@ -38,7 +41,7 @@ class LoginSystem(QDialog):
         })
 
     def validate(self, e: QEvent):
-        "Checks if the values of both QLineEdit are different from \"\", and enables a button if so."
+        "Checks if the values of both QLineEdit are different from \"\", and enables a button if so"
         if all(compare(getText(self, ("username_input", "password_input")), ("", ""))):
             enableButton(self, ("login_button", True))
         else:
@@ -46,7 +49,8 @@ class LoginSystem(QDialog):
         updateWindow(self)
 
     def _handle_login(self):
-        "Fetchs database to look for the username and password and if they are there, closes window and continues with the App"
+        """Fetchs database to look for the username and password and if they are there, 
+        closes window and continues with the App"""
         attrs = ("username_input", "password_input")
         iusername, ipassword = sha(self, attrs)
 

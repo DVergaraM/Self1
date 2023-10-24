@@ -1,14 +1,18 @@
+"Setters module from Utils module"
 from utils import elementType, attribute, method
 
 
-def setText(element: elementType, objs: dict[attribute, int | str] | tuple[attribute, int | str]) -> None:
+def setText(element: elementType,
+            objs: dict[attribute, int | str] | tuple[attribute, int | str]) -> None:
     "Sets the text of a QLineEdit with some value"
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, data = objs
-        if (isinstance(attr, str) and (isinstance(data, int) or isinstance(data, str))) and hasattr(element, attr):
+        if (isinstance(attr, str) and isinstance(data, (int, str)))\
+            and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.setText(f"{data}")
-    elif isinstance(objs, dict) and all(isinstance(key, attribute) and (isinstance(value, int) or isinstance(value, str))for key, value in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
+        isinstance(value, (int, str))for key, value in objs.items()):
         for key, value in objs.items():
             if hasattr(element, key):
                 obj = getattr(element, key)
@@ -17,7 +21,7 @@ def setText(element: elementType, objs: dict[attribute, int | str] | tuple[attri
                 continue
     else:
         raise TypeError(
-            fr"'objs' and/or 'data' params must have the correct type")
+            "'objs' and/or 'data' params must have the correct type")
 
 
 def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None:
@@ -27,7 +31,8 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.clicked.connect(meth)
-    elif isinstance(objs, dict) and all(isinstance(key, attribute) and isinstance(value, method) for key, value in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
+        isinstance(value, method) for key, value in objs.items()):
         for attr, meth in objs.items():
             if hasattr(element, attr):
                 obj = getattr(element, attr)
@@ -36,17 +41,19 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
                 continue
     else:
         raise TypeError(
-            fr"'obj' and/or 'method' params must have the correct type")
+            "'obj' and/or 'method' params must have the correct type")
 
 
-def textChangedConnect(element: elementType, objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
+def textChangedConnect(element: elementType,
+                       objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
     "Connects a button with a method depending of a QLineEdit"
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.textChanged.connect(meth)
-    elif isinstance(objs, dict) and all(isinstance(meth, method) and isinstance(lst, list) for meth, lst in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(meth, method) and\
+        isinstance(lst, list) for meth, lst in objs.items()):
         for meth, lst in objs.items():
             for attr in lst:
                 if hasattr(element, attr):
@@ -56,9 +63,10 @@ def textChangedConnect(element: elementType, objs: tuple[attribute, method] | di
                     continue
     else:
         raise TypeError(
-            fr"'obj' and/or 'method' params must have the correct type")
+            "'obj' and/or 'method' params must have the correct type")
 
-def enableButton(element: elementType, data: dict[attribute, bool] | tuple[attribute, bool]) -> None:
+def enableButton(element: elementType,
+                 data: dict[attribute, bool] | tuple[attribute, bool]) -> None:
     '''
     Enables or disables a button
 
@@ -68,13 +76,14 @@ def enableButton(element: elementType, data: dict[attribute, bool] | tuple[attri
 
     Raises:
         TypeError: 'data' param must have the correct type.
-    '''    
+    '''
     if isinstance(data, tuple) and len(data) == 2:
         attr, value = data # Unzip the data inside in two variables
         if hasattr(element, attr):
             attr = getattr(element, attr)
             attr.setEnabled(value)
-    elif isinstance(data, dict) and (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
+    elif isinstance(data, dict) and\
+        (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
         for attr, value in data.items(): # Loops in the items of the dict and assign values.
             if hasattr(element, attr):
                 attr = getattr(element, attr)
@@ -83,4 +92,4 @@ def enableButton(element: elementType, data: dict[attribute, bool] | tuple[attri
                 continue
     else:
         raise TypeError(
-            fr"'data' param must have the correct type")
+            "'data' param must have the correct type")

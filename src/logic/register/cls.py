@@ -1,3 +1,4 @@
+"Register module"
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
@@ -38,7 +39,8 @@ class RegisterSystem(QDialog):
         updateWindow(self)
 
     def validate(self, e: QEvent):
-        "Checks if the values of both QLineEdit are different from \"\", and enables a button if so."
+        """Checks if the values of both QLineEdit are different from \"\", 
+        and enables a button if so."""
         if all(compare(getText(self, ("username_input", "password_input")), ("", ""))):
             enableButton(self, {"register_button": True})
         else:

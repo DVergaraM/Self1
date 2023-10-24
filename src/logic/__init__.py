@@ -1,51 +1,58 @@
-from pystray import (Menu, MenuItem as Item, Icon)
-from winotify import Notification as _Notifier
-from winotify import audio as sounds
-from datetime import datetime as _datetime
-import schedule as _schedule
 from typing import Optional, Callable, Any, Union, List
 import os
 from datetime import datetime
-from PyQt5.QtCore import QThread as QThread
+from itertools import count
+import time as tm
+from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from PyQt5.QtGui import QIcon, QPixmap
-from itertools import count
+from pystray import (Menu, MenuItem as Item, Icon)
+from winotify import Notification as _Notifier
+from winotify import audio as sounds
+import schedule as _schedule
 import PIL.Image as Img
-import time
 
 from logic.login import cls as login
 
 
 class Notification(_Notifier):
     "Subclass of `winotify.Notification`"
-    def __init__(self, app_id: str = "Second Brain", title: str = "Notifier", msg: str = "", icon: str = "", launch: str | Callable | None = "",  duration='long', sound=sounds.Reminder) -> None:
+    def __init__(self, app_id: str = "Second Brain", title: str = "Notifier",
+                 msg: str = "", icon: str = "", launch: str | Callable | None = "",
+                 duration='long', sound=sounds.Reminder) -> None:
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
         if launch is not None:
             self.add_actions("Click Here!", launch)
 
     def run(self) -> None:
+        "Shows Notification with log"
         self.show()
-        date = _datetime.now()
-        print(f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Task: '{self.msg}'")
+        date = datetime.now()
+        format_date = f"[{date.day}-{date.month}-{date.year} "
+        format_time = f"{date.hour}:{date.minute}:{date.second}]"
+        format_date_all = format_date + format_time
+        print(f"{format_date_all} - Task: '{self.msg}'")
 
 
 class Schedule:
     """
     Class that allows the user to schedule tasks according to a time and timezone
     """
-    def __init__(self, time: Union[str, List[str]], task: Union[Callable[[], Any], List[Callable[[], Any]]], tz: Optional[str] = "America/Bogota") -> None:        
+    def __init__(self, time: Union[str, List[str]],
+                 task: Union[Callable[[], Any], List[Callable[[], Any]]],
+                 timezone: Optional[str] = "America/Bogota") -> None:
         if isinstance(time, str) and isinstance(task, Callable):
-            _schedule.every().day.at(time, tz).do(task)
-        elif isinstance(time, list) and all(isinstance(t, str) for t in time) and isinstance(task, list) and all(isinstance(t, Callable) for t in task):
+            _schedule.every().day.at(time, timezone).do(task)
+        if isinstance(time, list) and\
+            all(isinstance(t, str) for t in time) and\
+                isinstance(task, list) and all(isinstance(t, Callable) for t in task):
             if len(time) == len(task):
-                for i in range(len(time)):
-                    _schedule.every().day.at(time[i], tz).do(task[i])
-            else:
-                raise ValueError(
+                for _, (time_value, task_value) in enumerate(zip(time, task)):
+                    _schedule.every().day.at(time_value, timezone).do(task_value)
+            raise ValueError(
                     "'time' and 'task' params must have the same length of items")
-        else:
-            raise TypeError(
+        raise TypeError(
                 "'time' and 'task' params must have the correct type")
 
 
@@ -61,39 +68,52 @@ def stop() -> None:
 
 class MQThread(QThread):
     "Subclass of `PyQt5.QtCore.QThread`"
-    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]], bucles: bool | tuple[bool]) -> None:
+    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
+                 bucles: bool | tuple[bool]) -> None:
         super().__init__()
-        self.isTuple = False
+        self.is_tuple = False
         if isinstance(targets, Callable) and isinstance(bucles, bool):
             self.target = targets
             self.name = targets.__name__
-            self.tuple = False
+            self.is_tuple = False
             self.bucle = bucles
-        elif isinstance(targets, tuple) and isinstance(bucles, tuple) and (isinstance(target, Callable) for target in targets) and (isinstance(bucle, bool) for bucle in bucles):
+        elif isinstance(targets, tuple) and isinstance(bucles, tuple) and\
+            (isinstance(target, Callable) for target in targets) and\
+                (isinstance(bucle, bool) for bucle in bucles):
             self.targets = targets
             self.names: tuple[str] = tuple()
             for target in targets:
                 self.names += (target.__name__, )
-            self.isTuple = True
+            self.is_tuple = True
             self.bucles = bucles
         self.counter = count()
 
     def run(self) -> None:
         "Runs the target(s) method(s) according to some variables initialized in __init__"
-        if not self.isTuple:
+        if not self.is_tuple:
             if self.bucle:
                 if self.target:
                     date = datetime.now()
+                    format_date = f"[{date.day}-{date.month}-{date.year} "
+                    format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                    format_date_all = format_date + format_time
+                    condition = (self.name if self.name != '' else \
+                        f'Thread {next(self.counter)} (run)')
                     print(
-                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+                        f"{format_date_all} - {condition}")
 
                     while not self.isFinished():
                         self.target()
             else:
                 if self.target:
                     date = datetime.now()
+                    format_date = f"[{date.day}-{date.month}-{date.year} "
+                    format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                    format_date_all = format_date + format_time
+                    condition = (self.name if self.name != '' else \
+                        f'Thread {next(self.counter)} (run)')
                     print(
-                        f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.name if self.name != '' else f'Thread {next(self.counter)}')} (run)")
+                        f"{format_date_all} - {condition}")
 
                     self.target()
         else:
@@ -103,16 +123,22 @@ class MQThread(QThread):
                         if target:
                             date = datetime.now()
                             for name in self.names:
+                                format_date = f"[{date.day}-{date.month}-{date.year} "
+                                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                                format_date_all = format_date + format_time
                                 print(
-                                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    f"{format_date_all} - {name} (run)")
                                 while not self.isFinished():
                                     target()
                     else:
                         if target:
                             date = datetime.now()
                             for name in self.names:
+                                format_date = f"[{date.day}-{date.month}-{date.year} "
+                                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                                format_date_all = format_date + format_time
                                 print(
-                                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {name} (run)")
+                                    f"{format_date_all} - {name} (run)")
                                 target()
 
 
@@ -126,10 +152,12 @@ class Stray:
 
     @property
     def title(self):
+        "Title"
         return self.icon_name
 
     @title.setter
     def title(self, value: str):
+        "Title setter"
         if isinstance(value, str) and value != self.icon_name:
             self.icon_name = value
         else:
@@ -138,11 +166,12 @@ class Stray:
 
     @property
     def image(self):
+        "Image property"
         return self._image
 
     @image.setter
-    def image(self, value: Img):
-        if isinstance(value, Img) and value != self._image:
+    def image(self, value):
+        if isinstance(value, Img.Image) and value != self._image:
             self._image = value
         else:
             raise ValueError(
@@ -163,48 +192,66 @@ class Stray:
         self.icon.run()
 
     def __helper__(self, icon, item):
-        notifier_start, notifier_stop, open_config, show_ui, close_ui, exit = self.methods
+        notifier_start, notifier_stop, open_config, show_ui, close_ui, icon_exit = self.methods
         item = str(item)
         match item:
             case "Start System":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Starting Notification System")
+                    f"{format_date_all} - Starting Notification System")
                 notifier_start()
             case "Stop System":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Stopping Notification System")
+                    f"{format_date_all} - Stopping Notification System")
                 notifier_stop()
             case "Config":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Opening Config UI")
+                    f"{format_date_all} - Opening Config UI")
                 open_config()
             case "Open UI":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Opening UI")
+                    f"{format_date_all} - Opening UI")
                 show_ui()
             case "Close UI":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Closing UI")
+                    f"{format_date_all} - Closing UI")
                 close_ui()
             case "Exit":
                 date = datetime.now()
+                format_date = f"[{date.day}-{date.month}-{date.year} "
+                format_time = f"{date.hour}:{date.minute}:{date.second}]"
+                format_date_all = format_date + format_time
                 print(
-                    f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - Closing {self.icon_name}")
-                time.sleep(5)
+                    f"{format_date_all} - Closing {self.icon_name}")
+                tm.sleep(5)
                 icon.stop()
 
 
-def msgBox(login: login.LoginSystem):
+def msgBox(log: login.LoginSystem):
     """
     Creates a QMessageBox instance with some addons
     """
     msg = QMessageBox()
-    msg.setWindowIcon(login.icon)
+    msg.setWindowIcon(log.icon)
     msg.setWindowTitle("System Tray")
     msg.setText("Look at your Task Bar")
     msg.show()
@@ -215,10 +262,10 @@ def App(argv: list[str]):
     """
     Creates a QApplication instance with default values.
     """
-    cwdAssets = fr"{os.getcwd()}\assets"
+    cwd_assets = fr"{os.getcwd()}\assets"
     app = QApplication(argv)
     icon = QIcon()
-    icon.addPixmap(QPixmap(fr"{cwdAssets}\default.png"),
+    icon.addPixmap(QPixmap(fr"{cwd_assets}\default.png"),
                    QIcon.Mode.Selected, QIcon.State.On)
     app.setWindowIcon(icon)
     app.setDesktopFileName("Second Brain")

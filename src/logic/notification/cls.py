@@ -1,3 +1,4 @@
+"Notification Module"
 from datetime import datetime
 from typing import Any
 from PyQt5.QtGui import QIcon
@@ -14,7 +15,9 @@ from logic.apps import cls as apps
 
 class NotificationMenu(SubWindow):
     "Subclass of `SubWindow`"
-    def __init__(self, parent: Any , icon: QIcon, db: database.Database, notifier: MQThread, startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
+
+    def __init__(self, parent: Any, icon: QIcon, db: database.Database, notifier: MQThread,
+                 startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -27,7 +30,6 @@ class NotificationMenu(SubWindow):
         uic.loadUi(fr"{cwd}logic\notification\notification_menu.ui", self)
         setConfig(self,
                   "Notification Menu", self.icon, (760, 680))
-
 
     def loadShow(self):
         "Loads, connects and shows the buttons with methods"
@@ -44,10 +46,14 @@ class NotificationMenu(SubWindow):
         self.stopT.start()
         self.notifier.finished = True
         date = datetime.now()
+        format_date = f"[{date.day}-{date.month}-{date.year} "
+        format_time = f"{date.hour}:{date.minute}:{date.second}]"
+        condition = (self.notifier.name if self.notifier.name != '' else
+                     f'Thread {next(self.notifier.counter)}')
         print(
-            f"[{date.day}-{date.month}-{date.year} {date.hour}:{date.minute}:{date.second}] - {(self.notifier.name if self.notifier.name != '' else f'Thread {next(self.notifier.counter)}')} (stop)")
+            f"{format_date + format_time} - {condition} (stop)")
         self.notifier.exit()
-            
+
     def _start_thread(self):
         "Starts Notification System"
         self.notifier.start()

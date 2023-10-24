@@ -1,16 +1,18 @@
+"Database module from Logic Module"
 from typing import Any
 from PyQt5.QtWidgets import QMessageBox
+try:
+    from sqlite3 import (Connection,
+                        connect, DatabaseError)
+except ImportError as exc:
+    raise ImportError("Error by importing 'sqlite3' module.") from exc
 
 from utils import otuple_str, cwddb, elementType
 from utils import others
 
 class Database:
+    "Database class"
     def __init__(self, path_to_db: str, log: otuple_str = None):
-        try:
-            from sqlite3 import (Connection,
-                                 connect, DatabaseError)
-        except ImportError:
-            raise ImportError("Error by importing 'sqlite3' module.")
         self.__connect__ = connect
         self.__DatabaseError__: DatabaseError = DatabaseError
         self.__Connection__: Connection = Connection
@@ -26,9 +28,11 @@ class Database:
 
     @property
     def name(self):
+        "Name property"
         return self.__name
 
     def _create_connection(self):
+        "Creates a connection with the database"
         try:
             if self.DB_PATH == cwddb:
                 conn = self.__connect__(self.DB_PATH)
@@ -42,59 +46,53 @@ class Database:
                 conn.commit()
                 cur.close()
                 del cur
-                if isinstance(conn, self.__Connection__):
-                    return conn
-                else:
-                    raise self.__DatabaseError__("Connection Failure")
-            else:
-                conn = self.__connect__(self.DB_PATH)
-                cur = conn.cursor()
-                cur.execute("""CREATE TABLE IF NOT EXISTS Config(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    image_path TEXT NOT NULL,
-                    title VARCHAR(30) NOT NULL
-                    )""")
-                cur.execute("""CREATE TABLE IF NOT EXISTS Activities(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Image_URL VARCHAR(120) NOT NULL,
-                    Description VARCHAR(120) NOT NULL,
-                    Small_text VARCHAR(120) NOT NULL
-                    )""")
-                cur.execute("""CREATE TABLE IF NOT EXISTS Icons(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name VARCHAR(50) NOT NULL,
-                    Path VARCHAR(200) NOT NULL
-                    )""")
-                cur.execute("""CREATE TABLE IF NOT EXISTS Urls(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name VARCHAR(50) NOT NULL,
-                    Url VARCHAR(150) NOT NULL
-                    )""")
-                cur.execute("""CREATE TABLE IF NOT EXISTS Apps(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name VARCHAR(50) NOT NULL,
-                    path VARCHAR(700) NOT NULL
-                    )""")
-                cur.execute("""CREATE TABLE IF NOT EXISTS Notifications AS
-                            SELECT Urls.id as "id",
-                            Urls.name as "name",
-                            Urls.url as "url",
-                            Icons.path as "path"
-                            FROM Urls, Icons
-                            WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
-                cur.close()
-                del cur
-                if isinstance(conn, self.__Connection__):
-                    return conn
-                else:
-                    raise self.__DatabaseError__("Connection Failure")
+                return conn
+            conn = self.__connect__(self.DB_PATH)
+            cur = conn.cursor()
+            cur.execute("""CREATE TABLE IF NOT EXISTS Config(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image_path TEXT NOT NULL,
+                title VARCHAR(30) NOT NULL
+                )""")
+            cur.execute("""CREATE TABLE IF NOT EXISTS Activities(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Image_URL VARCHAR(120) NOT NULL,
+                Description VARCHAR(120) NOT NULL,
+                Small_text VARCHAR(120) NOT NULL
+                )""")
+            cur.execute("""CREATE TABLE IF NOT EXISTS Icons(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                Path VARCHAR(200) NOT NULL
+                )""")
+            cur.execute("""CREATE TABLE IF NOT EXISTS Urls(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                Url VARCHAR(150) NOT NULL
+                )""")
+            cur.execute("""CREATE TABLE IF NOT EXISTS Apps(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                path VARCHAR(700) NOT NULL
+                )""")
+            cur.execute("""CREATE TABLE IF NOT EXISTS Notifications AS
+                        SELECT Urls.id as "id",
+                        Urls.name as "name",
+                        Urls.url as "url",
+                        Icons.path as "path"
+                        FROM Urls, Icons
+                        WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
+            cur.close()
+            del cur
+            return conn
         except self.__DatabaseError__ as dberror:
             raise self.__DatabaseError__(dberror)
 
     def fetch_all_apps_paths(self):
+        "Get all Applications directories"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         SELECT path FROM Apps
         """
         cur.execute(sql)
@@ -102,9 +100,10 @@ class Database:
         return self.apps_paths
 
     def fetch_all_apps_names(self):
+        "Get all Applications names"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         SELECT name FROM Apps
         """
         cur.execute(sql)
@@ -112,9 +111,10 @@ class Database:
         return self.apps_names
 
     def fetch_all_apps_ids(self):
+        "Get all Applications ids"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         SELECT id FROM Apps
         """
         cur.execute(sql)
@@ -122,49 +122,54 @@ class Database:
         return self.apps_ids
 
     def get_current_apps_path_apps(self):
+        "Get the current Application directory"
         if len(self.apps_paths) != 0:
             return self.apps_paths[self.app_path_actual]
-        else:
-            raise IndexError("There are not items in database to look for")
+        raise IndexError("There are not items in database to look for")
 
     def right_path(self):
+        "Moves right in the Apps Directory list"
         self.app_path_actual += 1
         self.app_path_actual %= len(self.apps_paths)
 
     def left_path(self):
+        "Moves left in the Apps Directory list"
         self.app_path_actual -= 1
         self.app_path_actual %= len(self.apps_paths)
 
     def get_current_apps_name(self):
+        "Get the current Application name"
         if len(self.apps_names) != 0:
             return self.apps_names[self.create_apps_menu_actual]
-        else:
-            raise IndexError("There are not items in database to look for")
+        raise IndexError("There are not items in database to look for")
 
     def get_current_apps_id(self):
+        "Get the current Application id"
         if len(self.apps_ids) != 0:
             return self.apps_ids[self.create_apps_menu_actual]
-        else:
-            raise IndexError("There are not items in database to look for")
+        raise IndexError("There are not items in database to look for")
 
     def get_current_apps_path(self):
+        "Get the current Application directory"
         if len(self.apps_paths) != 0:
             return self.apps_paths[self.create_apps_menu_actual]
-        else:
-            raise IndexError("There are not items in database to look for")
+        raise IndexError("There are not items in database to look for")
 
     def right_create_apps_menu(self):
+        "Moves right in the Apps list"
         self.create_apps_menu_actual += 1
         self.create_apps_menu_actual %= len(self.apps_ids)
 
     def left_create_apps_menu(self):
+        "Moves left in the Apps list"
         self.create_apps_menu_actual -= 1
         self.create_apps_menu_actual %= len(self.apps_ids)
 
     def create_log_apps(self, log: otuple_str, element: elementType):
+        "Creates an Application Log"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         SELECT name, path, COUNT(*) FROM Apps
         GROUP BY name, path HAVING COUNT(*) > 1
         """
@@ -172,7 +177,7 @@ class Database:
         cur.execute(sql)
         results = cur.fetchall()
         if len(results) == 0:
-            sql = f'''
+            sql = '''
             INSERT INTO Apps(name, path)
             VALUES(?, ?)
             '''
@@ -181,25 +186,26 @@ class Database:
             QMessageBox.information(
                 element, 'Database', 'Information added to database')
             return cur.lastrowid
-        else:
-            QMessageBox.warning(
-                element, 'Error', 'Data already in database')
+        QMessageBox.warning(
+            element, 'Error', 'Data already in database')
+        return None
 
-    def delete_log_apps(self, t: tuple[str, str], element: elementType):
-        if len(t) == 2:
+    def delete_log_apps(self, log: tuple[str, str], element: elementType):
+        "Deletes an Application Log"
+        if len(log) == 2:
             conn = self.connection
             cur = conn.cursor()
-            sql = f"""
+            sql = """
             SELECT name, path FROM Apps
             WHERE name = ? AND path = ?
             """
-            cur.execute(sql, t)
+            cur.execute(sql, log)
             result = cur.fetchone()
             if result:
-                sql = f"""
+                sql = """
                 DELETE FROM Apps WHERE name = ? AND path = ?
                 """
-                cur.execute(sql, t)
+                cur.execute(sql, log)
                 conn.commit()
                 conn.close()
                 QMessageBox.information(
@@ -207,14 +213,15 @@ class Database:
             else:
                 QMessageBox.warning(element, "Not Found",
                                     "Elements not found in database")
-        else:
-            QMessageBox.warning(
-                element, "Error", "Only 2 items allowed in tuple")
+        QMessageBox.warning(
+            element, "Error", "Only 2 items allowed in tuple")
 
     def update_log_apps(self, path: str, name: str, element: elementType):
+        # TODO: Create a GUI that allows the user to update an App Directory according to the name
+        "Updates an Application Log"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         UPDATE Apps SET path = ? WHERE name = ?
         """
         cur.execute(sql, (path, name))
@@ -223,16 +230,18 @@ class Database:
         QMessageBox.information(element, "Updated", "Path updated in database")
 
     def fetch_all_logins(self, username: str, password: str):
+        "Get all logins and checks if an username and password exists in Database"
         conn = self.connection
         cur = conn.cursor()
-        sql = f"""
+        sql = """
         SELECT username, password FROM Login 
         WHERE username = ? AND password = ?
         """
-        l = cur.execute(sql, (username, password))
-        return l.fetchall()
+        logins = cur.execute(sql, (username, password))
+        return logins.fetchall()
 
     def add_user_logins(self, username: str, password: str):
+        "Adds a Login to Database according to some QLineEdit values in SHA256"
         conn = self.connection
         cur = conn.cursor()
 
@@ -244,11 +253,14 @@ class Database:
         conn.commit()
         return cur.lastrowid
 
-    def update_user_password_logins(self, element: elementType, username: str, password: str, new_password: str):
+    def update_user_password_logins(self, element: elementType, username: str,
+                                    password: str, new_password: str):
+        # TODO: Create a GUI that allows the user to update his password with ease
+        "Updates the user's password in database"
         conn = self.connection
         cur = conn.cursor()
 
-        sql = f"""
+        sql = """
         UPDATE Login SET password = ? WHERE (username = ? AND password = ?)
         """
         cur.execute(sql, (new_password, username, password))
@@ -258,11 +270,13 @@ class Database:
             element, "Password changed", "Your password has been updated")
 
     def set_config(self, element: elementType, config: tuple[str, str]):
+        """Sets the config with a directory and title that will be used for all 
+        Program's GUI and Stray"""
         assert len(config) == 2, "Config length must be 2"
         conn = self.connection
         cur = conn.cursor()
 
-        sql = f"""
+        sql = """
         INSERT INTO Config(image_path, title)
         VALUES(?, ?)
         """
@@ -274,10 +288,12 @@ class Database:
         return cur.lastrowid
 
     def update_config_icon(self, element: elementType, new_icon: str, title: str):
+        # TODO: Create a GUI that allows the user to set a new icon with ease
+        "Updates the icon according to the title"
         conn = self.connection
         cur = conn.cursor()
 
-        sql = f"""
+        sql = """
         UPDATE Config SET image_path = ? WHERE title = ?
         """
 
@@ -287,6 +303,8 @@ class Database:
         QMessageBox.information(element, "Information", "Icon changed")
 
     def update_config_title(self, element: elementType, new_title: str, icon: str):
+        # TODO: Create a GUI that allows the user to set a new title with ease
+        "Updates title according to the icon"
         conn = self.connection
         cur = conn.cursor()
 
@@ -299,6 +317,7 @@ class Database:
         QMessageBox.information(element, "Information", "Title changed")
 
     def delete_config(self):
+        "Deletes the unique id found in database"
         conn = self.connection
         cur = conn.cursor()
 
@@ -308,6 +327,7 @@ class Database:
         conn.commit()
 
     def get_config(self):
+        "Returns the config found in database"
         conn = self.connection
         cur = conn.cursor()
         sql = """

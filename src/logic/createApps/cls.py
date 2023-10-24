@@ -1,3 +1,4 @@
+"CreateApps Module"
 from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
@@ -13,7 +14,8 @@ from logic.apps import cls as apps
 
 class CreateAppsMenu(SubWindow):
     "Subclass of `SubWindow`"
-    def __init__(self, parent: Any , icon: QIcon, db: database.Database, appsMenu: apps.AppsMenu):
+
+    def __init__(self, parent: Any, icon: QIcon, db: database.Database, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -24,7 +26,6 @@ class CreateAppsMenu(SubWindow):
         setConfig(self, "Apps Create", self.icon, (760, 680))
         self.actual_name = str(self.db.get_current_apps_name()[0])
         self.actual_path = str(self.db.get_current_apps_path()[0])
-
 
     def loadShow(self):
         "Loads, connects buttons with methods, sets text in path lines and shows it"
@@ -41,7 +42,7 @@ class CreateAppsMenu(SubWindow):
             "edit_button": self.update
         })
         self.show()
-    
+
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
         with self.connection:
@@ -53,7 +54,6 @@ class CreateAppsMenu(SubWindow):
                 "path_input": self.actual_path
             })
 
-    
     def retroceder(self):
         "Loops back through the paths in database and sets it up in QLineEdit"
         with self.connection:
@@ -64,7 +64,7 @@ class CreateAppsMenu(SubWindow):
                 "name_input": self.actual_name,
                 "path_input": self.actual_path
             })
-    
+
     def add_to_db(self):
         "Adds info to database"
         cn = getText(self, "name_input")
@@ -75,7 +75,7 @@ class CreateAppsMenu(SubWindow):
             (current_name, current_path), self)
         updateWindow(self)
         updateWindow(self.appsMenu)
-    
+
     def delete_from_db(self):
         "Deletes info from database."
         cn = getText(self, "name_input")
@@ -86,7 +86,7 @@ class CreateAppsMenu(SubWindow):
             (current_name, current_path), self)
         updateWindow(self)
         updateWindow(self.appsMenu)
-        
+
     def update_from_db(self):
         "Updates info to database"
         cn = getText(self, "name_input")
@@ -97,4 +97,3 @@ class CreateAppsMenu(SubWindow):
             current_path, current_name, self)
         updateWindow(self)
         updateWindow(self.appsMenu)
-    
