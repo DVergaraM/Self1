@@ -83,7 +83,8 @@ class MQThread(QThread):
     Subclass of `PyQt5.QtCore.QThread`
     """
 
-    def __init__(self, targets, bucles):
+    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
+                 bucles: bool | tuple[bool]):
         super().__init__()
         self.is_tuple = False
         if isinstance(targets, Callable) and isinstance(bucles, bool):
@@ -154,7 +155,7 @@ class Stray:
 
     def create_menu(self):
         "Creates the menu for the Stray with some buttons and run it"
-        self.icon = Icon(self.title, self.image, menu=Menu(
+        menu = Menu(
             Item("Notifier", Menu(
                 Item("Start System", self.__helper__),
                 Item("Stop System", self.__helper__)
@@ -163,7 +164,8 @@ class Stray:
             Item("Open UI", self.__helper__),
             Item("Close UI", self.__helper__),
             Item("Exit", self.__helper__)
-        ), title=self.title)
+        )
+        self.icon = Icon(self.title, self.image, menu=menu, title=self.title)
         self.icon.run()
 
     def __helper__(self, icon, item):

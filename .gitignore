@@ -17,3 +17,4 @@ help.txt
 tests/*
 SelfCopy.*
 daniel-*/
+*.tex

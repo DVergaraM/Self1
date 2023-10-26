@@ -9,7 +9,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 import PIL.Image as Img
 import requests
 
-from logic import Notification, Stray, MQThread, run_pending, App, msgBox
+from logic import Notification, Stray, MQThread, App, msgBox, Schedule
 from logic.database import Database
 from logic.login.cls import LoginSystem
 from logic.apps.cls import AppsMenu
@@ -66,7 +66,7 @@ class Gui(QMainWindow):
         # # # # # # # #
 
         # Creates a Thread for 'run_pending' method with a while loop
-        self.notifier = MQThread(run_pending, True)
+        self.notifier = MQThread(Schedule.start, True)
         # Creates a Windows Pop-Up that displays that the system is on
         start_notifications = Notification(
             self.title, "Pop-Ups", "Notification System ON", icon, duration="short")

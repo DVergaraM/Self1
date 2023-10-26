@@ -18,7 +18,8 @@ def setConfig(element: elementType, title: str | None = None, icon: QIcon | None
     elif isinstance(size, QSize):
         element.setFixedSize(size)
     else:
-        raise TypeError("'size' must be an instance of tuple or PyQt5.QtCore.QSize")
+        raise TypeError(
+            "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 
 def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: QIcon,
@@ -32,3 +33,4 @@ def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: QI
         element.setWindowIcon(icon)
         element.setFixedSize(size)
         others.updateWindow(element)
+    return None

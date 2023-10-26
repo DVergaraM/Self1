@@ -24,15 +24,22 @@ The `assets/` folder contains the following files
 
 The Second Brain application has the following dependencies:
 
-- Python 3.6 or higher
+- Python 3.8 or higher
 
 - [PyQt5](https://pypi.org/project/PyQt5/)
+    - For the GUIs and threads
 
 - [PyStray](https://pypi.org/project/pystray/)
+    - For the System Tray Icon
 
-- [WiNotification](https://pypi.org/project/winotify/)
+- [Winotify](https://pypi.org/project/winotify/)
+    - For the Notification System
 
-- Pillow
+- [Schedule](https://pypi.org/project/schedule/)
+    - For running methods at certain hours
+
+- [Pillow](https://pypi.org/project/Pillow/)
+    - For loading images
 
 
 ## Running the Application
@@ -50,14 +57,10 @@ This will start the application and display the login dialog. Once you have logg
 
 ## Contributing
 
-  
-
 If you would like to contribute to the Second Brain application, please fork this repository and submit a pull request with your changes. We welcome contributions of all kinds, including bug fixes, new features, and documentation improvements.
 
   
 
 ## License
-
-  
 
 The Second Brain application is licensed under the MIT License. See the `LICENSE` file for more information.

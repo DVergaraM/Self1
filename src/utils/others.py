@@ -1,6 +1,6 @@
 "Others module from Utils module"
 from hashlib import sha256
-from typing import Any, overload
+from typing import Any
 from datetime import datetime
 
 from utils import elementType, attribute, config

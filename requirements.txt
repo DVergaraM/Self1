@@ -1,0 +1,5 @@
+Pillow
+pyqt5
+pystray
+winotify
+schedule
