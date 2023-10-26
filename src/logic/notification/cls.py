@@ -6,6 +6,7 @@ from PyQt5 import uic
 
 from utils import cwd, SubWindow
 from utils.config import setConfig
+from utils.others import get_time
 from utils.setters import connect
 
 from logic import database
@@ -45,13 +46,11 @@ class NotificationMenu(SubWindow):
         "Stops Notification System"
         self.stopT.start()
         self.notifier.finished = True
-        date = datetime.now()
-        format_date = f"[{date.day}-{date.month}-{date.year} "
-        format_time = f"{date.hour}:{date.minute}:{date.second}]"
+        format_date_all = get_time()
         condition = (self.notifier.name if self.notifier.name != '' else
                      f'Thread {next(self.notifier.counter)}')
         print(
-            f"{format_date + format_time} - {condition} (stop)")
+            f"{format_date_all} - {condition} (stop)")
         self.notifier.exit()
 
     def _start_thread(self):

@@ -1,6 +1,7 @@
 "Others module from Utils module"
 from hashlib import sha256
-from typing import Any
+from typing import Any, overload
+from datetime import datetime
 
 from utils import elementType, attribute, config
 from logic import database
@@ -43,7 +44,7 @@ def updateWindow(element: elementType) -> None:
                                  element.windowIcon(), element.size())
                 element.update()
         elif hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG") and\
-            hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
+                hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
             db: database.Database = getattr(element, "db")
             DB_PATH_CONFIG: str = getattr(element, "DB_PATH_CONFIG")
             DB_PATH_LOGIN: str = getattr(element, "DB_PATH_LOGIN")
@@ -101,3 +102,20 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
 def remove(elements: tuple) -> tuple:
     "Removes duped elements in tuple"
     return tuple(set(elements))
+
+
+@overload
+def get_time_log() -> str:
+    "Returns the current time"
+    date = datetime.now()
+    format_date = f"{date.day}-{date.month}-{date.year}_"
+    format_hour = f"{date.hour}-{date.minute}-{date.second}"
+    return format_date+format_hour
+
+def get_time():
+    "Returns the current time"
+    date = datetime.now()
+    format_date = f"[{date.day}-{date.month}-{date.year} "
+    format_time = f"{date.hour}:{date.minute}:{date.second}]"
+    return format_date + format_time
+

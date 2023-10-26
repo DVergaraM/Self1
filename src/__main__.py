@@ -19,6 +19,7 @@ from logic.createApps.cls import CreateAppsMenu
 from logic.notification.cls import NotificationMenu
 
 from utils.config import setConfig
+from utils.others import get_time
 from utils.setters import connect
 
 cwd = fr"{os.getcwd()}\src\\"
@@ -119,9 +120,10 @@ class Gui(QMainWindow):
     def title(self):
         "Title"
         return self.__title
-
+    
     def __repr__(self):
         return "Gui()"
+
 
 
 def main(argv: list[str]):
@@ -129,10 +131,7 @@ def main(argv: list[str]):
     app = App(argv)
     login = LoginSystem()
     if login.exec_() == QDialog.DialogCode.Accepted:
-        date = datetime.now()
-        format_date = f"[{date.day}-{date.month}-{date.year} "
-        format_time = f"{date.hour}:{date.minute}:{date.second}]"
-        format_date_all = format_date + format_time
+        format_date_all = get_time()
         print(
             f"{format_date_all} - Opening Stray...")
 

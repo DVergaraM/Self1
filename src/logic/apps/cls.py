@@ -9,7 +9,7 @@ from PyQt5 import uic
 from utils import cwd, SubWindow
 from utils.config import setConfig
 from utils.setters import setText, connect
-from utils.others import getText
+from utils.others import get_time_log, getText
 
 from logic import database
 
@@ -68,10 +68,8 @@ class AppsMenu(SubWindow):
         "Runs the program displayed in QLineEdit"
         text = getText(self, "path_line")
         path = fr"{text}"
-        date = datetime.now()
         cwd_log = os.getcwd()
-        format_date = f"{date.day}-{date.month}-{date.year}_"
-        format_hour = f"{date.hour}-{date.minute}-{date.second}"
+        format_date_all = get_time_log()
         path_split = path.split("\\")
         name_with_exe = path_split[-1]
         name_without_exe = name_with_exe.removesuffix('.exe"')
@@ -81,7 +79,7 @@ class AppsMenu(SubWindow):
             self.othread.start(self.othread.program())
         else:
             self.othread.start(self.othread.program(), [
-                               fr"> {cwd_log}\logs\log-{format_date+format_hour}.log"])
-        format_date = format_date.replace("_", " ")
+                               fr"> {cwd_log}\logs\log-{format_date_all}.log"])
+        format_date_all = format_date_all.replace("_", " ")
         print(
-            f"[{format_date+format_hour}] - {name} (run)")
+            f"[{format_date_all}] - {name} (run)")
