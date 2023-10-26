@@ -1,10 +1,9 @@
 "Notification Module"
-from datetime import datetime
 from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
-from utils import cwd, SubWindow
+from utils import cwd, SubWindow, elementType
 from utils.config import setConfig
 from utils.others import get_time
 from utils.setters import connect
@@ -17,7 +16,7 @@ from logic.apps import cls as apps
 class NotificationMenu(SubWindow):
     "Subclass of `SubWindow`"
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.Database, notifier: MQThread,
+    def __init__(self, parent: elementType, icon: QIcon, db: database.Database, notifier: MQThread,
                  startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon

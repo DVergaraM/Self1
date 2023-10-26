@@ -88,15 +88,9 @@ def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, s
 
 def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
     "Compares the items inside 2 tuples and checks if they are the same"
-    if len(result) == len(comparation):
-        j: tuple[bool] = tuple()
-        for _, (element, comp) in enumerate(zip(result, comparation)):
-            if element != comp:
-                j += (True, )
-            else:
-                j += (False, )
-        return j
-    return False
+    if len(result) != len(comparation):
+        return False
+    return tuple(element != comp for element, comp in zip(result, comparation))
 
 
 def remove(elements: tuple) -> tuple:
@@ -104,7 +98,6 @@ def remove(elements: tuple) -> tuple:
     return tuple(set(elements))
 
 
-@overload
 def get_time_log() -> str:
     "Returns the current time"
     date = datetime.now()
@@ -112,10 +105,10 @@ def get_time_log() -> str:
     format_hour = f"{date.hour}-{date.minute}-{date.second}"
     return format_date+format_hour
 
+
 def get_time():
     "Returns the current time"
     date = datetime.now()
     format_date = f"[{date.day}-{date.month}-{date.year} "
     format_time = f"{date.hour}:{date.minute}:{date.second}]"
     return format_date + format_time
-

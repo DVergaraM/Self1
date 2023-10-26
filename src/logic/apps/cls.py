@@ -1,5 +1,4 @@
 "Apps Menu Module"
-from datetime import datetime
 import os
 from typing import Any
 from PyQt5.QtGui import QIcon

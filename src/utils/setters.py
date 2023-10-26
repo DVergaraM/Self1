@@ -11,6 +11,7 @@ def setText(element: elementType,
             and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.setText(f"{data}")
+            return None
     elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
         isinstance(value, (int, str))for key, value in objs.items()):
         for key, value in objs.items():
@@ -19,6 +20,7 @@ def setText(element: elementType,
                 obj.setText(f"{value}")
             else:
                 continue
+        return None
     else:
         raise TypeError(
             "'objs' and/or 'data' params must have the correct type")
@@ -31,6 +33,7 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.clicked.connect(meth)
+            return None
     elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
         isinstance(value, method) for key, value in objs.items()):
         for attr, meth in objs.items():
@@ -39,6 +42,7 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
                 obj.clicked.connect(meth)
             else:
                 continue
+        return None
     else:
         raise TypeError(
             "'obj' and/or 'method' params must have the correct type")
@@ -52,6 +56,7 @@ def textChangedConnect(element: elementType,
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.textChanged.connect(meth)
+            return None
     elif isinstance(objs, dict) and all(isinstance(meth, method) and\
         isinstance(lst, list) for meth, lst in objs.items()):
         for meth, lst in objs.items():
@@ -61,6 +66,7 @@ def textChangedConnect(element: elementType,
                     obj.textChanged.connect(meth)
                 else:
                     continue
+        return None
     else:
         raise TypeError(
             "'obj' and/or 'method' params must have the correct type")
@@ -82,6 +88,7 @@ def enableButton(element: elementType,
         if hasattr(element, attr):
             attr = getattr(element, attr)
             attr.setEnabled(value)
+            return None
     elif isinstance(data, dict) and\
         (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
         for attr, value in data.items(): # Loops in the items of the dict and assign values.
@@ -90,6 +97,7 @@ def enableButton(element: elementType,
                 attr.setEnabled(value)
             else:
                 continue
+        return None
     else:
         raise TypeError(
             "'data' param must have the correct type")

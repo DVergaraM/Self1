@@ -63,81 +63,57 @@ class Schedule:
             args (tuple[Any], optional): Arguments to be used in the method.
         '''
         _schedule.every().day.at(time, self.timezone).do(method, args)
+        return None
 
     @staticmethod
     def start():
         "Runs the tasks that are pending."
         _schedule.run_pending()
+        return None
 
     @staticmethod
     def stop():
         "Clears the tasks in Queue"
         _schedule.clear()
+        return None
 
 
 class MQThread(QThread):
-    "Subclass of `PyQt5.QtCore.QThread`"
+    """
+    Subclass of `PyQt5.QtCore.QThread`
+    """
 
-    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
-                 bucles: bool | tuple[bool]) -> None:
+    def __init__(self, targets, bucles):
         super().__init__()
         self.is_tuple = False
         if isinstance(targets, Callable) and isinstance(bucles, bool):
-            self.target = targets
-            self.name = targets.__name__
-            self.is_tuple = False
-            self.bucle = bucles
-        elif isinstance(targets, tuple) and isinstance(bucles, tuple) and\
-            (isinstance(target, Callable) for target in targets) and\
-                (isinstance(bucle, bool) for bucle in bucles):
+            self.targets = (targets,)
+            self.names = (targets.__name__,)
+            self.bucles = (bucles,)
+        elif isinstance(targets, tuple) and isinstance(bucles, tuple) and all(isinstance(target, Callable) for target in targets) and all(isinstance(bucle, bool) for bucle in bucles):
             self.targets = targets
-            self.names: tuple[str] = tuple()
-            for target in targets:
-                self.names += (target.__name__, )
-            self.is_tuple = True
+            self.names = tuple(target.__name__ for target in targets)
             self.bucles = bucles
+            self.is_tuple = True
+        else:
+            raise TypeError(
+                "'targets' must be a callable or a tuple of callables, and 'bucles' must be a bool or a tuple of bools")
         self.counter = count()
 
-    def run(self) -> None:
-        "Runs the target(s) method(s) according to some variables initialized in __init__"
-        if not self.is_tuple:
-            if self.bucle:
-                if self.target:
-                    format_date_all = get_time()
-                    condition = (self.name if self.name != '' else
-                                 f'Thread {next(self.counter)} (run)')
-                    print(
-                        f"{format_date_all} - {condition}")
-
-                    while not self.isFinished():
-                        self.target()
+    def run(self):
+        """
+        Runs the target(s) method(s) according to some variables initialized in __init__
+        """
+        for bucle, target, name in zip(self.bucles, self.targets, self.names):
+            if bucle:
+                format_date_all = get_time()
+                print(f"{format_date_all} - {name} (run)")
+                while not self.isFinished():
+                    target()
             else:
-                if self.target:
-                    format_date_all = get_time()
-                    condition = (self.name if self.name != '' else
-                                 f'Thread {next(self.counter)} (run)')
-                    print(
-                        f"{format_date_all} - {condition}")
-
-                    self.target()
-        else:
-            for bucle in self.bucles:
-                for target in self.targets:
-                    if bucle:
-                        if target:
-                            for name in self.names:
-                                format_date_all = get_time()
-                                print(
-                                    f"{format_date_all} - {name} (run)")
-                                while not self.isFinished():
-                                    target()
-                    else:
-                        if target:
-                            for name in self.names:
-                                format_date_all = get_time()
-                                print(
-                                    f"{format_date_all} - {name} (run)")
-                                target()
+                format_date_all = get_time()
+                print(f"{format_date_all} - {name} (run)")
+                target()
 
 
 class Stray:
@@ -195,45 +171,37 @@ class Stray:
         item = str(item)
         match item:
             case "Start System":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Starting Notification System")
                 notifier_start()
             case "Stop System":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Stopping Notification System")
                 notifier_stop()
             case "Config":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Opening Config UI")
                 open_config()
             case "Open UI":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Opening UI")
                 show_ui()
             case "Close UI":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Closing UI")
                 close_ui()
             case "Exit":
-                format_date_all = self.get_time()
+                format_date_all = get_time()
                 print(
                     f"{format_date_all} - Closing {self.icon_name}")
                 tm.sleep(5)
                 icon.stop()
                 icon.exit()
-
-    @staticmethod
-    def get_time():
-        "Gets the date formatted for easy usage as a print log"
-        date = datetime.now()
-        format_date = f"[{date.day}-{date.month}-{date.year} "
-        format_time = f"{date.hour}:{date.minute}:{date.second}]"
-        return format_date + format_time
 
 
 def msgBox(log: login.LoginSystem):

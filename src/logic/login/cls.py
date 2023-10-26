@@ -26,7 +26,6 @@ class LoginSystem(QDialog):
         self.icon = QIcon(icon)
         self.connection_config = self.db_config.connection
         self.connection_login = self.db_login.connection
-        # self.setStyleSheet('background-color: black')
         updateWindow(self)
         setConfig(self, "Login", self.icon, (760, 680))  # )(1240, 780))
         textChangedConnect(self, {

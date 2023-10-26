@@ -82,7 +82,6 @@ class ConfigMenu(SubWindow):
         title = str(getText(self, "title_input"))
         if (len(self._config)%2 == 1 or len(self._config) >= 3) and\
             title != "" and os.path.exists(self._config[0]):
-        #self._config = ()
             self._config = remove(self._config)
             self._config += (title, )
         else:
@@ -108,5 +107,6 @@ class ConfigMenu(SubWindow):
                 ), self.mp.create_apps_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.notification_menu.windowTitle()),
                 icon,
                 (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size()))
-        else:
-            QMessageBox.warning(self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")
+            return None
+        QMessageBox.warning(self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")
+        return None

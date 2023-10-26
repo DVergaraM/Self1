@@ -26,11 +26,11 @@ The Second Brain application has the following dependencies:
 
 - Python 3.6 or higher
 
-- PyQt5
+- [PyQt5](https://pypi.org/project/PyQt5/)
 
-- PyStray
+- [PyStray](https://pypi.org/project/pystray/)
 
-- WiNotification 
+- [WiNotification](https://pypi.org/project/winotify/)
 
 - Pillow
 
