@@ -203,7 +203,6 @@ class Stray:
                     f"{format_date_all} - Closing {self.icon_name}")
                 tm.sleep(5)
                 icon.stop()
-                icon.exit()
 
 
 def msgBox(log: login.LoginSystem):
