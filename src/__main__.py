@@ -31,7 +31,7 @@ class Gui(QMainWindow):
     def __init__(self) -> None:
         super(Gui, self).__init__()
         # Loads Main GUI
-        icon_url = "https://daniel-vergara-m.github.io/images/media/default.png"
+        icon_url = "https://daniel-vergara-m.github.io/assets/default.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = BrainDatabase(DB_PATH)
         self.connection = self.database.connection
