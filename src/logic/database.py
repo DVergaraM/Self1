@@ -1,92 +1,101 @@
 "Database module from Logic Module"
-from typing import Any
+import os
+from typing import Any, Callable
 from PyQt5.QtWidgets import QMessageBox
 try:
     from sqlite3 import (Connection,
-                        connect, DatabaseError)
+                         connect, DatabaseError)
 except ImportError as exc:
     raise ImportError("Error by importing 'sqlite3' module.") from exc
 
-from utils import otuple_str, cwddb, elementType
+from utils import otuple_str, cwddb, elementType, cwd
 from utils import others
 
-class Database:
-    "Database class"
-    def __init__(self, path_to_db: str, log: otuple_str = None):
-        self.__connect__ = connect
-        self.__DatabaseError__: DatabaseError = DatabaseError
-        self.__Connection__: Connection = Connection
-        self._log: otuple_str = log
-        self.__name: str = self.__class__.__name__.lower()
-        self.app_path_actual: int = 0
-        self.create_apps_menu_actual: int = 0
-        self.DB_PATH: str = path_to_db
+
+def create_brain_tables(conn):
+    cur = conn.cursor()
+    cur.execute("""CREATE TABLE IF NOT EXISTS Config(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            image_path TEXT NOT NULL,
+            title VARCHAR(30) NOT NULL
+            )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS Icons(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(50) NOT NULL,
+            Path VARCHAR(200) NOT NULL
+            )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS Urls(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(50) NOT NULL,
+            Url VARCHAR(150) NOT NULL
+            )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS Apps(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(50) NOT NULL,
+            path VARCHAR(700) NOT NULL
+            )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS Notifications AS
+            SELECT Urls.id as "id",
+            Urls.name as "name",
+            Urls.url as "url",
+            Icons.path as "path"
+            FROM Urls, Icons
+            WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
+    cur.close()
+    del cur
+    return None
+
+
+def create_login_tables(conn):
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS Activities")
+    cur.execute("DROP TABLE IF EXISTS Icons")
+    cur.execute("DROP TABLE IF EXISTS Urls")
+    cur.execute("DROP TABLE IF EXISTS Apps")
+    cur.execute("DROP TABLE IF EXISTS Notifications")
+    cur.execute("DROP TABLE IF EXISTS Config")
+    cur.execute("""CREATE TABLE IF NOT EXISTS Login(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username VARCHAR(200) NOT NULL,
+        password VARCHAR(200) NOT NULL
+        )""")
+    conn.commit()
+    cur.close()
+    del cur
+    return None
+
+
+class ParentDatabase:
+    def __init__(self, path_to_db: str, type: str):
+        self.name = self.__class__.__name__.lower()
+        if os.path.exists(path_to_db) and type == "brain":
+            self.DB_PATH = path_to_db
+        elif os.path.exists(path_to_db) and type == "login":
+            self.DB_PATH = path_to_db
+        else:
+            self.DB_PATH = fr"{cwd}\brain_mine.db"
+
         self.connection = self._create_connection()
-        self.apps_paths: list[Any] = self.fetch_all_apps_paths()
-        self.apps_names: list[Any] = self.fetch_all_apps_names()
-        self.apps_ids: list[Any] = self.fetch_all_apps_ids()
 
-    @property
-    def name(self):
-        "Name property"
-        return self.__name
-
-    def _create_connection(self):
-        "Creates a connection with the database"
+    def _create_connection(self, func: Callable[[], Any] = None):
         try:
-            if self.DB_PATH == cwddb:
-                conn = self.__connect__(self.DB_PATH)
-                cur = conn.cursor()
-                cur.execute("DROP TABLE IF EXISTS Activities")
-                cur.execute("DROP TABLE IF EXISTS Icons")
-                cur.execute("DROP TABLE IF EXISTS Urls")
-                cur.execute("DROP TABLE IF EXISTS Apps")
-                cur.execute("DROP TABLE IF EXISTS Notifications")
-                cur.execute("DROP TABLE IF EXISTS Config")
-                conn.commit()
-                cur.close()
-                del cur
-                return conn
-            conn = self.__connect__(self.DB_PATH)
-            cur = conn.cursor()
-            cur.execute("""CREATE TABLE IF NOT EXISTS Config(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                image_path TEXT NOT NULL,
-                title VARCHAR(30) NOT NULL
-                )""")
-            cur.execute("""CREATE TABLE IF NOT EXISTS Activities(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Image_URL VARCHAR(120) NOT NULL,
-                Description VARCHAR(120) NOT NULL,
-                Small_text VARCHAR(120) NOT NULL
-                )""")
-            cur.execute("""CREATE TABLE IF NOT EXISTS Icons(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(50) NOT NULL,
-                Path VARCHAR(200) NOT NULL
-                )""")
-            cur.execute("""CREATE TABLE IF NOT EXISTS Urls(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(50) NOT NULL,
-                Url VARCHAR(150) NOT NULL
-                )""")
-            cur.execute("""CREATE TABLE IF NOT EXISTS Apps(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(50) NOT NULL,
-                path VARCHAR(700) NOT NULL
-                )""")
-            cur.execute("""CREATE TABLE IF NOT EXISTS Notifications AS
-                        SELECT Urls.id as "id",
-                        Urls.name as "name",
-                        Urls.url as "url",
-                        Icons.path as "path"
-                        FROM Urls, Icons
-                        WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
-            cur.close()
-            del cur
+            conn = connect(self.DB_PATH)
+            if func is not None:
+                func(conn)
             return conn
-        except self.__DatabaseError__ as dberror:
-            raise self.__DatabaseError__(dberror)
+        except DatabaseError as excp:
+            raise DatabaseError(excp) from excp
+
+
+class BrainDatabase(ParentDatabase):
+    def __init__(self, path_to_db: str):
+        super().__init__(path_to_db, "brain")
+        self.connection = self._create_connection(create_brain_tables)
+        self.app_path_actual = 0
+        self.create_apps_menu_actual = 0
+        self.apps_paths = self.fetch_all_apps_paths()
+        self.apps_names = self.fetch_all_apps_names()
+        self.apps_ids = self.fetch_all_apps_ids()
 
     def fetch_all_apps_paths(self):
         "Get all Applications directories"
@@ -96,8 +105,7 @@ class Database:
         SELECT path FROM Apps
         """
         cur.execute(sql)
-        self.apps_paths = cur.fetchall()
-        return self.apps_paths
+        return cur.fetchall()
 
     def fetch_all_apps_names(self):
         "Get all Applications names"
@@ -107,8 +115,7 @@ class Database:
         SELECT name FROM Apps
         """
         cur.execute(sql)
-        self.apps_names = cur.fetchall()
-        return self.apps_names
+        return cur.fetchall()
 
     def fetch_all_apps_ids(self):
         "Get all Applications ids"
@@ -118,8 +125,7 @@ class Database:
         SELECT id FROM Apps
         """
         cur.execute(sql)
-        self.apps_ids = cur.fetchall()
-        return self.apps_ids
+        return cur.fetchall()
 
     def get_current_apps_path_apps(self):
         "Get the current Application directory"
@@ -229,46 +235,6 @@ class Database:
         conn.close()
         QMessageBox.information(element, "Updated", "Path updated in database")
 
-    def fetch_all_logins(self, username: str, password: str):
-        "Get all logins and checks if an username and password exists in Database"
-        conn = self.connection
-        cur = conn.cursor()
-        sql = """
-        SELECT username, password FROM Login 
-        WHERE username = ? AND password = ?
-        """
-        logins = cur.execute(sql, (username, password))
-        return logins.fetchall()
-
-    def add_user_logins(self, username: str, password: str):
-        "Adds a Login to Database according to some QLineEdit values in SHA256"
-        conn = self.connection
-        cur = conn.cursor()
-
-        sql = """
-        INSERT INTO Login(username, password)
-        VALUES(?, ?)
-        """
-        cur.execute(sql, (username, password))
-        conn.commit()
-        return cur.lastrowid
-
-    def update_user_password_logins(self, element: elementType, username: str,
-                                    password: str, new_password: str):
-        # TODO: Create a GUI that allows the user to update his password with ease
-        "Updates the user's password in database"
-        conn = self.connection
-        cur = conn.cursor()
-
-        sql = """
-        UPDATE Login SET password = ? WHERE (username = ? AND password = ?)
-        """
-        cur.execute(sql, (new_password, username, password))
-        conn.commit()
-        conn.close()
-        QMessageBox.information(
-            element, "Password changed", "Your password has been updated")
-
     def set_config(self, element: elementType, config: tuple[str, str]):
         """Sets the config with a directory and title that will be used for all 
         Program's GUI and Stray"""
@@ -335,3 +301,50 @@ class Database:
         """
         cur.execute(sql)
         return cur.fetchone()
+
+
+class LoginDatabase(ParentDatabase):
+    def __init__(self, path_to_db: str):
+        super().__init__(path_to_db, "login")
+        self.connection = self._create_connection(create_login_tables)
+
+    def fetch_all_logins(self, username: str, password: str):
+        "Get all logins and checks if an username and password exists in Database"
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT username, password FROM Login 
+        WHERE username = ? AND password = ?
+        """
+        logins = cur.execute(sql, (username, password))
+        return logins.fetchall()
+
+    def add_user_logins(self, username: str, password: str):
+        "Adds a Login to Database according to some QLineEdit values in SHA256"
+        conn = self.connection
+        cur = conn.cursor()
+
+        sql = """
+        INSERT INTO Login(username, password)
+        VALUES(?, ?)
+        """
+        cur.execute(sql, (username, password))
+        conn.commit()
+        return cur.lastrowid
+
+    def update_user_password_logins(self, element: elementType, username: str,
+                                    password: str, new_password: str):
+        # TODO: Create a GUI that allows the user to update his password with ease
+        "Updates the user's password in database"
+        conn = self.connection
+        cur = conn.cursor()
+
+        sql = """
+        UPDATE Login SET password = ? WHERE (username = ? AND password = ?)
+        """
+        cur.execute(sql, (new_password, username, password))
+        conn.commit()
+        conn.close()
+        QMessageBox.information(
+            element, "Password changed", "Your password has been updated")
+        return None
