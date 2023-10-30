@@ -14,7 +14,7 @@ from logic import database
 
 class ConfigMenu(SubWindow):
     "Subclass of `SubWindow`"
-    def __init__(self, parent: Any , icon: QIcon, db: database.Database):
+    def __init__(self, parent: Any , icon: QIcon, db: database.BrainDatabase):
         '''
 
         Args:

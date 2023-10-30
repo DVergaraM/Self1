@@ -12,7 +12,7 @@ from logic.createApps import cls as createApps
 
 class CreateMenu(SubWindow):
     "Subclass of `SubWindow`"
-    def __init__(self, parent: Any , icon: QIcon, db: database.Database,
+    def __init__(self, parent: Any , icon: QIcon, db: database.BrainDatabase,
                  createApp: createApps.CreateAppsMenu):
         '''
 
@@ -26,7 +26,6 @@ class CreateMenu(SubWindow):
         self.icon = icon
         self.mp = parent
         self.db = db
-        self.connection = self.db.connection
         self.createApps = createApp
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
         setConfig(self,

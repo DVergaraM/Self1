@@ -16,7 +16,7 @@ from logic import database
 class AppsMenu(SubWindow):
     "Subclass of `SubWindow`"
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.Database, thread: QProcess):
+    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
         '''
 
         Args:

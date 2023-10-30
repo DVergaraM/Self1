@@ -1,7 +1,6 @@
 "Main File of Second Brain"
 import os
 import sys
-from datetime import datetime
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
@@ -10,7 +9,7 @@ import PIL.Image as Img
 import requests
 
 from logic import Notification, Stray, MQThread, App, msgBox, Schedule
-from logic.database import Database
+from logic.database import BrainDatabase
 from logic.login.cls import LoginSystem
 from logic.apps.cls import AppsMenu
 from logic.config.cls import ConfigMenu
@@ -34,7 +33,7 @@ class Gui(QMainWindow):
         # Loads Main GUI
         icon_url = "https://daniel-vergara-m.github.io/images/media/default.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
-        self.database = Database(DB_PATH)
+        self.database = BrainDatabase(DB_PATH)
         self.connection = self.database.connection
         icon, self.__title = None, None
         icon, self.__title = self.database.get_config()
@@ -120,7 +119,7 @@ class Gui(QMainWindow):
     def title(self):
         "Title"
         return self.__title
-    
+
     def __repr__(self):
         return "Gui()"
 

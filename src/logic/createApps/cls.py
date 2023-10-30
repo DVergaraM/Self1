@@ -15,13 +15,12 @@ from logic.apps import cls as apps
 class CreateAppsMenu(SubWindow):
     "Subclass of `SubWindow`"
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.Database, appsMenu: apps.AppsMenu):
+    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
         self.db = db
         self.appsMenu = appsMenu
-        self.connection = self.db.connection
         uic.loadUi(fr"{cwd}logic\createApps\create_apps_menu.ui", self)
         setConfig(self, "Apps Create", self.icon, (760, 680))
         self.actual_name = str(self.db.get_current_apps_name()[0])

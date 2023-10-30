@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QEvent
 
-from logic.database import Database
+from logic.database import BrainDatabase, LoginDatabase
 
 from utils import cwd
 from utils.config import setConfig
@@ -20,11 +20,10 @@ class RegisterSystem(QDialog):
         uic.loadUi(fr"{cwd}logic\register\register_window.ui", self)
         DB_PATH_CONFIG = fr"{cwd}brain_mine.db"
         DB_PATH_LOGIN = fr"{cwd}login.db"
-        self.db = Database(DB_PATH_CONFIG)
-        self.db_login = Database(DB_PATH_LOGIN)
-        icon, _ = self.db.get_config()
+        db = BrainDatabase(DB_PATH_CONFIG)
+        self.db_login = LoginDatabase(DB_PATH_LOGIN)
+        icon, _ = db.get_config()
         self.icon = QIcon(icon)
-        self.connection = self.db.connection
         setConfig(self, "Register", self.icon, (650, 400))
         textChangedConnect(self, {
             self.validate: [

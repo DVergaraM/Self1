@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QEvent
 
-from logic.database import Database
+from logic.database import BrainDatabase, LoginDatabase
 from logic.register import cls as reg
 from utils import cwd
 from utils.config import setConfig
@@ -20,12 +20,10 @@ class LoginSystem(QDialog):
         uic.loadUi(fr'{cwd}logic\login\login_window.ui', self)
         self.DB_PATH_CONFIG = fr"{cwd}brain_mine.db"
         self.DB_PATH_LOGIN = fr"{cwd}login.db"
-        self.db_config = Database(self.DB_PATH_CONFIG)
-        self.db_login = Database(self.DB_PATH_LOGIN)
-        icon, _ = self.db_config.get_config()
+        db_config = BrainDatabase(self.DB_PATH_CONFIG)
+        self.db_login = LoginDatabase(self.DB_PATH_LOGIN)
+        icon, _ = db_config.get_config()
         self.icon = QIcon(icon)
-        self.connection_config = self.db_config.connection
-        self.connection_login = self.db_login.connection
         updateWindow(self)
         setConfig(self, "Login", self.icon, (760, 680))  # )(1240, 780))
         textChangedConnect(self, {

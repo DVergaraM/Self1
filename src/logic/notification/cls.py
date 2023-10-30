@@ -16,13 +16,12 @@ from logic.apps import cls as apps
 class NotificationMenu(SubWindow):
     "Subclass of `SubWindow`"
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.Database, notifier: MQThread,
+    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, notifier: MQThread,
                  startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
         self.db = db
-        self.connection = self.db.connection
         self.notifier = notifier
         self.startT = startT
         self.stopT = stopT
