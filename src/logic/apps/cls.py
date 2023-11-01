@@ -21,7 +21,7 @@ class AppsMenu(SubWindow):
         icon (QIcon): The icon to be displayed in the GUI.
         mp (Any): A reference to the parent object.
         db (database.BrainDatabase): The database where the items are stored.
-        othread (QProcess): The thread where the programs will run from the database.
+        o_thread (QProcess): The thread where the programs will run from the database.
         connection: The connection to the database.
         actual (str): The current path selected in the database.
 

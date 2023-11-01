@@ -1,13 +1,22 @@
 import os
+
 from typing import Any
+
 from PyQt5.QtGui import QIcon, QImageReader
+
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
+
 from PyQt5 import uic
 
+
 from utils import cwd, SubWindow
+
 from utils.config import setConfig, setMultipleConfig
+
 from utils.setters import setText, textChangedConnect, connect, enableButton
+
 from utils.others import updateWindow, getText, remove
+
 
 from logic import database
 
@@ -66,8 +75,8 @@ class ConfigMenu(SubWindow):
         formats = []
         for sF in supportedFormats:
             formats.append(f"*.{sF.data().decode()}")
-        formated = " ".join(formats)
-        text_filter = f"Images ({formated})"
+        formatted = " ".join(formats)
+        text_filter = f"Images ({formatted})"
         self.image_path, _ = QFileDialog.getOpenFileName(
             self, "Open an image", realpath, text_filter)
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and self.image_path != "":
