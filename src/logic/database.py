@@ -1,3 +1,5 @@
+from typing import Callable, Any
+from sqlite3 import connect, Connection, DatabaseError
 "Database module from Logic Module"
 import os
 from typing import Any, Callable
@@ -10,6 +12,20 @@ except ImportError as exc:
 
 from utils import otuple_str, cwddb, elementType, cwd
 from utils import others
+
+
+def create_brain_tables(conn):
+    """
+    Creates the necessary tables for the SBrain application in the given database connection.
+
+    Args:
+        conn (sqlite3.Connection): The connection to the SQLite database.
+
+    Returns:
+        sqlite3.Connection: The same connection object passed as an argument.
+    """
+    cur = conn.cursor()
+    # rest of the function code
 
 
 def create_brain_tables(conn):
@@ -43,10 +59,19 @@ def create_brain_tables(conn):
             WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
     cur.close()
     del cur
-    return None
+    return conn
 
 
 def create_login_tables(conn):
+    """
+    Creates the necessary tables for the login system in the specified database connection.
+
+    Args:
+        conn: A SQLite database connection object.
+
+    Returns:
+        The same database connection object passed as an argument.
+    """
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS Activities")
     cur.execute("DROP TABLE IF EXISTS Icons")
@@ -62,11 +87,39 @@ def create_login_tables(conn):
     conn.commit()
     cur.close()
     del cur
-    return None
+    return conn
 
 
 class ParentDatabase:
+    """
+    A class representing a parent database.
+
+    Attributes:
+    -----------
+    DB_PATH : str
+        The path to the database file.
+    connection : Connection
+        The connection to the database.
+
+    Methods:
+    --------
+    __init__(self, path_to_db: str, type: str)
+        Initializes the ParentDatabase object.
+    _create_connection(self, func: Callable[[], Any] = None)
+        Creates a connection to the database.
+    """
+
     def __init__(self, path_to_db: str, type: str):
+        """
+        Initializes the ParentDatabase object.
+
+        Parameters:
+        -----------
+        path_to_db : str
+            The path to the database file.
+        type : str
+            The type of database (either "brain" or "login").
+        """
         self.name = self.__class__.__name__.lower()
         if os.path.exists(path_to_db) and type == "brain":
             self.DB_PATH = path_to_db
@@ -74,23 +127,75 @@ class ParentDatabase:
             self.DB_PATH = path_to_db
         else:
             self.DB_PATH = fr"{cwd}\brain_mine.db"
+        self._connection = self._create_connection()
 
-        self.connection = self._create_connection()
+    @property
+    def connection(self) -> Connection:
+        """
+        Returns the connection to the database.
+
+        Returns:
+        --------
+        Connection
+            The connection to the database.
+        """
+        return self._connection
 
     def _create_connection(self, func: Callable[[], Any] = None):
+        """
+        Creates a connection to the database.
+
+        Parameters:
+        -----------
+        func : Callable[[], Any], optional
+            A function to be applied to the connection, by default None.
+
+        Returns:
+        --------
+        Any
+            The result of applying the function to the connection, if provided.
+        """
         try:
             conn = connect(self.DB_PATH)
-            if func is not None:
-                func(conn)
-            return conn
+            return func(conn) if func else conn
         except DatabaseError as excp:
             raise DatabaseError(excp) from excp
 
 
 class BrainDatabase(ParentDatabase):
+    """
+    A class representing a database for storing information about applications.
+
+    Attributes:
+    - path_to_db (str): The path to the database file.
+    - _connection: The connection object to the database.
+    - app_path_actual (int): The index of the current application directory.
+    - create_apps_menu_actual (int): The index of the current application in the create apps menu.
+    - apps_paths (list): A list of all application directories.
+    - apps_names (list): A list of all application names.
+    - apps_ids (list): A list of all application IDs.
+
+    Methods:
+    - __init__(self, path_to_db: str): Initializes the BrainDatabase object.
+    - fetch_all_apps_paths(self): Returns a list of all application directories.
+    - fetch_all_apps_names(self): Returns a list of all application names.
+    - fetch_all_apps_ids(self): Returns a list of all application IDs.
+    - get_current_apps_path_apps(self): Returns the current application directory.
+    - right_path(self): Moves right in the application directory list.
+    - left_path(self): Moves left in the application directory list.
+    - get_current_apps_name(self): Returns the current application name.
+    - get_current_apps_id(self): Returns the current application ID.
+    - get_current_apps_path(self): Returns the current application directory.
+    - right_create_apps_menu(self): Moves right in the application list.
+    - left_create_apps_menu(self): Moves left in the application list.
+    - create_log_apps(self, log: otuple_str, element: elementType): Creates an application log.
+    - delete_log_apps(self, log: tuple[str, str], element: elementType): Deletes an application log.
+    - update_log_apps(self, path: str, name: str, element: elementType): Updates an application log.
+    """
+
     def __init__(self, path_to_db: str):
         super().__init__(path_to_db, "brain")
-        self.connection = self._create_connection(create_brain_tables)
+        self._connection = self._create_connection(create_brain_tables)
         self.app_path_actual = 0
         self.create_apps_menu_actual = 0
         self.apps_paths = self.fetch_all_apps_paths()
@@ -304,9 +409,27 @@ class BrainDatabase(ParentDatabase):
 
 
 class LoginDatabase(ParentDatabase):
+    """
+    A class used to represent a Login Database.
+
+    Attributes
+    ----------
+    path_to_db : str
+        The path to the database file.
+
+    Methods
+    -------
+    fetch_all_logins(username: str, password: str)
+        Get all logins and checks if an username and password exists in Database.
+    add_user_logins(username: str, password: str)
+        Adds a Login to Database according to some QLineEdit values in SHA256.
+    update_user_password_logins(element: elementType, username: str, password: str, new_password: str)
+        Updates the user's password in database.
+    """
+
     def __init__(self, path_to_db: str):
         super().__init__(path_to_db, "login")
-        self.connection = self._create_connection(create_login_tables)
+        self._connection = self._create_connection(create_login_tables)
 
     def fetch_all_logins(self, username: str, password: str):
         "Get all logins and checks if an username and password exists in Database"

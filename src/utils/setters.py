@@ -4,7 +4,16 @@ from utils import elementType, attribute, method
 
 def setText(element: elementType,
             objs: dict[attribute, int | str] | tuple[attribute, int | str]) -> None:
-    "Sets the text of a QLineEdit with some value"
+    """
+    Sets the text of a QLineEdit with some value.
+
+    Args:
+        element (elementType): The QLineEdit element to set the text on.
+        objs (dict[attribute, int | str] | tuple[attribute, int | str]): A dictionary or tuple containing the attribute and value to set.
+
+    Raises:
+        TypeError: If 'objs' and/or 'data' params have the incorrect type.
+    """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, data = objs
         if (isinstance(attr, str) and isinstance(data, (int, str)))\
@@ -27,7 +36,16 @@ def setText(element: elementType,
 
 
 def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None:
-    "Connects a/some button(s) with a/some method(s)"
+    """
+    Connects a button or a group of buttons with a method or a group of methods.
+
+    Args:
+        element (elementType): Element where the attributes are going to be.
+        objs (tuple[attribute, method] | dict[attribute, method]): The button or group of buttons to connect with the method or group of methods to.
+
+    Raises:
+        TypeError: If the 'objs' parameter is not a tuple or a dictionary, or if it is a tuple but does not have exactly two elements, or if it is a dictionary but not all its keys are of type 'attribute' and all its values are of type 'method'.
+    """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
@@ -50,7 +68,16 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
 
 def textChangedConnect(element: elementType,
                        objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
-    "Connects a button with a method depending of a QLineEdit"
+    """
+    Connects a button with a method depending of a QLineEdit.
+
+    Args:
+        element (elementType): The element to connect the method to.
+        objs (tuple[attribute, method] | dict[method, list[attribute]]): A tuple or dictionary containing the attributes and methods to connect.
+
+    Raises:
+        TypeError: If 'objs' and/or 'method' params must have the correct type.
+    """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
@@ -82,6 +109,9 @@ def enableButton(element: elementType,
 
     Raises:
         TypeError: 'data' param must have the correct type.
+
+    Returns:
+        None
     '''
     if isinstance(data, tuple) and len(data) == 2:
         attr, value = data # Unzip the data inside in two variables

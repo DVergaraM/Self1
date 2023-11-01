@@ -15,8 +15,24 @@ from logic.apps import cls as apps
 from logic.schedule.schedule import Schedule as LogicSchedule
 
 class ScheduleMenu(SubWindow):
-    "Subclass of `SubWindow`"
-    
+    """
+    Subclass of `SubWindow` that represents a window for managing a schedule of tasks.
+
+    Attributes:
+        icon (QIcon): The icon to be displayed in the window title bar.
+        mp (elementType): The parent element of the window.
+        db (database.BrainDatabase): The database used to store the schedule data.
+        schedule (LogicSchedule): The logic component responsible for managing the schedule.
+
+    Methods:
+        __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
+            Initializes a new instance of the `ScheduleMenu` class.
+        loadShow(self):
+            Loads, connects and shows the buttons with methods.
+        _add_task(self):
+            Adds a task to the schedule.
+    """
+   
     def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
         super().__init__(size=(760, 680))
         self.icon = icon

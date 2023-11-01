@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from typing import Callable, Any, Iterator, Union, Tuple
 import os
 from datetime import datetime
 from itertools import count
@@ -9,20 +9,43 @@ from PyQt5.QtGui import QIcon, QPixmap
 from pystray import (Menu, MenuItem as Item, Icon)
 import pytz
 from winotify import Notification as _Notifier
-from winotify import audio as sounds
+from winotify import audio
 import schedule as _schedule
 import PIL.Image as Img
+from threading import Thread
 
 from logic.login import cls as login
 from utils.others import get_time
 
 
 class Notification(_Notifier):
-    "Subclass of `winotify.Notification`"
+    """
+    Subclass of `winotify.Notification`.
 
+    Args:
+        app_id (str): The ID of the application sending the notification.
+        title (str): The title of the notification.
+        msg (str): The message to display in the notification.
+        icon (str): The path to the icon to display in the notification.
+        launch (str | Callable | None): The action to take when the notification is clicked.
+        duration (str): The duration for which to display the notification.
+        sound (audio.Sound): The sound to play when the notification is displayed.
+
+    Attributes:
+        app_id (str): The ID of the application sending the notification.
+        title (str): The title of the notification.
+        msg (str): The message to display in the notification.
+        icon (str): The path to the icon to display in the notification.
+        launch (str | Callable | None): The action to take when the notification is clicked.
+        duration (str): The duration for which to display the notification.
+        sound (audio.Sound): The sound to play when the notification is displayed.
+
+    Methods:
+        run(): Shows Notification with log.
+    """
     def __init__(self, app_id: str = "Second Brain", title: str = "Notifier",
-                 msg: str = "", icon: str = "", launch: str | Callable | None = "",
-                 duration='long', sound=sounds.Reminder) -> None:
+                 msg: str = "", icon: str = "", launch: str | Callable | None = None,
+                 duration='long', sound: audio.Sound = audio.Reminder) -> None:
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
         if launch is not None:
@@ -33,54 +56,18 @@ class Notification(_Notifier):
         self.show()
         format_date_all = get_time()
         print(f"{format_date_all} - Task: '{self.msg}'")
-
-
-class Schedule:
-    """
-    Class that allows the user to schedule tasks according to a time and timezone
-    """
-
-    def __init__(self, timezone: str | pytz.BaseTzInfo = "America/Bogota") -> None:
-        '''
-
-        Args:
-            timezone (str, pytz.BaseTzInfo, opt): Current timezone. Defaults to`America/Bogota`.
-        '''
-        if isinstance(timezone, str):
-            self.timezone = pytz.timezone(timezone)  # type: ignore
-        elif isinstance(timezone, pytz.BaseTzInfo):
-            self.timezone = timezone
-        else:
-            raise ValueError(
-                "'timezone' is not an instance of str or pytz.BaseTzInfo")
-
-    def add_task(self, time: str, method: Callable, args: tuple[Any] = (...)):
-        '''Adds a task to the schedule
-
-        Args:
-            time (str): Time where the method will be executed
-            method (Callable): Instance of the method
-            args (tuple[Any], optional): Arguments to be used in the method.
-        '''
-        _schedule.every().day.at(time, self.timezone).do(method, args)
-        return None
-
-    @staticmethod
-    def start():
-        "Runs the tasks that are pending."
-        _schedule.run_pending()
-        return None
-
-    @staticmethod
-    def stop():
-        "Clears the tasks in Queue"
-        _schedule.clear()
         return None
 
 
 class MQThread(QThread):
     """
     Subclass of `PyQt5.QtCore.QThread`
+    A subclass of `PyQt5.QtCore.QThread` that allows for running one or more target methods in a loop or once.
+
+    :param targets: A callable or a tuple of callables to be run.
+    :type targets: Callable[[], Any] | tuple[Callable[[], Any]]
+    :param bucles: A boolean or a tuple of booleans indicating whether each target should be run in a loop or once.
+    :type bucles: bool | tuple[bool]
     """
 
     def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
@@ -102,19 +89,22 @@ class MQThread(QThread):
         self.counter = count()
 
     def run(self):
-        """
-        Runs the target(s) method(s) according to some variables initialized in __init__
-        """
-        for bucle, target, name in zip(self.bucles, self.targets, self.names):
-            if bucle:
-                format_date_all = get_time()
-                print(f"{format_date_all} - {name} (run)")
-                while not self.isFinished():
+            """
+            Runs the target(s) method(s) according to some variables initialized in __init__
+
+            Loops through the targets and names, and if the corresponding bucle is True, runs the target method in a loop
+            until the isFinished method returns True. Otherwise, runs the target method once.
+            """
+            for bucle, target, name in zip(self.bucles, self.targets, self.names):
+                if bucle:
+                    format_date_all = get_time()
+                    print(f"{format_date_all} - {name} (run)")
+                    while not self.isFinished():
+                        target()
+                else:
+                    format_date_all = get_time()
+                    print(f"{format_date_all} - {name} (run)")
                     target()
-            else:
-                format_date_all = get_time()
-                print(f"{format_date_all} - {name} (run)")
-                target()
 
 
 class Stray:
@@ -169,7 +159,7 @@ class Stray:
         self.icon.run()
 
     def __helper__(self, icon, item):
-        notifier_start, notifier_stop, open_config, show_ui, close_ui, icon_exit = self.methods
+        notifier_start, notifier_stop, open_config, show_ui, close_ui, *_ = self.methods
         item = str(item)
         match item:
             case "Start System":

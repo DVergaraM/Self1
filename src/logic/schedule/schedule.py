@@ -11,15 +11,36 @@ import schedule as _schedule
 class Schedule:
     """
     Class that allows the user to schedule tasks according to a time and timezone
+
+    Attributes:
+    - timezone (str | pytz.BaseTzInfo): Current timezone. Defaults to `America/Bogota`.
+    - tasks (list[tuple]): List of scheduled tasks. Each task is represented as a tuple with the following structure:
+        - (time, method name | url, Job Object)
+        - Example: ("12:00", "say_hello", Job Object)
+
+    Methods:
+    - __init__(timezone: str | pytz.BaseTzInfo = "America/Bogota") -> None: Initializes a new Schedule object with the given timezone.
+    - add_task(time: str, method: Union[Callable, str], args: Tuple[Any] = None) -> bool: Adds a task to the list and runs it at the time setted.
+    - remove_task(method_name: str) -> bool: Removes a task from the list according to the url or name.
+    - total_tasks() -> int: Gives the amount of items in the list.
+    - has_tasks() -> bool: Checks if the list has items or not.
+    - start() -> None: Runs the tasks that are pending.
+    - run_task(method: Callable, args: list | tuple, callback: Callable): Runs a task with its arguments and run a callback.
+    - stop() -> None: Clears the tasks in Queue.
+    - open_web(url: str) -> bool: Opens a web page with the given URL.
+
+    Example:
+    ```python
+    def say_hello():
+        print("Hello World!")
+    schedule = Schedule()
+    schedule.add_task("12:00", say_hello)
+    print(schedule.tasks) # [("12:00", "say_hello", Job Object)]
+    ```
     """
     _running = False
 
     def __init__(self, timezone: str | pytz.BaseTzInfo = "America/Bogota") -> None:
-        '''
-
-        Args:
-            timezone (str, pytz.BaseTzInfo, opt): Current timezone. Defaults to`America/Bogota`.
-        '''
         self._tasks: list[tuple] = []
         self._amount_tasks = 0
         if isinstance(timezone, str):
@@ -33,17 +54,6 @@ class Schedule:
 
     @property
     def tasks(self):
-        """
-        Structure: (time, method name | url, Job Object)
-        Example: 
-        ```python
-            def say_hello():
-                print("Hello World!")
-            schedule = Schedule()
-            schedule.add_task("12:00", say_hello)
-            print(schedule.tasks) # ("12:00", "say_hello", Job Object)
-        ```
-        """
         return self._tasks
 
     def add_task(self, time: str, method: Union[Callable, str], args: Tuple[Any] = None) -> bool:

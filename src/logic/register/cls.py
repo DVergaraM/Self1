@@ -13,7 +13,10 @@ from utils.others import updateWindow, getText, sha, compare
 
 
 class RegisterSystem(QDialog):
-    "Subclass of `PyQt5.QtWidgets.QDialog`"
+    """
+    Subclass of `PyQt5.QtWidgets.QDialog` that provides a user interface for
+    registering a new user in the system.
+    """
 
     def __init__(self) -> None:
         super(RegisterSystem, self).__init__()
@@ -48,15 +51,15 @@ class RegisterSystem(QDialog):
 
     def _add_to_db(self):
         "Adds the QLineEdit values to database if not exists"
-        iusername, ipassword = sha(self, ("username_input", "password_input"))
-        login = self.db_login.fetch_all_logins(iusername, ipassword)
+        i_username, i_password = sha(self, ("username_input", "password_input"))
+        login = self.db_login.fetch_all_logins(i_username, i_password)
 
         if len(login) >= 1:
             updateWindow(self)
             QMessageBox.warning(
                 self, "Error", "Username already exists\nTry a new one")
         else:
-            self.db_login.add_user_logins(iusername, ipassword)
+            self.db_login.add_user_logins(i_username, i_password)
             QMessageBox.information(
                 self, "Success", "Username and password created.")
             updateWindow(self)

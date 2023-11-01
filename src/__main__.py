@@ -8,7 +8,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 import PIL.Image as Img
 import requests
 
-from logic import Notification, Stray, MQThread, App, msgBox, Schedule
+from logic import Notification, Stray, MQThread, App, msgBox, Thread
 from logic.database import BrainDatabase
 from logic.login.cls import LoginSystem
 from logic.apps.cls import AppsMenu
@@ -16,6 +16,7 @@ from logic.config.cls import ConfigMenu
 from logic.create.cls import CreateMenu
 from logic.createApps.cls import CreateAppsMenu
 from logic.notification.cls import NotificationMenu
+from logic.schedule.cls import ScheduleMenu
 
 from utils.config import setConfig
 from utils.others import get_time
@@ -26,8 +27,12 @@ DB_PATH = fr"{cwd}brain_mine.db"
 
 
 class Gui(QMainWindow):
-    "Subclass of `PyQt5.QtWidgets.QMainWindow`"
-
+    """
+    Subclass of `PyQt5.QtWidgets.QMainWindow`.
+    This class represents the main graphical user interface of the Second Brain application.
+    It loads the main GUI, sets the title, icon and fixed size for GUI, creates threads for running executables,
+    creates menus, and makes the connections between buttons and methods.
+    """
     def __init__(self) -> None:
         super(Gui, self).__init__()
         # Loads Main GUI
@@ -63,9 +68,12 @@ class Gui(QMainWindow):
         # # # # # # # #
         #   Threads   #
         # # # # # # # #
+        
+        # Loads Schedule Menu GUI
+        self.schedule_menu = ScheduleMenu(self, self.icon, self.database)
 
         # Creates a Thread for 'run_pending' method with a while loop
-        self.notifier = MQThread(Schedule.start, True)
+        self.notifier = MQThread(self.schedule_menu.schedule.start, False)
         # Creates a Windows Pop-Up that displays that the system is on
         start_notifications = Notification(
             self.title, "Pop-Ups", "Notification System ON", icon, duration="short")
@@ -77,7 +85,7 @@ class Gui(QMainWindow):
         # Thread for running the "Stop Notifications" Pop-Up
         self.stop_thread = MQThread(stop_notifications.run, False)
         # Creates a Thread for running executables that are in Database
-        self.othread = QProcess()
+        self.o_thread = QProcess()
 
         # # # # # # # #
         #    Menus    #
@@ -86,25 +94,26 @@ class Gui(QMainWindow):
         # Loads Config Menu GUI
         self.config_menu = ConfigMenu(self, self.icon, self.database)
         # Loads Apps Menu GUI
-        self.apps_menu = AppsMenu(self, self.icon, self.database, self.othread)
+        self.apps_menu = AppsMenu(self, self.icon, self.database, self.o_thread)
         # Loads Create Apps Menu GUI
         self.create_apps_menu = CreateAppsMenu(
             self, self.icon, self.database, self.apps_menu)
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
-            self, self.icon, self.database, self.notifier,
-            self.start_thread, self.stop_thread, self.apps_menu)
+            self, self.icon, self.database, start_notifications.run,
+            self.notifier, self.stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
             self, self.icon, self.database, self.create_apps_menu)
-
+        
         # Makes the connections between buttons and methods
         connect(self, {
             "notification_menu_button": self.notification_menu.loadShow,
             "apps_menu_button": self.apps_menu.loadShow,
             "exit_button": self.close,
             "create_menu_button": self.create_menu.loadShow,
-            "config_button": self.config_menu.loadShow
+            "config_button": self.config_menu.loadShow,
+            "schedule_menu_button": self.schedule_menu.loadShow
         })
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
@@ -142,3 +151,5 @@ def main(argv: list[str]):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
+# TODO: Create a GUI for scheduling activities with certain hours

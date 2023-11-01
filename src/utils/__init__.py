@@ -5,7 +5,10 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel
 
 
 class SubWindow(QWidget):
-    "Subclass of `PyQt5.QtWidgets.QWidget`"
+    """
+    Subclass of `PyQt5.QtWidgets.QWidget`.
+    A custom widget for creating sub-windows with a fixed size and a label.
+    """
 
     def __init__(self, parent: Any = None, size: tuple[int, int] = None):
         super(SubWindow, self).__init__(parent)

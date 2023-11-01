@@ -1,5 +1,6 @@
 "Notification Module"
 from typing import Any
+from itertools import count
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
@@ -9,15 +10,26 @@ from utils.others import get_time
 from utils.setters import connect
 
 from logic import database
-from logic import MQThread
+from logic import MQThread, Thread
 from logic.apps import cls as apps
 
 
 class NotificationMenu(SubWindow):
-    "Subclass of `SubWindow`"
+    """
+    Subclass of `SubWindow` that represents the notification menu.
+
+    Args:
+        parent (elementType): The parent element of the notification menu.
+        icon (QIcon): The icon to be displayed on the notification menu.
+        db (database.BrainDatabase): The database object used by the notification menu.
+        notifier (MQThread): The message queue thread used by the notification menu.
+        startT (Thread): The thread used to start the notification system.
+        stopT (MQThread): The message queue thread used to stop the notification system.
+        appsMenu (apps.AppsMenu): The apps menu object used by the notification menu.
+    """
 
     def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, notifier: MQThread,
-                 startT: MQThread, stopT: MQThread, appsMenu: apps.AppsMenu):
+                 startT: Thread, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -43,15 +55,13 @@ class NotificationMenu(SubWindow):
     def _stop_popups(self):
         "Stops Notification System"
         self.stopT.start()
-        self.notifier.finished = True
         format_date_all = get_time()
-        condition = (self.notifier.name if self.notifier.name != '' else
-                     f'Thread {next(self.notifier.counter)}')
+        counter = count()
         print(
-            f"{format_date_all} - {condition} (stop)")
+            f"{format_date_all} - Thread-{next(counter)} (stop)")
         self.notifier.exit()
 
     def _start_thread(self):
         "Starts Notification System"
-        self.notifier.start()
+        self.notifier()
         self.startT.start()

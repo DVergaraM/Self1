@@ -11,17 +11,27 @@ from logic.createApps import cls as createApps
 
 
 class CreateMenu(SubWindow):
-    "Subclass of `SubWindow`"
-    def __init__(self, parent: Any , icon: QIcon, db: database.BrainDatabase,
+    """
+    A subclass of `SubWindow` that represents a GUI window for creating new items.
+
+    Attributes:
+        icon (QIcon): The icon to be displayed in the GUI.
+        mp (Any): A reference to the parent object.
+        db (database.BrainDatabase): The database where items will be stored.
+        createApps (createApps.CreateAppsMenu): A menu for saving apps to the database.
+    """
+
+    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase,
                  createApp: createApps.CreateAppsMenu):
-        '''
+        """
+        Initializes a new instance of the `CreateMenu` class.
 
         Args:
-            parent (Self): Different of of `self` but to implement inside other class with `self`
-            icon (QIcon): Icon to be setted up in the GUI
-            db (database.Database): Db where is going to look for items
-            createApp (createApps.CreateAppsMenu): Menu for saving apps to database
-        '''
+            parent (Any): A reference to the parent object.
+            icon (QIcon): The icon to be displayed in the GUI.
+            db (database.BrainDatabase): The database where items will be stored.
+            createApp (createApps.CreateAppsMenu): A menu for saving apps to the database.
+        """
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -31,9 +41,10 @@ class CreateMenu(SubWindow):
         setConfig(self,
                   "Notification Menu", self.icon, (760, 680))
 
-
     def loadShow(self):
-        "Loads, connects buttons with methods and shows GUI"
+        """
+        Loads the GUI, connects buttons with methods, and shows the window.
+        """
         connect(self, {
             "exit_button": self.close,
             "create_apps_menu": self.createApps.loadShow

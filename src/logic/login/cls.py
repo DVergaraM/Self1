@@ -13,7 +13,9 @@ from utils.setters import textChangedConnect, connect, enableButton
 
 
 class LoginSystem(QDialog):
-    "Subclass of `PyQt5.QtWidgets.QDialog`"
+    """
+    Subclass of `PyQt5.QtWidgets.QDialog` that provides a login window for the application.
+    """
 
     def __init__(self) -> None:
         super(LoginSystem, self).__init__()
@@ -46,12 +48,12 @@ class LoginSystem(QDialog):
         updateWindow(self)
 
     def _handle_login(self):
-        """Fetchs database to look for the username and password and if they are there, 
+        """Fetches database to look for the username and password and if they are there, 
         closes window and continues with the App"""
         attrs = ("username_input", "password_input")
-        iusername, ipassword = sha(self, attrs)
+        i_username, i_password = sha(self, attrs)
 
-        login = self.db_login.fetch_all_logins(iusername, ipassword)
+        login = self.db_login.fetch_all_logins(i_username, i_password)
 
         if 0 < len(login) < 3:
             self.accept()

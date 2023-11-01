@@ -13,8 +13,17 @@ from logic.apps import cls as apps
 
 
 class CreateAppsMenu(SubWindow):
-    "Subclass of `SubWindow`"
+    """
+    Subclass of `SubWindow` that represents a window for creating and managing applications.
 
+    Attributes:
+    - icon (QIcon): The icon for the window.
+    - mp (Any): The parent object of the window.
+    - db (database.BrainDatabase): The database object used for storing application information.
+    - appsMenu (apps.AppsMenu): The `AppsMenu` object that this window is associated with.
+    - actual_name (str): The current name of the application being displayed.
+    - actual_path (str): The current path of the application being displayed.
+    """
     def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon

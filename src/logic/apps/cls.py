@@ -14,8 +14,29 @@ from logic import database
 
 
 class AppsMenu(SubWindow):
-    "Subclass of `SubWindow`"
+    """
+    Subclass of `SubWindow` that represents the applications menu window.
 
+    Attributes:
+        icon (QIcon): The icon to be displayed in the GUI.
+        mp (Any): A reference to the parent object.
+        db (database.BrainDatabase): The database where the items are stored.
+        othread (QProcess): The thread where the programs will run from the database.
+        connection: The connection to the database.
+        actual (str): The current path selected in the database.
+
+    Methods:
+        __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
+            Initializes the `AppsMenu` object.
+        loadShow(self):
+            Loads, connects, sets and shows the GUI.
+        avanzar(self):
+            Loops front through the paths in the database and sets it up in QLineEdit.
+        retroceder(self):
+            Loops back through the paths in the database and sets it up in QLineEdit.
+        run(self):
+            Runs the program displayed in QLineEdit.
+    """
     def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
         '''
 
@@ -29,7 +50,7 @@ class AppsMenu(SubWindow):
         self.icon = icon
         self.mp = parent
         self.db = db
-        self.othread = thread
+        self.o_thread = thread
         self.connection = self.db.connection
         uic.loadUi(fr"{cwd}logic\apps\apps_menu.ui", self)
         setConfig(self, "Apps Menu", self.icon, (760, 680))
@@ -73,11 +94,11 @@ class AppsMenu(SubWindow):
         name_with_exe = path_split[-1]
         name_without_exe = name_with_exe.removesuffix('.exe"')
         name = name_without_exe.title().lstrip().rstrip().strip()
-        self.othread.setProgram(path)
+        self.o_thread.setProgram(path)
         if name == "Code":
-            self.othread.start(self.othread.program())
+            self.o_thread.start(self.o_thread.program())
         else:
-            self.othread.start(self.othread.program(), [
+            self.o_thread.start(self.o_thread.program(), [
                                fr"> {cwd_log}\logs\log-{format_date_all}.log"])
         format_date_all = format_date_all.replace("_", " ")
         print(

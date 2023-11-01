@@ -1,13 +1,16 @@
 "Others module from Utils module"
+
 from hashlib import sha256
 from typing import Any
 from datetime import datetime
+from hashlib import sha256
 
 from utils import elementType, attribute, config
 from logic import database
 
 
 def getText(element: elementType,
+
             attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
@@ -27,14 +30,23 @@ def getText(element: elementType,
 
 
 def updateWindow(element: elementType) -> None:
-    "Updates a window and reloads variables"
+    """
+    Updates a window and reloads variables.
+
+    Args:
+        element (elementType): The window element to be updated.
+
+    Raises:
+        AttributeError: If an attribute error occurs during the update process.
+    """
     try:
-        if hasattr(element, "db") and hasattr(element, "DB_PATH"):
-            db: database.Database = getattr(element, "db")
+        if (hasattr(element, "db") or hasattr(element, "database")):
+            db: database.BrainDatabase = getattr(element, "db")
             DB_PATH: str = getattr(element, "DB_PATH")
             if hasattr(db, "connection"):
                 connection: Any = getattr(db, "connection")
-                element.db = database.Database(DB_PATH)
+                element.db = database.BrainDatabase(DB_PATH)
+                element.database = database.BrainDatabase(DB_PATH)
                 element.connection = connection
                 config.setConfig(element, element.windowTitle(),
                                  element.windowIcon(), element.size())
@@ -43,9 +55,11 @@ def updateWindow(element: elementType) -> None:
                 config.setConfig(element, element.windowTitle(),
                                  element.windowIcon(), element.size())
                 element.update()
-        elif hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG") and\
-                hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
-            db: database.Database = getattr(element, "db")
+        elif (hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG")) or\
+                (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")) or (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")):
+            db: database.BrainDatabase = getattr(
+                element, "db") if hasattr(element, "db") else None
+            db_login: database.LoginDatabase = getattr(element, "db_login")
             DB_PATH_CONFIG: str = getattr(element, "DB_PATH_CONFIG")
             DB_PATH_LOGIN: str = getattr(element, "DB_PATH_LOGIN")
             if hasattr(db, "connection"):
@@ -64,12 +78,24 @@ def updateWindow(element: elementType) -> None:
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-    except AttributeError as excep:
-        raise AttributeError(excep) from excep
+    except AttributeError as excp:
+        raise AttributeError(excp) from excp
 
 
-def sha(element: elementType, objs: tuple[attribute, attribute]) -> tuple[str, str]:
-    "Converts QLineEdit values to SHA256 and return it as a tuple"
+def sha(element: Any, objs: Tuple[str, str]) -> Tuple[str, str]:
+    """
+    Converts QLineEdit values to SHA256 and returns it as a tuple.
+
+    Args:
+        element (Any): The element containing the attributes to be hashed.
+        objs (Tuple[str, str]): A tuple containing the names of the attributes to be hashed.
+
+    Returns:
+        Tuple[str, str]: A tuple containing the hashed values of the attributes.
+    Raises:
+        IndexError: If the tuple contains more than 2 items.
+        TypeError: If the objs parameter is not a tuple of strings.
+    """
     if isinstance(objs, tuple):
         if len(objs) == 2:
             objs_in_sha = ()
