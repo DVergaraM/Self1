@@ -37,6 +37,7 @@ class AppsMenu(SubWindow):
         run(self):
             Runs the program displayed in QLineEdit.
     """
+
     def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
         '''
 
@@ -99,7 +100,7 @@ class AppsMenu(SubWindow):
             self.o_thread.start(self.o_thread.program())
         else:
             self.o_thread.start(self.o_thread.program(), [
-                               fr"> {cwd_log}\logs\log-{format_date_all}.log"])
+                fr"> {cwd_log}\logs\log-{format_date_all}.log"])
         format_date_all = format_date_all.replace("_", " ")
         print(
             f"[{format_date_all}] - {name} (run)")

@@ -14,6 +14,7 @@ from logic import MQThread
 from logic.apps import cls as apps
 from logic.schedule.schedule import Schedule as LogicSchedule
 
+
 class ScheduleMenu(SubWindow):
     """
     Subclass of `SubWindow` that represents a window for managing a schedule of tasks.
@@ -32,7 +33,7 @@ class ScheduleMenu(SubWindow):
         _add_task(self):
             Adds a task to the schedule.
     """
-   
+
     def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
         super().__init__(size=(760, 680))
         self.icon = icon
@@ -49,7 +50,7 @@ class ScheduleMenu(SubWindow):
             "exit_button": self.close,
         })
         self.show()
-        
+
     def _add_task(self):
         "Adds a task to the schedule"
         time = str(getText(self, "time_input"))

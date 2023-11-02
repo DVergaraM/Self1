@@ -17,12 +17,12 @@ def setText(element: elementType,
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, data = objs
         if (isinstance(attr, str) and isinstance(data, (int, str)))\
-            and hasattr(element, attr):
+                and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.setText(f"{data}")
             return None
-    elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
-        isinstance(value, (int, str))for key, value in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and
+                                        isinstance(value, (int, str))for key, value in objs.items()):
         for key, value in objs.items():
             if hasattr(element, key):
                 obj = getattr(element, key)
@@ -52,8 +52,8 @@ def connect(element: elementType, objs: tuple[attribute, method] | dict[attribut
             obj = getattr(element, attr)
             obj.clicked.connect(meth)
             return None
-    elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
-        isinstance(value, method) for key, value in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and
+                                        isinstance(value, method) for key, value in objs.items()):
         for attr, meth in objs.items():
             if hasattr(element, attr):
                 obj = getattr(element, attr)
@@ -84,8 +84,8 @@ def textChangedConnect(element: elementType,
             obj = getattr(element, attr)
             obj.textChanged.connect(meth)
             return None
-    elif isinstance(objs, dict) and all(isinstance(meth, method) and\
-        isinstance(lst, list) for meth, lst in objs.items()):
+    elif isinstance(objs, dict) and all(isinstance(meth, method) and
+                                        isinstance(lst, list) for meth, lst in objs.items()):
         for meth, lst in objs.items():
             for attr in lst:
                 if hasattr(element, attr):
@@ -97,6 +97,7 @@ def textChangedConnect(element: elementType,
     else:
         raise TypeError(
             "'obj' and/or 'method' params must have the correct type")
+
 
 def enableButton(element: elementType,
                  data: dict[attribute, bool] | tuple[attribute, bool]) -> None:
@@ -114,14 +115,14 @@ def enableButton(element: elementType,
         None
     '''
     if isinstance(data, tuple) and len(data) == 2:
-        attr, value = data # Unzip the data inside in two variables
+        attr, value = data  # Unzip the data inside in two variables
         if hasattr(element, attr):
             attr = getattr(element, attr)
             attr.setEnabled(value)
             return None
     elif isinstance(data, dict) and\
-        (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
-        for attr, value in data.items(): # Loops in the items of the dict and assign values.
+            (isinstance(k, str) and isinstance(v, bool) for k, v in data.items()):
+        for attr, value in data.items():  # Loops in the items of the dict and assign values.
             if hasattr(element, attr):
                 attr = getattr(element, attr)
                 attr.setEnabled(value)

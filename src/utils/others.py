@@ -1,88 +1,67 @@
 "Others module from Utils module"
 
 from hashlib import sha256
-from typing import Any
+from typing import Any, Tuple
 from datetime import datetime
-from hashlib import sha256
 
 from utils import elementType, attribute, config
 from logic import database
 
 
 def getText(element: elementType,
-
-            attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None:
+            attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None | str:
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
-        getter = ()
-        for attr in attrs:
-            if isinstance(attr, attribute) and hasattr(element, attr):
-                obj = getattr(element, attr)
-                getter += (obj.text(), )
-            else:
-                continue
-        return getter
-    if isinstance(attrs, attribute):
-        if hasattr(element, attrs):
-            obj = getattr(element, attrs)
-            return obj.text()
-    return None
+        return tuple(getattr(element, attr).text() if isinstance(attr, attribute) and hasattr(element, attr) else "" for attr in attrs)
+    return getattr(element, attrs).text() if isinstance(attr, attribute) and hasattr(element, attrs) else ""
 
 
 def updateWindow(element: elementType) -> None:
     """
     Updates a window and reloads variables.
 
-    Args:
-        element (elementType): The window element to be updated.
+    Args\: ::  
+        - element (elementType): The window element to be updated.
 
     Raises:
         AttributeError: If an attribute error occurs during the update process.
     """
     try:
-        if (hasattr(element, "db") or hasattr(element, "database")):
-            db: database.BrainDatabase = getattr(element, "db")
-            DB_PATH: str = getattr(element, "DB_PATH")
-            if hasattr(db, "connection"):
-                connection: Any = getattr(db, "connection")
-                element.db = database.BrainDatabase(DB_PATH)
-                element.database = database.BrainDatabase(DB_PATH)
-                element.connection = connection
-                config.setConfig(element, element.windowTitle(),
-                                 element.windowIcon(), element.size())
-                element.update()
-            else:
-                config.setConfig(element, element.windowTitle(),
-                                 element.windowIcon(), element.size())
-                element.update()
-        elif (hasattr(element, "db") and hasattr(element, "DB_PATH_CONFIG")) or\
-                (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")) or (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")):
-            db: database.BrainDatabase = getattr(
-                element, "db") if hasattr(element, "db") else None
-            db_login: database.LoginDatabase = getattr(element, "db_login")
-            DB_PATH_CONFIG: str = getattr(element, "DB_PATH_CONFIG")
-            DB_PATH_LOGIN: str = getattr(element, "DB_PATH_LOGIN")
-            if hasattr(db, "connection"):
-                connection: Any = getattr(db, "connection")
-                element.db = database.Database(DB_PATH_CONFIG)
-                element.db_login = database.Database(DB_PATH_LOGIN)
-                element.connection = connection
-                config.setConfig(element, element.windowTitle(),
-                                 element.windowIcon(), element.size())
-                element.update()
-            else:
-                config.setConfig(element, element.windowTitle(),
-                                 element.windowIcon(), element.size())
-                element.update()
+        if hasattr(element, "db") and hasattr(element, "DB_PATH"):
+            element.db = database.BrainDatabase(element.DB_PATH)
+            config.setConfig(element, element.windowTitle(),
+                             element.windowIcon(), element.size())
+            element.update()
+            return None
+        elif hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
+            element.db_login = database.LoginDatabase(element.DB_PATH_LOGIN)
+            config.setConfig(element, element.windowTitle(),
+                             element.windowIcon(), element.size())
+            element.update()
+            return None
+        elif hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG"):
+            element.db_config = database.BrainDatabase(element.DB_PATH_CONFIG)
+            config.setConfig(element, element.windowTitle(),
+                             element.windowIcon(), element.size())
+            element.update()
+            return None
+        elif (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")) and (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")):
+            element.db_config = database.BrainDatabase(element.DB_PATH_CONFIG)
+            element.db_login = database.LoginDatabase(element.DB_PATH_LOGIN)
+            config.setConfig(element, element.windowTitle(),
+                             element.windowIcon(), element.size())
+            element.update()
+            return None
         else:
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
+            return None
     except AttributeError as excp:
         raise AttributeError(excp) from excp
 
 
-def sha(element: Any, objs: Tuple[str, str]) -> Tuple[str, str]:
+def sha(element: elementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | str:
     """
     Converts QLineEdit values to SHA256 and returns it as a tuple.
 
@@ -109,23 +88,46 @@ def sha(element: Any, objs: Tuple[str, str]) -> Tuple[str, str]:
                     continue
             return objs_in_sha
         raise IndexError("Only 2 items are allowed in the tuple")
-    raise TypeError("'objs' param must be str or tuple of str")
+    return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest() if hasattr(element, objs) else ""
 
 
-def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
-    "Compares the items inside 2 tuples and checks if they are the same"
+def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tuple[bool]:
+    """
+    Compares the items inside 2 tuples and checks if they are the same.
+
+    Args:
+        result (tuple[str, ...]): The first tuple to compare.
+        comparation (tuple[str, ...]): The second tuple to compare.
+
+    Returns:
+        bool | tuple[bool]: If the tuples are the same, returns True. Otherwise, returns False and a tuple
+        indicating which elements are different.
+    """
     if len(result) != len(comparation):
         return False
     return tuple(element != comp for element, comp in zip(result, comparation))
 
 
 def remove(elements: tuple) -> tuple:
-    "Removes duped elements in tuple"
+    """
+    Removes duplicate elements in a tuple.
+
+    Args:
+        elements (tuple): The tuple to remove duplicates from.
+
+    Returns:
+        tuple: A new tuple with the duplicate elements removed.
+    """
     return tuple(set(elements))
 
 
 def get_time_log() -> str:
-    "Returns the current time"
+    """
+    Returns the current time in the format of day-month-year_hour-minute-second.
+
+    Returns:
+    str: A string representing the current time in the format of day-month-year_hour-minute-second.
+    """
     date = datetime.now()
     format_date = f"{date.day}-{date.month}-{date.year}_"
     format_hour = f"{date.hour}-{date.minute}-{date.second}"
@@ -133,7 +135,9 @@ def get_time_log() -> str:
 
 
 def get_time():
-    "Returns the current time"
+    """
+    Returns the current time in the format of [day-month-year hour:minute:second].
+    """
     date = datetime.now()
     format_date = f"[{date.day}-{date.month}-{date.year} "
     format_time = f"{date.hour}:{date.minute}:{date.second}]"
