@@ -1,12 +1,12 @@
 "Config module from Utils module"
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QSize
 
-from utils import elementType, others
+from utils import elementType, others, props
 
 
 def setConfig(element: elementType, title: str | None = None, icon: QIcon | None = None,
-              size: QSize | tuple[int, int] | None = None) -> None:
+              size: QSize | tuple[int, int]  | None = None) -> None:
     """
     Sets the configuration of an element with ease.
 
@@ -28,6 +28,7 @@ def setConfig(element: elementType, title: str | None = None, icon: QIcon | None
         element.setFixedSize(*size)
     elif isinstance(size, QSize):
         element.setFixedSize(size)
+        return None
     else:
         raise TypeError(
             "'size' must be an instance of tuple or PyQt5.QtCore.QSize")

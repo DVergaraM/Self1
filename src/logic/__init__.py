@@ -43,6 +43,7 @@ class Notification(_Notifier):
     Methods:
         run(): Shows Notification with log.
     """
+
     def __init__(self, app_id: str = "Second Brain", title: str = "Notifier",
                  msg: str = "", icon: str = "", launch: str | Callable | None = None,
                  duration='long', sound: audio.Sound = audio.Reminder) -> None:
@@ -50,6 +51,8 @@ class Notification(_Notifier):
         self.set_audio(sound, loop=False)
         if launch is not None:
             self.add_actions("Click Here!", launch)
+            return None
+        return None
 
     def run(self) -> None:
         "Shows Notification with log"
@@ -61,60 +64,78 @@ class Notification(_Notifier):
 
 class MQThread(QThread):
     """
-    Subclass of `PyQt5.QtCore.QThread`
     A subclass of `PyQt5.QtCore.QThread` that allows for running one or more target methods in a loop or once.
 
     :param targets: A callable or a tuple of callables to be run.
     :type targets: Callable[[], Any] | tuple[Callable[[], Any]]
-    :param bucles: A boolean or a tuple of booleans indicating whether each target should be run in a loop or once.
-    :type bucles: bool | tuple[bool]
+    :param loops: A boolean or a tuple of booleans indicating whether each target should be run in a loop or once.
+    :type loops: bool | tuple[bool]
     """
 
     def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
-                 bucles: bool | tuple[bool]):
+                 loops: bool | tuple[bool]):
         super().__init__()
         self.is_tuple = False
-        if isinstance(targets, Callable) and isinstance(bucles, bool):
+        if isinstance(targets, Callable) and isinstance(loops, bool):
             self.targets = (targets,)
             self.names = (targets.__name__,)
-            self.bucles = (bucles,)
-        elif isinstance(targets, tuple) and isinstance(bucles, tuple) and all(isinstance(target, Callable) for target in targets) and all(isinstance(bucle, bool) for bucle in bucles):
+            self.loops = (loops,)
+            return None
+        elif isinstance(targets, tuple) and isinstance(loops, tuple) and \
+                all(isinstance(target, Callable) for target in targets) and all(isinstance(loop, bool) for loop in loops):
             self.targets = targets
             self.names = tuple(target.__name__ for target in targets)
-            self.bucles = bucles
+            self.loop = loop
             self.is_tuple = True
+            return None
         else:
             raise TypeError(
-                "'targets' must be a callable or a tuple of callables, and 'bucles' must be a bool or a tuple of bools")
+                "'targets' must be a callable or a tuple of callables, and 'loop' must be a bool or a tuple of bools")
         self.counter = count()
+        return None
 
     def run(self):
-            """
-            Runs the target(s) method(s) according to some variables initialized in __init__
+        """
+        Runs the target(s) method(s) according to some variables initialized in __init__
 
-            Loops through the targets and names, and if the corresponding bucle is True, runs the target method in a loop
-            until the isFinished method returns True. Otherwise, runs the target method once.
-            """
-            for bucle, target, name in zip(self.bucles, self.targets, self.names):
-                if bucle:
-                    format_date_all = get_time()
-                    print(f"{format_date_all} - {name} (run)")
-                    while not self.isFinished():
-                        target()
-                else:
-                    format_date_all = get_time()
-                    print(f"{format_date_all} - {name} (run)")
+        Loops through the targets and names, and if the corresponding loop is True, runs the target method in a loop
+        until the isFinished method returns True. Otherwise, runs the target method once.
+        """
+        for loop, target, name in zip(self.loop, self.targets, self.names):
+            if loop:
+                format_date_all = get_time()
+                print(f"{format_date_all} - {name} (run)")
+                while not self.isFinished():
                     target()
+            else:
+                format_date_all = get_time()
+                print(f"{format_date_all} - {name} (run)")
+                target()
+        return None
 
 
 class Stray:
-    "This class slows the user to create a Windows Stray Icon with some methods, icon and title"
+    """
+    This class allows the user to create a Windows Stray Icon with some methods, icon and title.
+
+    Attributes:
+    -----------
+    icon_name : str
+        The name of the icon.
+    _image : Img
+        The image of the icon.
+    methods : tuple[Callable, ...]
+        A tuple of methods that can be called from the Stray menu.
+    icon : Icon
+        The Stray icon object.
+    """
 
     def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]):
         self.icon_name = icon_name
         self._image = image
         self.methods = methods
         self.icon = None
+        return None
 
     @property
     def title(self):
@@ -144,7 +165,12 @@ class Stray:
                 "'value' is not an instance of PIL.Image or is the same")
 
     def create_menu(self):
-        "Creates the menu for the Stray with some buttons and run it"
+        """
+        Creates the menu for the Stray with some buttons and runs it.
+
+        Returns:
+        None
+        """
         menu = Menu(
             Item("Notifier", Menu(
                 Item("Start System", self.__helper__),
@@ -157,6 +183,7 @@ class Stray:
         )
         self.icon = Icon(self.title, self.image, menu=menu, title=self.title)
         self.icon.run()
+        return None
 
     def __helper__(self, icon, item):
         notifier_start, notifier_stop, open_config, show_ui, close_ui, *_ = self.methods
@@ -193,11 +220,18 @@ class Stray:
                     f"{format_date_all} - Closing {self.icon_name}")
                 tm.sleep(5)
                 icon.stop()
+        return None
 
 
 def msgBox(log: login.LoginSystem):
     """
     Creates a QMessageBox instance with some addons
+
+    Args:
+        log (login.LoginSystem): An instance of the LoginSystem class
+
+    Returns:
+        QMessageBox: An instance of the QMessageBox class
     """
     msg = QMessageBox()
     msg.setWindowIcon(log.icon)
@@ -210,6 +244,12 @@ def msgBox(log: login.LoginSystem):
 def App(argv: list[str]):
     """
     Creates a QApplication instance with default values.
+
+    Args:
+        argv (list[str]): List of command line arguments.
+
+    Returns:
+        QApplication: The created QApplication instance.
     """
     cwd_assets = fr"{os.getcwd()}\assets"
     app = QApplication(argv)

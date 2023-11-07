@@ -4,7 +4,7 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QImage
 import PIL.Image as Img
 import requests
 
@@ -37,7 +37,7 @@ class Gui(QMainWindow):
     def __init__(self) -> None:
         super(Gui, self).__init__()
         # Loads Main GUI
-        icon_url = "https://daniel-vergara-m.github.io/assets/default.png"
+        default = "https://i.imgur.com/PgUSXzh.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = BrainDatabase(DB_PATH)
         self.connection = self.database.connection
@@ -52,17 +52,26 @@ class Gui(QMainWindow):
             print("With Icon")
         else:
             try:
-                response = requests.get(icon_url, timeout=5000)
-                pil = Img.open(response.content)
-                pix = QPixmap()
-                pix.loadFromData(response.content)
-                self.icon = QIcon(pix)
-                print("With URL")
-            except requests.ConnectTimeout:
-                pil = Img.open(fr"{os.getcwd()}\assets\default.png")
-                self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
-                print("With path")
+                default = "https://i.imgur.com/PgUSXzh.png"
+                from io import BytesIO
+                response = requests.get(default, timeout=5000)
+                if response.status_code == 200:
+                    pil = Img.open(BytesIO(response.content))
+                    print(pil.format)
+                    if pil.mode != 'RGB':
+                        pil = pil.convert('RGB')
 
+                    pixmap = QPixmap()
+                    pixmap.convertFromImage(QImage(pil.tobytes(), pil.width, pil.height, QImage.Format.Format_RGB888))
+
+                    self.icon = QIcon(pixmap)
+                    print("With URL")
+                else:
+                    pil = Img.open(fr"{os.getcwd()}\assets\default.png")
+                    self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
+                    print("With path")
+            except requests.ConnectTimeout as excp:
+                raise requests.ConnectTimeout(excp) from excp
         # Sets title, icon and fixed size for GUI
         setConfig(self, self.title, self.icon, (760, 680))
 

@@ -33,3 +33,6 @@ method: TypeAlias = Callable
 cwd: Literal[r"\src\\"] = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)
 cwddb: Literal[r"\src\login.db"] = fr"{os.getcwd()}\src\login.db"
+
+def props(cls) -> list[str]:   
+  return [i for i in cls.__dict__.keys() if i[:1] != '_']

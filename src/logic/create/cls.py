@@ -2,7 +2,7 @@ from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
-from utils import cwd, SubWindow
+from utils import cwd, SubWindow, elementType
 from utils.config import setConfig
 from utils.setters import connect
 
@@ -21,7 +21,7 @@ class CreateMenu(SubWindow):
         createApps (createApps.CreateAppsMenu): A menu for saving apps to the database.
     """
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase,
+    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase,
                  createApp: createApps.CreateAppsMenu):
         """
         Initializes a new instance of the `CreateMenu` class.
@@ -40,6 +40,7 @@ class CreateMenu(SubWindow):
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
         setConfig(self,
                   "Notification Menu", self.icon, (760, 680))
+        return None
 
     def loadShow(self):
         """
@@ -50,3 +51,5 @@ class CreateMenu(SubWindow):
             "create_apps_menu": self.createApps.loadShow
         })
         self.show()
+        return None
+    

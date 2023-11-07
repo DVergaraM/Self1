@@ -1,22 +1,13 @@
 import os
-
 from typing import Any
-
 from PyQt5.QtGui import QIcon, QImageReader
-
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-
 from PyQt5 import uic
 
-
-from utils import cwd, SubWindow
-
+from utils import cwd, SubWindow, elementType, props
 from utils.config import setConfig, setMultipleConfig
-
 from utils.setters import setText, textChangedConnect, connect, enableButton
-
 from utils.others import updateWindow, getText, remove
-
 
 from logic import database
 
@@ -31,7 +22,7 @@ class ConfigMenu(SubWindow):
         db (database.BrainDatabase): The database where the items are stored.
     """
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase):
+    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
         '''
         Initializes the ConfigMenu class.
         '''
@@ -82,11 +73,14 @@ class ConfigMenu(SubWindow):
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and self.image_path != "":
             self._config = remove(self._config)
             self._config += (self.image_path, )
+            print(self._config)
         else:
             self._config = ()
             self._config += (self.image_path, )
+            print(self._config)
         setText(self, {"path_input": self.image_path})
         updateWindow(self)
+        print(self._config)
 
     def save_title(self):
         "Saves the title displayed in QLineEdit"
@@ -95,10 +89,13 @@ class ConfigMenu(SubWindow):
                 title != "" and os.path.exists(self._config[0]):
             self._config = remove(self._config)
             self._config += (title, )
+            print(self._config)
         else:
             self._config = ()
             self._config += (self.image_path, title)
+            print(self._config)
         updateWindow(self)
+        print(self._config)
 
     def add_to_db(self):
         """Adds the information to Database and 
@@ -109,13 +106,20 @@ class ConfigMenu(SubWindow):
             self.database.set_config(self, self._config)
             icon, title = self.database.get_config()
             icon = QIcon(icon)
-            setMultipleConfig(
-                (self.mp, self, self.mp.apps_menu, self.mp.create_menu,
-                 self.mp.create_apps_menu, self.mp.apps_menu, self.mp.notification_menu, self.mp.schedule_menu),
-                (str(title), self.mp.config_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.create_menu.windowTitle(
-                ), self.mp.create_apps_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.notification_menu.windowTitle(), self.mp.schedule_menu.windowTitle()),
-                icon,
-                (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size(), self.mp.schedule_menu.size()))
+            properties = props(self.mp)
+            menus = [obj for obj in properties if "menu" in obj]
+            print(menus)
+            for menu in menus:
+                obj = getattr(self.mp, menu)
+                setConfig(obj)
+            print("Config setted for all windows")
+            # setMultipleConfig(
+            #    (self.mp, self, self.mp.apps_menu, self.mp.create_menu,
+            #     self.mp.create_apps_menu, self.mp.apps_menu, self.mp.notification_menu, self.mp.schedule_menu),
+            #    (str(title), self.mp.config_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.create_menu.windowTitle(
+            #    ), self.mp.create_apps_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.notification_menu.windowTitle(), self.mp.schedule_menu.windowTitle()),
+            #    icon,
+            #    (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size(), self.mp.schedule_menu.size()))
             return None
         QMessageBox.warning(
             self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")

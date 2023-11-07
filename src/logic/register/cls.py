@@ -39,6 +39,7 @@ class RegisterSystem(QDialog):
             "exit_button": self.close
         })
         updateWindow(self)
+        return None
 
     def validate(self, e: QEvent):
         """Checks if the values of both QLineEdit are different from \"\", 
@@ -48,6 +49,7 @@ class RegisterSystem(QDialog):
         else:
             enableButton(self, {"register button": False})
         updateWindow(self)
+        return None
 
     def _add_to_db(self):
         "Adds the QLineEdit values to database if not exists"
@@ -65,3 +67,5 @@ class RegisterSystem(QDialog):
                 self, "Success", "Username and password created.")
             updateWindow(self)
             self.accept()
+            return None
+        return None

@@ -3,7 +3,7 @@ from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
-from utils import cwd, SubWindow
+from utils import cwd, SubWindow, elementType
 from utils.config import setConfig
 from utils.setters import setText, connect
 from utils.others import getText, updateWindow
@@ -24,7 +24,8 @@ class CreateAppsMenu(SubWindow):
     - actual_name (str): The current name of the application being displayed.
     - actual_path (str): The current path of the application being displayed.
     """
-    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, appsMenu: apps.AppsMenu):
+
+    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.mp = parent
@@ -34,6 +35,7 @@ class CreateAppsMenu(SubWindow):
         setConfig(self, "Apps Create", self.icon, (760, 680))
         self.actual_name = str(self.db.get_current_apps_name()[0])
         self.actual_path = str(self.db.get_current_apps_path()[0])
+        return None
 
     def loadShow(self):
         "Loads, connects buttons with methods, sets text in path lines and shows it"
@@ -50,6 +52,7 @@ class CreateAppsMenu(SubWindow):
             "edit_button": self.update
         })
         self.show()
+        return None
 
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
@@ -83,6 +86,7 @@ class CreateAppsMenu(SubWindow):
             (current_name, current_path), self)
         updateWindow(self)
         updateWindow(self.appsMenu)
+        return None
 
     def delete_from_db(self):
         "Deletes info from database."
@@ -94,6 +98,7 @@ class CreateAppsMenu(SubWindow):
             (current_name, current_path), self)
         updateWindow(self)
         updateWindow(self.appsMenu)
+        return None
 
     def update_from_db(self):
         "Updates info to database"
@@ -105,3 +110,4 @@ class CreateAppsMenu(SubWindow):
             current_path, current_name, self)
         updateWindow(self)
         updateWindow(self.appsMenu)
+        return None

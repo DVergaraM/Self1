@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QProcess
 from PyQt5 import uic
 
-from utils import cwd, SubWindow
+from utils import cwd, SubWindow, elementType
 from utils.config import setConfig
 from utils.setters import setText, connect
 from utils.others import get_time_log, getText
@@ -38,7 +38,7 @@ class AppsMenu(SubWindow):
             Runs the program displayed in QLineEdit.
     """
 
-    def __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
+    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
         '''
 
         Args:
@@ -57,6 +57,7 @@ class AppsMenu(SubWindow):
         setConfig(self, "Apps Menu", self.icon, (760, 680))
 
         self.actual: str = self.db.get_current_apps_path_apps()[0]
+        return None
 
     def loadShow(self):
         "Loads, connects, sets and show GUI"
@@ -70,6 +71,7 @@ class AppsMenu(SubWindow):
             "run_button": self.run
         })
         self.show()
+        return None
 
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
@@ -77,6 +79,7 @@ class AppsMenu(SubWindow):
             self.db.right_path()
             self.actual: Any = self.db.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
+            return None
 
     def retroceder(self):
         "Loops back through the paths in database and sets it up in QLineEdit"
@@ -84,6 +87,7 @@ class AppsMenu(SubWindow):
             self.db.left_path()
             self.actual: Any = self.db.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
+            return None
 
     def run(self):
         "Runs the program displayed in QLineEdit"
@@ -91,16 +95,9 @@ class AppsMenu(SubWindow):
         path = fr"{text}"
         cwd_log = os.getcwd()
         format_date_all = get_time_log()
-        path_split = path.split("\\")
-        name_with_exe = path_split[-1]
-        name_without_exe = name_with_exe.removesuffix('.exe"')
-        name = name_without_exe.title().lstrip().rstrip().strip()
+        name = path.split("\\")[-1].removesuffix('.exe"').title().strip()
         self.o_thread.setProgram(path)
-        if name == "Code":
-            self.o_thread.start(self.o_thread.program())
-        else:
-            self.o_thread.start(self.o_thread.program(), [
-                fr"> {cwd_log}\logs\log-{format_date_all}.log"])
-        format_date_all = format_date_all.replace("_", " ")
-        print(
-            f"[{format_date_all}] - {name} (run)")
+        self.o_thread.start(self.o_thread.program() if name == "Code" else self.o_thread.program(), [
+            fr"> {cwd_log}\logs\log-{format_date_all.replace('_', ' ')}.log"])
+        print(f"[{format_date_all}] - {name} (run)")
+        return None

@@ -13,8 +13,7 @@ except ImportError as exc:
 from utils import otuple_str, cwddb, elementType, cwd
 from utils import others
 
-
-def create_brain_tables(conn):
+def create_brain_tables(conn: Connection):
     """
     Creates the necessary tables for the SBrain application in the given database connection.
 
@@ -24,11 +23,6 @@ def create_brain_tables(conn):
     Returns:
         sqlite3.Connection: The same connection object passed as an argument.
     """
-    cur = conn.cursor()
-    # rest of the function code
-
-
-def create_brain_tables(conn):
     cur = conn.cursor()
     cur.execute("""CREATE TABLE IF NOT EXISTS Config(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,12 +51,13 @@ def create_brain_tables(conn):
             Icons.path as "path"
             FROM Urls, Icons
             WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
+    conn.commit()
     cur.close()
     del cur
     return conn
 
 
-def create_login_tables(conn):
+def create_login_tables(conn: Connection):
     """
     Creates the necessary tables for the login system in the specified database connection.
 
@@ -128,6 +123,7 @@ class ParentDatabase:
         else:
             self.DB_PATH = fr"{cwd}\brain_mine.db"
         self._connection = self._create_connection()
+        return None
 
     @property
     def connection(self) -> Connection:
@@ -141,7 +137,7 @@ class ParentDatabase:
         """
         return self._connection
 
-    def _create_connection(self, func: Callable[[], Any] = None):
+    def _create_connection(self, func: Callable[[], Any] = None) -> Connection:
         """
         Creates a connection to the database.
 
@@ -242,11 +238,13 @@ class BrainDatabase(ParentDatabase):
         "Moves right in the Apps Directory list"
         self.app_path_actual += 1
         self.app_path_actual %= len(self.apps_paths)
+        return None
 
     def left_path(self):
         "Moves left in the Apps Directory list"
         self.app_path_actual -= 1
         self.app_path_actual %= len(self.apps_paths)
+        return None
 
     def get_current_apps_name(self):
         "Get the current Application name"
@@ -270,11 +268,13 @@ class BrainDatabase(ParentDatabase):
         "Moves right in the Apps list"
         self.create_apps_menu_actual += 1
         self.create_apps_menu_actual %= len(self.apps_ids)
+        return None
 
     def left_create_apps_menu(self):
         "Moves left in the Apps list"
         self.create_apps_menu_actual -= 1
         self.create_apps_menu_actual %= len(self.apps_ids)
+        return None
 
     def create_log_apps(self, log: otuple_str, element: elementType):
         "Creates an Application Log"
@@ -321,11 +321,14 @@ class BrainDatabase(ParentDatabase):
                 conn.close()
                 QMessageBox.information(
                     element, "Deleted", "Elements deleted in database")
+                return None
             else:
                 QMessageBox.warning(element, "Not Found",
                                     "Elements not found in database")
+                return None
         QMessageBox.warning(
             element, "Error", "Only 2 items allowed in tuple")
+        return None
 
     def update_log_apps(self, path: str, name: str, element: elementType):
         # TODO: Create a GUI that allows the user to update an App Directory according to the name

@@ -38,9 +38,11 @@ class NotificationMenu(SubWindow):
         self.startT = startT
         self.stopT = stopT
         self.appsMenu = appsMenu
+        self.counter = count()
         uic.loadUi(fr"{cwd}logic\notification\notification_menu.ui", self)
         setConfig(self,
                   "Notification Menu", self.icon, (760, 680))
+        return None
 
     def loadShow(self):
         "Loads, connects and shows the buttons with methods"
@@ -51,17 +53,19 @@ class NotificationMenu(SubWindow):
             "apps_button_menu": self.appsMenu.loadShow
         })
         self.show()
+        return None
 
     def _stop_popups(self):
         "Stops Notification System"
         self.stopT.start()
         format_date_all = get_time()
-        counter = count()
         print(
-            f"{format_date_all} - Thread-{next(counter)} (stop)")
+            f"{format_date_all} - Thread-{next(self.counter)} (stop)")
         self.notifier.exit()
+        return None
 
     def _start_thread(self):
         "Starts Notification System"
         self.notifier()
         self.startT.start()
+        return None

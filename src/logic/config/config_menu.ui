@@ -72,9 +72,6 @@
      <pointsize>12</pointsize>
     </font>
    </property>
-   <property name="text">
-    <string>Second Brain</string>
-   </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
    </property>

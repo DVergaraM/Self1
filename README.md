@@ -48,7 +48,7 @@ The Second Brain application has the following dependencies:
 To run the Second Brain application, run the `src/` folder using Python:  
 
 ```
-python src
+python setup.py && python src
 ```
   
 This will start the application and display the login dialog. Once you have logged in, you will be taken to the main GUI of the application.

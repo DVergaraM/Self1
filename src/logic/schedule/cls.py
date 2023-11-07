@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5 import uic
 
-from utils import cwd, SubWindow, elementType
+from utils import cwd, SubWindow, elementType, props
 from utils.config import setConfig
 from utils.others import get_time, getText
 from utils.setters import connect, setText
@@ -42,6 +42,7 @@ class ScheduleMenu(SubWindow):
         self.schedule = LogicSchedule()
         uic.loadUi(fr"{cwd}logic\schedule\schedule_menu.ui", self)
         setConfig(self, "Schedule Menu", self.icon, (760, 680))
+        return None
 
     def loadShow(self):
         "Loads, connects and show the buttons with methods"
@@ -50,6 +51,7 @@ class ScheduleMenu(SubWindow):
             "exit_button": self.close,
         })
         self.show()
+        return None
 
     def _add_task(self):
         "Adds a task to the schedule"

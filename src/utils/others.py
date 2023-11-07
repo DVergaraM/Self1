@@ -13,7 +13,7 @@ def getText(element: elementType,
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
         return tuple(getattr(element, attr).text() if isinstance(attr, attribute) and hasattr(element, attr) else "" for attr in attrs)
-    return getattr(element, attrs).text() if isinstance(attr, attribute) and hasattr(element, attrs) else ""
+    return getattr(element, attrs).text() if isinstance(attrs, attribute) and hasattr(element, attrs) else ""
 
 
 def updateWindow(element: elementType) -> None:
