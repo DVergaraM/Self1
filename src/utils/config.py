@@ -1,4 +1,5 @@
 "Config module from Utils module"
+from typing import Any
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QSize
 
@@ -6,7 +7,7 @@ from utils import elementType, others, props
 
 
 def setConfig(element: elementType, title: str | None = None, icon: QIcon | None = None,
-              size: QSize | tuple[int, int]  | None = None) -> None:
+              size: QSize | tuple[int, int] | None = None) -> None:
     """
     Sets the configuration of an element with ease.
 
@@ -21,42 +22,38 @@ def setConfig(element: elementType, title: str | None = None, icon: QIcon | None
     """
     title = title or element.windowTitle()
     icon = icon or element.windowIcon()
-    size = size or element.size()
+    size = size or element.size() # type: ignore
     element.setWindowTitle(title)
     element.setWindowIcon(icon)
     if isinstance(size, tuple):
         element.setFixedSize(*size)
     elif isinstance(size, QSize):
         element.setFixedSize(size)
-        return None
     else:
         raise TypeError(
             "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 
-def setMultipleConfig(elements: tuple[elementType], titles: tuple[str], icon: QIcon,
-                      sizes: tuple[QSize]) -> None:
-    """
-    Sets the configuration of multiple elements with ease.
+def setMultipleConfig(element: elementType, icon: QIcon, properties: list[Any] | None, **kwargs):
+    if not properties:
+        properties = [getattr(element, obj) for obj in props(
+            element) if "menu" in obj and not "button" in obj]
 
-    Args:
-        elements (tuple[elementType]): A tuple of elements to be configured.
-        titles (tuple[str]): A tuple of titles to be set for each element.
-        icon (QIcon): The icon to be set for each element.
-        sizes (tuple[QSize]): A tuple of sizes to be set for each element.
+    titles = ()
+    sizes = ()
+    default_title = kwargs["default_title"] if "default_title" in kwargs else None
 
-    Raises:
-        ValueError: If the length of 'elements', 'titles' and 'sizes' parameters are not equal.
+    for prop in properties:
+        titles += (prop.title, )
+        sizes += (prop.size(), )
 
-    Returns:
-        None
-    """
-    if len(elements) != len(titles) != len(sizes):
-        raise ValueError(
-            "'elements', 'titles' and 'sizes' parameters must have the same amount of items")
-    for element, title, size in zip(elements, titles, sizes):
-        element.setWindowTitle(title)
-        element.setWindowIcon(icon)
-        element.setFixedSize(size)
-        others.updateWindow(element)
-    return None
+    if default_title:
+        element.setWindowTitle(default_title)
+
+    element.setWindowIcon(icon)
+
+    for prop, title, size in zip(properties, titles, sizes):
+        prop.setWindowTitle(title)
+        prop.setWindowIcon(icon)
+        prop.setFixedSize(size)
+        others.updateWindow(prop)

@@ -9,9 +9,9 @@ from utils.config import setConfig
 from utils.others import get_time, getText
 from utils.setters import connect, setText
 
-from logic import database
+from logic import database as l_database
 from logic import MQThread
-from logic.apps import cls as apps
+from logic.notification import cls as notification
 from logic.schedule.schedule import Schedule as LogicSchedule
 
 
@@ -22,24 +22,29 @@ class ScheduleMenu(SubWindow):
     Attributes:
         icon (QIcon): The icon to be displayed in the window title bar.
         mp (elementType): The parent element of the window.
-        db (database.BrainDatabase): The database used to store the schedule data.
+        db (l_database.BrainDatabase): The database used to store the schedule data.
         schedule (LogicSchedule): The logic component responsible for managing the schedule.
 
     Methods:
-        __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
+        __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase):
             Initializes a new instance of the `ScheduleMenu` class.
         loadShow(self):
             Loads, connects and shows the buttons with methods.
         _add_task(self):
             Adds a task to the schedule.
     """
+    _running = False
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
+    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase, **kwargs):
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.mp = parent
-        self.db = db
-        self.schedule = LogicSchedule()
+        self.my_parent = parent
+        self.database = database
+        notifier = kwargs["notifier"] if "notifier" in kwargs else None
+        start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
+        self.schedule = LogicSchedule(
+            notifier=notifier, start_thread=start_thread)
+        self._thread = MQThread(self.schedule.start, False)  # type: ignore
         uic.loadUi(fr"{cwd}logic\schedule\schedule_menu.ui", self)
         setConfig(self, "Schedule Menu", self.icon, (760, 680))
         return None
@@ -62,5 +67,14 @@ class ScheduleMenu(SubWindow):
             "time_input": "",
             "url_input": ""
         })
-        QMessageBox.information(self.mp, "Schedule", "Task saved successfully")
+        QMessageBox.information(self, "Schedule", "Task saved successfully")
         return None
+
+    def start(self):
+        self._thread.start()
+        self._running = True
+        
+    def stop(self):
+        if self._running:
+            self._running = False
+            self.schedule.stop()

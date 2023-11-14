@@ -1,5 +1,5 @@
 "Notification Module"
-from typing import Any
+from typing import Any, Callable
 from itertools import count
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
@@ -9,7 +9,7 @@ from utils.config import setConfig
 from utils.others import get_time
 from utils.setters import connect
 
-from logic import database
+from logic import database as l_database
 from logic import MQThread, Thread
 from logic.apps import cls as apps
 
@@ -21,19 +21,19 @@ class NotificationMenu(SubWindow):
     Args:
         parent (elementType): The parent element of the notification menu.
         icon (QIcon): The icon to be displayed on the notification menu.
-        db (database.BrainDatabase): The database object used by the notification menu.
+        db (l_database.BrainDatabase): The database object used by the notification menu.
         notifier (MQThread): The message queue thread used by the notification menu.
         startT (Thread): The thread used to start the notification system.
         stopT (MQThread): The message queue thread used to stop the notification system.
         appsMenu (apps.AppsMenu): The apps menu object used by the notification menu.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, notifier: MQThread,
-                 startT: Thread, stopT: MQThread, appsMenu: apps.AppsMenu):
+    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase, notifier: MQThread | Callable,
+                 startT: Thread | MQThread | Callable, stopT: MQThread, appsMenu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.mp = parent
-        self.db = db
+        self.my_parent = parent
+        self.database = database
         self.notifier = notifier
         self.startT = startT
         self.stopT = stopT
@@ -42,7 +42,6 @@ class NotificationMenu(SubWindow):
         uic.loadUi(fr"{cwd}logic\notification\notification_menu.ui", self)
         setConfig(self,
                   "Notification Menu", self.icon, (760, 680))
-        return None
 
     def loadShow(self):
         "Loads, connects and shows the buttons with methods"
@@ -66,6 +65,22 @@ class NotificationMenu(SubWindow):
 
     def _start_thread(self):
         "Starts Notification System"
-        self.notifier()
-        self.startT.start()
-        return None
+        if isinstance(self.startT, Callable) and isinstance(self.notifier, Callable):
+            self.startT()
+            self.notifier()
+            return None
+        elif isinstance(self.startT, (MQThread | Thread)) and isinstance(self.notifier, Callable):
+            self.startT.start()
+            self.notifier()
+            return None
+        elif isinstance(self.startT, Callable) and isinstance(self.notifier, (MQThread | Thread)):
+            self.startT()
+            self.notifier.start()
+            return None
+        elif isinstance(self.startT, (MQThread | Thread)) and isinstance(self.notifier, (MQThread | Thread)):
+            self.startT.start()
+            self.notifier.start()
+            return None
+        else:
+            raise TypeError(
+                f"Expected {MQThread} or {Thread} for startT and {MQThread} or {Thread} for notifier, got {type(self.startT)} and {type(self.notifier)} instead.")

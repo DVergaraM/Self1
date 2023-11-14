@@ -137,7 +137,7 @@ class ParentDatabase:
         """
         return self._connection
 
-    def _create_connection(self, func: Callable[[], Any] = None) -> Connection:
+    def _create_connection(self, func: Callable[[Connection], Connection] = None) -> Connection: # type: ignore
         """
         Creates a connection to the database.
 
@@ -292,7 +292,7 @@ class BrainDatabase(ParentDatabase):
             INSERT INTO Apps(name, path)
             VALUES(?, ?)
             '''
-            cur.execute(sql, log)
+            cur.execute(sql, log) # type: ignore
             conn.commit()
             QMessageBox.information(
                 element, 'Database', 'Information added to database')

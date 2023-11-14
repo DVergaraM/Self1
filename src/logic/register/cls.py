@@ -11,7 +11,6 @@ from utils.config import setConfig
 from utils.setters import textChangedConnect, connect, enableButton
 from utils.others import updateWindow, getText, sha, compare
 
-
 class RegisterSystem(QDialog):
     """
     Subclass of `PyQt5.QtWidgets.QDialog` that provides a user interface for
@@ -44,7 +43,7 @@ class RegisterSystem(QDialog):
     def validate(self, e: QEvent):
         """Checks if the values of both QLineEdit are different from \"\", 
         and enables a button if so."""
-        if all(compare(getText(self, ("username_input", "password_input")), ("", ""))):
+        if all(compare(getText(self, ("username_input", "password_input")), ("", ""))): # type: ignore
             enableButton(self, {"register_button": True})
         else:
             enableButton(self, {"register button": False})

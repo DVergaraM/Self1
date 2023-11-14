@@ -78,24 +78,25 @@ class Gui(QMainWindow):
         # # # # # # # #
         #   Threads   #
         # # # # # # # #
-
-        # Loads Schedule Menu GUI
-        self.schedule_menu = ScheduleMenu(self, self.icon, self.database)
-
-        # Creates a Thread for 'run_pending' method with a while loop
-        self.notifier = MQThread(self.schedule_menu.schedule.start, False)
+        
         # Creates a Windows Pop-Up that displays that the system is on
         start_notifications = Notification(
-            self.title, "Pop-Ups", "Notification System ON", icon, duration="short")
+            self.title, "Pop-Ups", "Notification System ON", icon, duration="short") # type: ignore
         # Creates a Windows Pop-Up that displays that the system is off
         stop_notifications = Notification(
-            self.title, "Pop-Ups", "Notification System OFF", icon, duration='short')
+            self.title, "Pop-Ups", "Notification System OFF", icon, duration='short') # type: ignore
         # Thread for running the "Start Notifications" Pop-Up
         self.start_thread = MQThread(start_notifications.run, False)
         # Thread for running the "Stop Notifications" Pop-Up
         self.stop_thread = MQThread(stop_notifications.run, False)
         # Creates a Thread for running executables that are in Database
         self.o_thread = QProcess()
+        
+        # Loads Schedule Menu
+        self.schedule_menu = ScheduleMenu(self, self.icon, self.database, notifier=self.start_thread)
+
+        # Creates a Thread for 'run_pending' method with a while loop
+        #self.notifier = self.schedule_menu.start
 
         # # # # # # # #
         #    Menus    #
@@ -112,7 +113,7 @@ class Gui(QMainWindow):
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
             self, self.icon, self.database, start_notifications.run,
-            self.notifier, self.stop_thread, self.apps_menu)
+            self.schedule_menu.start, self.stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
             self, self.icon, self.database, self.create_apps_menu)
@@ -128,8 +129,8 @@ class Gui(QMainWindow):
         })
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
-        stray = Stray(self.title, pil, (self.notification_menu._start_thread,
-                                        self.notification_menu._stop_popups,
+        stray = Stray(self.title, pil, (self.schedule_menu.start, # type: ignore
+                                        self.schedule_menu.stop,
                                         self.config_menu.loadShow, self.show,
                                         self.hide, sys.exit))
         stray.create_menu()

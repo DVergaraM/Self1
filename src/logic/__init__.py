@@ -76,6 +76,7 @@ class MQThread(QThread):
                  loops: bool | tuple[bool]):
         super().__init__()
         self.is_tuple = False
+        self.counter = count()
         if isinstance(targets, Callable) and isinstance(loops, bool):
             self.targets = (targets,)
             self.names = (targets.__name__,)
@@ -85,14 +86,12 @@ class MQThread(QThread):
                 all(isinstance(target, Callable) for target in targets) and all(isinstance(loop, bool) for loop in loops):
             self.targets = targets
             self.names = tuple(target.__name__ for target in targets)
-            self.loop = loop
+            self.loops = loops
             self.is_tuple = True
             return None
         else:
             raise TypeError(
                 "'targets' must be a callable or a tuple of callables, and 'loop' must be a bool or a tuple of bools")
-        self.counter = count()
-        return None
 
     def run(self):
         """
@@ -101,7 +100,7 @@ class MQThread(QThread):
         Loops through the targets and names, and if the corresponding loop is True, runs the target method in a loop
         until the isFinished method returns True. Otherwise, runs the target method once.
         """
-        for loop, target, name in zip(self.loop, self.targets, self.names):
+        for loop, target, name in zip(self.loops, self.targets, self.names):
             if loop:
                 format_date_all = get_time()
                 print(f"{format_date_all} - {name} (run)")
@@ -111,6 +110,13 @@ class MQThread(QThread):
                 format_date_all = get_time()
                 print(f"{format_date_all} - {name} (run)")
                 target()
+        return None
+    
+    def stop(self):
+        """
+        Stops the thread.
+        """
+        self.terminate()
         return None
 
 
@@ -130,7 +136,7 @@ class Stray:
         The Stray icon object.
     """
 
-    def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]):
+    def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]): # type: ignore
         self.icon_name = icon_name
         self._image = image
         self.methods = methods

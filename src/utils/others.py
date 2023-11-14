@@ -5,7 +5,7 @@ from typing import Any, Tuple
 from datetime import datetime
 
 from utils import elementType, attribute, config
-from logic import database
+from logic import database as l_database
 
 
 def getText(element: elementType,
@@ -20,7 +20,7 @@ def updateWindow(element: elementType) -> None:
     """
     Updates a window and reloads variables.
 
-    Args\: ::  
+    Args::  
         - element (elementType): The window element to be updated.
 
     Raises:
@@ -28,26 +28,28 @@ def updateWindow(element: elementType) -> None:
     """
     try:
         if hasattr(element, "db") and hasattr(element, "DB_PATH"):
-            element.db = database.BrainDatabase(element.DB_PATH)
+            element.database = l_database.BrainDatabase(element.DB_PATH)
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
             return None
         elif hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
-            element.db_login = database.LoginDatabase(element.DB_PATH_LOGIN)
+            element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
             return None
         elif hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG"):
-            element.db_config = database.BrainDatabase(element.DB_PATH_CONFIG)
+            element.db_config = l_database.BrainDatabase(
+                element.DB_PATH_CONFIG)
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
             return None
         elif (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")) and (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")):
-            element.db_config = database.BrainDatabase(element.DB_PATH_CONFIG)
-            element.db_login = database.LoginDatabase(element.DB_PATH_LOGIN)
+            element.db_config = l_database.BrainDatabase(
+                element.DB_PATH_CONFIG)
+            element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
             config.setConfig(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
@@ -86,7 +88,7 @@ def sha(element: elementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
                     objs_in_sha += (objsha, )
                 else:
                     continue
-            return objs_in_sha
+            return objs_in_sha  # type: ignore
         raise IndexError("Only 2 items are allowed in the tuple")
     return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest() if hasattr(element, objs) else ""
 
@@ -105,7 +107,7 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tup
     """
     if len(result) != len(comparation):
         return False
-    return tuple(element != comp for element, comp in zip(result, comparation))
+    return tuple(element != comp for element, comp in zip(result, comparation)) # type: ignore
 
 
 def remove(elements: tuple) -> tuple:

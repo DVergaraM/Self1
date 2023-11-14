@@ -1,15 +1,14 @@
 import os
-from typing import Any
 from PyQt5.QtGui import QIcon, QImageReader
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5 import uic
 
-from utils import cwd, SubWindow, elementType, props
+from utils import cwd, SubWindow, elementType
 from utils.config import setConfig, setMultipleConfig
-from utils.setters import setText, textChangedConnect, connect, enableButton
-from utils.others import updateWindow, getText, remove
+from utils.setters import setText, enableButton, textChangedConnect, connect
+from utils.others import remove, updateWindow, getText
 
-from logic import database
+from logic import database as l_database
 
 
 class ConfigMenu(SubWindow):
@@ -19,17 +18,17 @@ class ConfigMenu(SubWindow):
     Args:
         parent (Any): The parent widget.
         icon (QIcon): The icon to be displayed in the GUI.
-        db (database.BrainDatabase): The database where the items are stored.
+        db (l_database.BrainDatabase): The database where the items are stored.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase):
+    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase):
         '''
         Initializes the ConfigMenu class.
         '''
         super().__init__(size=(510, 460))
         self.icon = icon
-        self.mp = parent
-        self.database = db
+        self.my_parent = parent
+        self.database = database
         self._config = ()
         self.image_path = str()
         uic.loadUi(fr"{cwd}logic\config\config_menu.ui", self)
@@ -86,7 +85,7 @@ class ConfigMenu(SubWindow):
         "Saves the title displayed in QLineEdit"
         title = str(getText(self, "title_input"))
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and\
-                title != "" and os.path.exists(self._config[0]):
+                title != "" and os.path.exists(self._config[0]): # type: ignore
             self._config = remove(self._config)
             self._config += (title, )
             print(self._config)
@@ -106,20 +105,8 @@ class ConfigMenu(SubWindow):
             self.database.set_config(self, self._config)
             icon, title = self.database.get_config()
             icon = QIcon(icon)
-            properties = props(self.mp)
-            menus = [obj for obj in properties if "menu" in obj]
-            print(menus)
-            for menu in menus:
-                obj = getattr(self.mp, menu)
-                setConfig(obj)
+            setMultipleConfig(self.my_parent, icon, None, default_title=title)
             print("Config setted for all windows")
-            # setMultipleConfig(
-            #    (self.mp, self, self.mp.apps_menu, self.mp.create_menu,
-            #     self.mp.create_apps_menu, self.mp.apps_menu, self.mp.notification_menu, self.mp.schedule_menu),
-            #    (str(title), self.mp.config_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.create_menu.windowTitle(
-            #    ), self.mp.create_apps_menu.windowTitle(), self.mp.apps_menu.windowTitle(), self.mp.notification_menu.windowTitle(), self.mp.schedule_menu.windowTitle()),
-            #    icon,
-            #    (self.mp.size(), self.size(), self.mp.apps_menu.size(), self.mp.create_menu.size(), self.mp.create_apps_menu.size(), self.mp.apps_menu.size(), self.mp.notification_menu.size(), self.mp.schedule_menu.size()))
             return None
         QMessageBox.warning(
             self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")

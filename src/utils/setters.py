@@ -18,15 +18,13 @@ def setText(element: elementType,
         attr, data = objs
         if (isinstance(attr, str) and isinstance(data, (int, str)))\
                 and hasattr(element, attr):
-            obj = getattr(element, attr)
-            obj.setText(f"{data}")
+            getattr(element, attr).setText(f"{data}")
             return None
     elif isinstance(objs, dict) and all(isinstance(key, attribute) and
                                         isinstance(value, (int, str))for key, value in objs.items()):
         for key, value in objs.items():
             if hasattr(element, key):
-                obj = getattr(element, key)
-                obj.setText(f"{value}")
+                getattr(element, key).setText(f"{value}")
             else:
                 continue
         return None
@@ -35,7 +33,7 @@ def setText(element: elementType,
             "'objs' and/or 'data' params must have the correct type")
 
 
-def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None:
+def connect(element: elementType, objs: tuple[attribute, method] | dict[attribute, method]) -> None: # type: ignore
     """
     Connects a button or a group of buttons with a method or a group of methods.
 

@@ -1,143 +1,109 @@
-from typing import Callable, Any, Iterator, Union, Tuple
-import os
-from datetime import datetime
-import time as tm
-import webbrowser as wb
 import pytz
-import validators
 import schedule as _schedule
+import time as tm
+import re
+import webbrowser as wb
+import validators
+from typing import Callable, Tuple, Any, Union, Iterator
+from logic import MQThread
 
 
 class Schedule:
-    """
-    Class that allows the user to schedule tasks according to a time and timezone
-
-    Attributes:
-    - timezone (str | pytz.BaseTzInfo): Current timezone. Defaults to `America/Bogota`.
-    - tasks (list[tuple]): List of scheduled tasks. Each task is represented as a tuple with the following structure:
-        - (time, method name | url, Job Object)
-        - Example: ("12:00", "say_hello", Job Object)
-
-    Methods:
-    - __init__(timezone: str | pytz.BaseTzInfo = "America/Bogota") -> None: Initializes a new Schedule object with the given timezone.
-    - add_task(time: str, method: Union[Callable, str], args: Tuple[Any] = None) -> bool: Adds a task to the list and runs it at the time setted.
-    - remove_task(method_name: str) -> bool: Removes a task from the list according to the url or name.
-    - total_tasks() -> int: Gives the amount of items in the list.
-    - has_tasks() -> bool: Checks if the list has items or not.
-    - start() -> None: Runs the tasks that are pending.
-    - run_task(method: Callable, args: list | tuple, callback: Callable): Runs a task with its arguments and run a callback.
-    - stop() -> None: Clears the tasks in Queue.
-    - open_web(url: str) -> bool: Opens a web page with the given URL.
-
-    Example:
-    ```python
-    def say_hello():
-        print("Hello World!")
-    schedule = Schedule()
-    schedule.add_task("12:00", say_hello)
-    print(schedule.tasks) # [("12:00", "say_hello", Job Object)]
-    ```
-    """
-    _running = False
-
-    def __init__(self, timezone: str | pytz.BaseTzInfo = "America/Bogota") -> None:
+    def __init__(self, timezone: Union[str, pytz.BaseTzInfo] = "America/Bogota", **kwargs) -> None:
         self._tasks: list[tuple] = []
         self._amount_tasks = 0
+        self.notifier = kwargs["notifier"] if "notifier" in kwargs else None
+        self.start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
         if isinstance(timezone, str):
-            self.timezone = pytz.timezone(timezone)  # type: ignore
+            self.timezone = pytz.timezone(timezone)
         elif isinstance(timezone, pytz.BaseTzInfo):
             self.timezone = timezone
         else:
             raise ValueError(
                 "'timezone' is not an instance of str or pytz.BaseTzInfo")
-        return None
 
     @property
     def tasks(self):
         return self._tasks
 
-    def add_task(self, time: str, method: Union[Callable, str], args: Tuple[Any] = None) -> bool:
-        "Adds a task to the list and runs it at the time setted"
-        if isinstance(method, Callable):
-            job = _schedule.every().day.at(time).do(self.run_task, method,
-                                                    args if args else [], self.remove_task)
-            self._tasks.append((time, method.__name__, job))
-            self._amount_tasks += 1
-            return True
-        elif isinstance(method, str):
+    def add_task(self, time: str, method: Union[Callable, str], args: Tuple[Any] | list[Any] = None) -> bool: # type: ignore
+        if isinstance(method, Callable) and self.is_time(time):
             job = _schedule.every().day.at(time).do(
-                self.run_task, self.open_web, [method], self.remove_task)
+                self.run_task, method, args if args else [])
             self._tasks.append((time, method, job))
             self._amount_tasks += 1
+            print("Added method")
+            return True
+        if isinstance(method, str) and self.is_time(time):
+            job = _schedule.every().day.at(time).do(
+                self.run_task, self.open_web, [method])
+            self._tasks.append((time, self.open_web, job))
+            self._amount_tasks += 1
+            print("Added URL")
             return True
         return False
 
-    def remove_task(self, method_name: str) -> bool:
-        "Removes a task from the list according to the url or name"
+    def remove_task(self, method_name: Union[str, Callable]) -> bool:
         for t in self._tasks:
-            if t[1].__name__ == method_name:
-                _schedule.cancel_job(t[2])
-                self._tasks.remove(t)
-                self._amount_tasks -= 1
-                return True
-            elif validators.url(t[1]) and t[1] == method_name:
-                _schedule.cancel_job(t[2])
-                self._tasks.remove(t)
-                self._amount_tasks -= 1
-                return True
-        return False
+            if isinstance(method_name, Callable):
+                if t[1].__name__ == method_name.__name__:
+                    _schedule.cancel_job(t[2])
+                    self._tasks.remove(t)
+                    self._amount_tasks -= 1
+                    return True
+            elif isinstance(method_name, str):
+                if t[1] == method_name:
+                    _schedule.cancel_job(t[2])
+                    self._tasks.remove(t)
+                    self._amount_tasks -= 1
+                    return True
+            else:
+                continue
+        else:
+            print("Still", self._tasks, self._amount_tasks)
+            return False
+
+    def run_task(self, method: Callable, args: list | tuple) -> None:
+        method(*args)
+        tm.sleep(1.25)
+        self.remove_task(method)
 
     def total_tasks(self) -> int:
-        "Gives the amount of items in  the list"
         return len(self._tasks)
 
     def has_tasks(self) -> bool:
-        "Checks if the list has items or not"
         return len(self._tasks) != 0
 
     def start(self) -> None:
-        "Runs the tasks that are pending."
-        try:
-            self._running = True
-            while self._amount_tasks != 0:
-                _schedule.run_pending()
-                tm.sleep(1)
-            return None
-        except _schedule.ScheduleError as excp:
-            raise _schedule.ScheduleError(excp) from excp
-
-    def run_task(self, method: Callable, args: list | tuple, callback: Callable):
-        "Runs a task with its arguments and run a callback"
-        method(*args)
-        self._tasks = list(
-            filter(lambda task: task[1] != method.__name__, self._tasks))
-        self._amount_tasks -= 1
-        callback(method.__name__)
+        if self.notifier and isinstance(self.notifier, Callable):
+            self.notifier()
+        if self.notifier and isinstance(self.notifier, MQThread):
+            self.notifier.start()
+        while self._amount_tasks != 0:
+            _schedule.run_pending()
+            tm.sleep(1)
 
     def stop(self) -> None:
-        "Clears the tasks in Queue"
-        self._running = False
-        try:
-            _schedule.clear()
-            return None
-        except _schedule.ScheduleError as excp:
-            raise _schedule.ScheduleError(excp) from excp
+        _schedule.clear()
 
     @staticmethod
     def open_web(url: str) -> bool:
         try:
-            if validators.url(url):
-                print(f"Trying to open {url}...")
+            if validators.url(url): # type: ignore
                 success = wb.open(url)
-                print(f"Successfully opened {url}") if success else print(
-                    f"Failed to open {url}")
+                print("Opening URL...")
+                if success:
+                    print("Successfully opened.")
+                    return success
                 return success
-            else:
-                print(f"{url} is not a valid URL")
-                return False
+            return False
         except wb.Error as excp:
-            print(f"An error occurred while trying to open {url}: {excp}")
             raise wb.Error(excp) from excp
+    
+    @staticmethod
+    def is_time(time: str) -> bool:
+        pattern = r"^[0-9]{2}:[0-9]{2}$"
+        return bool(re.match(pattern, time))
 
     def __int__(self) -> int:
         return self.total_tasks()
@@ -146,10 +112,10 @@ class Schedule:
         return self.has_tasks()
 
     def __str__(self) -> str:
-        return " ".join(self._tasks)
+        return " ".join([str(task) for task in self._tasks])
 
     def __iter__(self) -> Iterator:
         return iter(self._tasks)
 
     def __next__(self) -> Any:
-        return next(self._tasks)
+        return next(iter(self._tasks))

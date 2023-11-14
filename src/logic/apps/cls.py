@@ -10,7 +10,7 @@ from utils.config import setConfig
 from utils.setters import setText, connect
 from utils.others import get_time_log, getText
 
-from logic import database
+from logic import database as l_database
 
 
 class AppsMenu(SubWindow):
@@ -20,13 +20,13 @@ class AppsMenu(SubWindow):
     Attributes:
         icon (QIcon): The icon to be displayed in the GUI.
         mp (Any): A reference to the parent object.
-        db (database.BrainDatabase): The database where the items are stored.
+        db (l_database.BrainDatabase): The database where the items are stored.
         o_thread (QProcess): The thread where the programs will run from the database.
         connection: The connection to the database.
         actual (str): The current path selected in the database.
 
     Methods:
-        __init__(self, parent: Any, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
+        __init__(self, parent: Any, icon: QIcon, database: l_database.BrainDatabase, thread: QProcess):
             Initializes the `AppsMenu` object.
         loadShow(self):
             Loads, connects, sets and shows the GUI.
@@ -38,10 +38,10 @@ class AppsMenu(SubWindow):
             Runs the program displayed in QLineEdit.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase, thread: QProcess):
+    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase, thread: QProcess):
         '''
 
-        Args:
+        Args::
             parent (Self): Different of of `self` but to implement inside other class with `self`
             icon (QIcon): Icon to be setted up in the GUI
             db (database.Database): Db where is going to look for items
@@ -49,14 +49,14 @@ class AppsMenu(SubWindow):
         '''
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.mp = parent
-        self.db = db
+        self.my_parent = parent
+        self.database = database
         self.o_thread = thread
-        self.connection = self.db.connection
+        self.connection = self.database.connection
         uic.loadUi(fr"{cwd}logic\apps\apps_menu.ui", self)
         setConfig(self, "Apps Menu", self.icon, (760, 680))
 
-        self.actual: str = self.db.get_current_apps_path_apps()[0]
+        self.actual = str(self.database.get_current_apps_path_apps()[0])
         return None
 
     def loadShow(self):
@@ -76,16 +76,16 @@ class AppsMenu(SubWindow):
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
         with self.connection:
-            self.db.right_path()
-            self.actual: Any = self.db.get_current_apps_path_apps()[0]
+            self.database.right_path()
+            self.actual: Any = self.database.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
             return None
 
     def retroceder(self):
         "Loops back through the paths in database and sets it up in QLineEdit"
         with self.connection:
-            self.db.left_path()
-            self.actual: Any = self.db.get_current_apps_path_apps()[0]
+            self.database.left_path()
+            self.actual: Any = self.database.get_current_apps_path_apps()[0]
             setText(self, {"path_line": fr'"{self.actual}"'})
             return None
 

@@ -6,7 +6,7 @@ from utils import cwd, SubWindow, elementType
 from utils.config import setConfig
 from utils.setters import connect
 
-from logic import database
+from logic import database as l_database
 from logic.createApps import cls as createApps
 
 
@@ -17,11 +17,11 @@ class CreateMenu(SubWindow):
     Attributes:
         icon (QIcon): The icon to be displayed in the GUI.
         mp (Any): A reference to the parent object.
-        db (database.BrainDatabase): The database where items will be stored.
+        db (l_database.BrainDatabase): The database where items will be stored.
         createApps (createApps.CreateAppsMenu): A menu for saving apps to the database.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, db: database.BrainDatabase,
+    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase,
                  createApp: createApps.CreateAppsMenu):
         """
         Initializes a new instance of the `CreateMenu` class.
@@ -29,13 +29,13 @@ class CreateMenu(SubWindow):
         Args:
             parent (Any): A reference to the parent object.
             icon (QIcon): The icon to be displayed in the GUI.
-            db (database.BrainDatabase): The database where items will be stored.
+            db (l_database.BrainDatabase): The database where items will be stored.
             createApp (createApps.CreateAppsMenu): A menu for saving apps to the database.
         """
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.mp = parent
-        self.db = db
+        self.my_parent = parent
+        self.database = database
         self.createApps = createApp
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
         setConfig(self,

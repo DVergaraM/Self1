@@ -42,7 +42,7 @@ class LoginSystem(QDialog):
 
     def validate(self, e: QEvent):
         "Checks if the values of both QLineEdit are different from \"\", and enables a button if so"
-        if all(compare(getText(self, ("username_input", "password_input")), ("", ""))):
+        if all(compare(getText(self, ("username_input", "password_input")), ("", ""))): # type: ignore
             enableButton(self, ("login_button", True))
         else:
             enableButton(self, ("login_button", False))
