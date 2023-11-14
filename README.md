@@ -24,7 +24,7 @@ The `assets/` folder contains the following files
 
 The Second Brain application has the following dependencies:
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 
 - [PyQt5](https://pypi.org/project/PyQt5/)
     - For the GUIs and threads

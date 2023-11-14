@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QMessageBox
 from utils import otuple_str, ElementType, cwd
 from utils import others
 
+
 def create_brain_tables(conn: Connection):
     """
     Creates the necessary tables for the SBrain application in the given database connection.
@@ -25,33 +26,52 @@ def create_brain_tables(conn: Connection):
         sqlite3.Connection: The same connection object passed as an argument.
     """
     cur = conn.cursor()
-    cur.execute("""CREATE TABLE IF NOT EXISTS Config(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            image_path TEXT NOT NULL,
-            title VARCHAR(30) NOT NULL
-            )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS Icons(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR(50) NOT NULL,
-            Path VARCHAR(200) NOT NULL
-            )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS Urls(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR(50) NOT NULL,
-            Url VARCHAR(150) NOT NULL
-            )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS Apps(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR(50) NOT NULL,
-            path VARCHAR(700) NOT NULL
-            )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS Notifications AS
-            SELECT Urls.id as "id",
-            Urls.name as "name",
-            Urls.url as "url",
-            Icons.path as "path"
-            FROM Urls, Icons
-            WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)""")
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Config(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    image_path TEXT NOT NULL,
+                    title VARCHAR(30) NOT NULL
+                )
+                """)
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Icons(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                Path VARCHAR(200) NOT NULL
+                )
+                """)
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Urls(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(50) NOT NULL,
+                Url VARCHAR(150) NOT NULL
+                )
+                """)
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Apps(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name VARCHAR(50) NOT NULL,
+                    path VARCHAR(700) NOT NULL
+                )
+                """)
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Tasks(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    time VARCHAR(100) NOT NULL,
+                    method_name VARCHAR(30) NOT NULL,
+                    url VARCHAR(150),
+                    job VARCHAR(350) NOT NULL
+                )
+                """)
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Notifications AS
+                    SELECT Urls.id as "id",
+                    Urls.name as "name",
+                    Urls.url as "url",
+                    Icons.path as "path"
+                        FROM Urls, Icons
+                    WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)
+                    """)
     conn.commit()
     cur.close()
     del cur
@@ -75,15 +95,32 @@ def create_login_tables(conn: Connection):
     cur.execute("DROP TABLE IF EXISTS Apps")
     cur.execute("DROP TABLE IF EXISTS Notifications")
     cur.execute("DROP TABLE IF EXISTS Config")
-    cur.execute("""CREATE TABLE IF NOT EXISTS Login(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username VARCHAR(200) NOT NULL,
-        password VARCHAR(200) NOT NULL
-        )""")
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS Login(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username VARCHAR(200) NOT NULL,
+                    password VARCHAR(200) NOT NULL
+                    )
+                    """)
     conn.commit()
     cur.close()
     del cur
     return conn
+
+
+r"""
+def run(self):
+        "Runs the program displayed in QLineEdit"
+        text = get_text(self, "path_line")
+        path = fr"{text}"
+        cwd_log = os.getcwd()
+        format_date_all = get_time_log()
+        name = path.split("\\")[-1].removesuffix('.exe"').title().strip()
+        self.o_thread.setProgram(path)
+        self.o_thread.start(self.o_thread.program() if name == "Code" else self.o_thread.program(),
+                            [fr"> {cwd_log}\logs\log-{format_date_all.replace('_', ' ')}.log"])
+        print(f"[{format_date_all}] - {name} (run)")
+"""
 
 
 class ParentDatabase:
@@ -288,7 +325,7 @@ class BrainDatabase(ParentDatabase):
             INSERT INTO Apps(name, path)
             VALUES(?, ?)
             '''
-            cur.execute(sql, log) # type: ignore
+            cur.execute(sql, log)  # type: ignore
             conn.commit()
             QMessageBox.information(
                 element, 'Database', 'Information added to database')
@@ -319,7 +356,7 @@ class BrainDatabase(ParentDatabase):
                     element, "Deleted", "Elements deleted in database")
                 return None
             QMessageBox.warning(element, "Not Found",
-                                    "Elements not found in database")
+                                "Elements not found in database")
             return None
         QMessageBox.warning(
             element, "Error", "Only 2 items allowed in tuple")
