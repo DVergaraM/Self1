@@ -1,6 +1,7 @@
 "Main File of Second Brain"
 import os
 import sys
+from io import BytesIO
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
@@ -8,7 +9,7 @@ from PyQt5.QtGui import QIcon, QPixmap, QImage
 import PIL.Image as Img
 import requests
 
-from logic import Notification, Stray, MQThread, App, msgBox, Thread
+from logic import Notification, Stray, MQThread, App, msgBox
 from logic.database import BrainDatabase
 from logic.login.cls import LoginSystem
 from logic.apps.cls import AppsMenu
@@ -18,7 +19,7 @@ from logic.createApps.cls import CreateAppsMenu
 from logic.notification.cls import NotificationMenu
 from logic.schedule.cls import ScheduleMenu
 
-from utils.config import setConfig
+from utils.config import set_config
 from utils.others import get_time
 from utils.setters import connect
 
@@ -30,12 +31,12 @@ class Gui(QMainWindow):
     """
     Subclass of `PyQt5.QtWidgets.QMainWindow`.
     This class represents the main graphical user interface of the Second Brain application.
-    It loads the main GUI, sets the title, icon and fixed size for GUI, creates threads for running executables,
-    creates menus, and makes the connections between buttons and methods.
+    It loads the main GUI, sets the title, icon and fixed size for GUI, creates threads for 
+    running executables, creates menus, and makes the connections between buttons and methods.
     """
 
     def __init__(self) -> None:
-        super(Gui, self).__init__()
+        super().__init__()
         # Loads Main GUI
         default = "https://i.imgur.com/PgUSXzh.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
@@ -53,18 +54,15 @@ class Gui(QMainWindow):
         else:
             try:
                 default = "https://i.imgur.com/PgUSXzh.png"
-                from io import BytesIO
                 response = requests.get(default, timeout=5000)
                 if response.status_code == 200:
                     pil = Img.open(BytesIO(response.content))
                     print(pil.format)
                     if pil.mode != 'RGB':
                         pil = pil.convert('RGB')
-
-                    pixmap = QPixmap()
-                    pixmap.convertFromImage(QImage(pil.tobytes(), pil.width, pil.height, QImage.Format.Format_RGB888))
-
-                    self.icon = QIcon(pixmap)
+                    img = QImage(pil.tobytes(), pil.width,
+                                 pil.height, QImage.Format.Format_RGB888)
+                    self.icon = QIcon(QPixmap().convertFromImage(img))
                     print("With URL")
                 else:
                     pil = Img.open(fr"{os.getcwd()}\assets\default.png")
@@ -73,30 +71,25 @@ class Gui(QMainWindow):
             except requests.ConnectTimeout as excp:
                 raise requests.ConnectTimeout(excp) from excp
         # Sets title, icon and fixed size for GUI
-        setConfig(self, self.title, self.icon, (760, 680))
+        set_config(self, self.title, self.icon, (760, 680))
 
-        # # # # # # # #
-        #   Threads   #
-        # # # # # # # #
-        
         # Creates a Windows Pop-Up that displays that the system is on
         start_notifications = Notification(
-            self.title, "Pop-Ups", "Notification System ON", icon, duration="short") # type: ignore
+            self.title, "Pop-Ups", "Notification System ON", icon, duration="short")  # type: ignore
         # Creates a Windows Pop-Up that displays that the system is off
-        stop_notifications = Notification(
-            self.title, "Pop-Ups", "Notification System OFF", icon, duration='short') # type: ignore
+        stop_notifications = Notification(self.title,  # type: ignore
+            "Pop-Ups", "Notification System OFF", icon, duration='short')  # type: ignore
         # Thread for running the "Start Notifications" Pop-Up
-        self.start_thread = MQThread(start_notifications.run, False)
+        start_thread = MQThread(start_notifications.run, False)
         # Thread for running the "Stop Notifications" Pop-Up
-        self.stop_thread = MQThread(stop_notifications.run, False)
+        stop_thread = MQThread(stop_notifications.run, False)
         # Creates a Thread for running executables that are in Database
-        self.o_thread = QProcess()
-        
-        # Loads Schedule Menu
-        self.schedule_menu = ScheduleMenu(self, self.icon, self.database, notifier=self.start_thread)
+        o_thread = QProcess()
 
-        # Creates a Thread for 'run_pending' method with a while loop
-        #self.notifier = self.schedule_menu.start
+        # Loads Schedule Menu
+        self.schedule_menu = ScheduleMenu(
+            self, self.icon, self.database, notifier=start_thread)
+
 
         # # # # # # # #
         #    Menus    #
@@ -106,14 +99,14 @@ class Gui(QMainWindow):
         self.config_menu = ConfigMenu(self, self.icon, self.database)
         # Loads Apps Menu GUI
         self.apps_menu = AppsMenu(
-            self, self.icon, self.database, self.o_thread)
+            self, self.icon, self.database, o_thread)
         # Loads Create Apps Menu GUI
         self.create_apps_menu = CreateAppsMenu(
             self, self.icon, self.database, self.apps_menu)
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
             self, self.icon, self.database, start_notifications.run,
-            self.schedule_menu.start, self.stop_thread, self.apps_menu)
+            self.schedule_menu.start, stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
             self, self.icon, self.database, self.create_apps_menu)
@@ -129,7 +122,7 @@ class Gui(QMainWindow):
         })
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
-        stray = Stray(self.title, pil, (self.schedule_menu.start, # type: ignore
+        stray = Stray(self.title, pil, (self.schedule_menu.start,  # type: ignore
                                         self.schedule_menu.stop,
                                         self.config_menu.loadShow, self.show,
                                         self.hide, sys.exit))
@@ -156,7 +149,7 @@ def main(argv: list[str]):
 
         msg = msgBox(login)
         QTimer.singleShot(3*1000, lambda: msg.done(0))
-        gui = Gui()
+        _ = Gui()
         sys.exit(app.exec_())
 
 

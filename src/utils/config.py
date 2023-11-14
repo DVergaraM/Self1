@@ -1,21 +1,21 @@
 "Config module from Utils module"
 from typing import Any
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
 
-from utils import elementType, others, props
+from utils import ElementType, others, props
 
 
-def setConfig(element: elementType, title: str | None = None, icon: QIcon | None = None,
+def set_config(element: ElementType, title: str | None = None, icon: QIcon | None = None,
               size: QSize | tuple[int, int] | None = None) -> None:
     """
     Sets the configuration of an element with ease.
 
     Args:
-        element (elementType): The element to set the configuration for.
-        title (str | None, optional): The title to set for the element. Defaults to None.
-        icon (QIcon | None, optional): The icon to set for the element. Defaults to None.
-        size (QSize | tuple[int, int] | None, optional): The size to set for the element. Defaults to None.
+        element (ElementType): The element to set the configuration for.
+        title (str | None, optional): The title to set for the element.
+        icon (QIcon | None, optional): The icon to set for the element.
+        size (QSize | tuple[int, int] | None, optional): The size to set for the element.
 
     Raises:
         TypeError: If size is not an instance of tuple or PyQt5.QtCore.QSize.
@@ -34,7 +34,20 @@ def setConfig(element: elementType, title: str | None = None, icon: QIcon | None
             "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 
-def setMultipleConfig(element: elementType, icon: QIcon, properties: list[Any] | None, **kwargs):
+def set_multiple_config(element: ElementType, icon: QIcon, properties: list[Any] | None, **kwargs):
+    """
+    Set the configuration for multiple elements.
+
+    Args::
+        - element (ElementType): The main element to configure.
+        - icon (QIcon): The icon to set for all elements.
+        - properties (list[Any] | None): The list of elements to configure. 
+            If None, all menu elements will be configured.
+        - **kwargs: Additional arguments.
+        
+    Returns:
+        None
+    """
     if not properties:
         properties = [getattr(element, obj) for obj in props(
             element) if "menu" in obj and not "button" in obj]
@@ -56,4 +69,4 @@ def setMultipleConfig(element: elementType, icon: QIcon, properties: list[Any] |
         prop.setWindowTitle(title)
         prop.setWindowIcon(icon)
         prop.setFixedSize(size)
-        others.updateWindow(prop)
+        others.update_window(prop)

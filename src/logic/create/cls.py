@@ -1,9 +1,12 @@
-from typing import Any
+"Create Menu Module"
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
-from utils import cwd, SubWindow, elementType
-from utils.config import setConfig
+from utils import cwd, SubWindow, ElementType
+from utils.config import set_config
 from utils.setters import connect
 
 from logic import database as l_database
@@ -21,8 +24,8 @@ class CreateMenu(SubWindow):
         createApps (createApps.CreateAppsMenu): A menu for saving apps to the database.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase,
-                 createApp: createApps.CreateAppsMenu):
+    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
+                 create_app: createApps.CreateAppsMenu):
         """
         Initializes a new instance of the `CreateMenu` class.
 
@@ -36,12 +39,13 @@ class CreateMenu(SubWindow):
         self.icon = icon
         self.my_parent = parent
         self.database = database
-        self.createApps = createApp
+        # pylint: disable=invalid-name
+        self.createApps = create_app
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
-        setConfig(self,
-                  "Notification Menu", self.icon, (760, 680))
-        return None
+        set_config(self,
+                   "Notification Menu", self.icon, (760, 680))
 
+    # pylint: disable=invalid-name
     def loadShow(self):
         """
         Loads the GUI, connects buttons with methods, and shows the window.
@@ -51,5 +55,9 @@ class CreateMenu(SubWindow):
             "create_apps_menu": self.createApps.loadShow
         })
         self.show()
-        return None
-    
+
+    def add_to_db(self):
+        """
+        Adds the current instance of the App class to the database.
+        """
+        # TODO: Create the logic part to save apps to database in the App table

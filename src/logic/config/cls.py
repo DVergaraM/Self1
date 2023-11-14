@@ -1,12 +1,16 @@
+"Config Module"
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
 import os
 from PyQt5.QtGui import QIcon, QImageReader
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5 import uic
 
-from utils import cwd, SubWindow, elementType
-from utils.config import setConfig, setMultipleConfig
-from utils.setters import setText, enableButton, textChangedConnect, connect
-from utils.others import remove, updateWindow, getText
+from utils import cwd, SubWindow, ElementType
+from utils.config import set_config, set_multiple_config
+from utils.setters import set_text, enable_button, text_changed_connect, connect
+from utils.others import remove, update_window, get_text
 
 from logic import database as l_database
 
@@ -21,7 +25,7 @@ class ConfigMenu(SubWindow):
         db (l_database.BrainDatabase): The database where the items are stored.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase):
+    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase):
         '''
         Initializes the ConfigMenu class.
         '''
@@ -32,11 +36,12 @@ class ConfigMenu(SubWindow):
         self._config = ()
         self.image_path = str()
         uic.loadUi(fr"{cwd}logic\config\config_menu.ui", self)
-        setConfig(self, "Config Menu", self.icon)
+        set_config(self, "Config Menu", self.icon)
 
+    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects buttons with methods and shows GUI"
-        textChangedConnect(self, {
+        text_changed_connect(self, {
             self.validate_all: [
                 "title_input",
                 "path_input"
@@ -52,19 +57,25 @@ class ConfigMenu(SubWindow):
         self.show()
 
     def validate_all(self):
-        if all([getText(self, "title_input") != "", getText(self, "path_input") != ""]):
-            enableButton(self, {"save_all_button": True})
+        """
+        Validates if the title_input and path_input fields are not empty.
+        If both fields are not empty, the
+        save_all_button is enabled.
+        Otherwise, the save_all_button is disabled.
+        """
+        if all([get_text(self, "title_input") != "", get_text(self, "path_input") != ""]):
+            enable_button(self, {"save_all_button": True})
         else:
-            enableButton(self, {"save_all_button": False})
-        updateWindow(self)
+            enable_button(self, {"save_all_button": False})
+        update_window(self)
 
     def browse_icon(self):
         "Looks for an image to set up as App Icon"
         realpath = os.path.realpath("C:/Users")
-        supportedFormats = QImageReader.supportedImageFormats()
+        supportedFormats = QImageReader.supportedImageFormats() # type: ignore
         formats = []
-        for sF in supportedFormats:
-            formats.append(f"*.{sF.data().decode()}")
+        for sF in supportedFormats: # type: ignore
+            formats.append(f"*.{sF.data().decode()}") # type: ignore
         formatted = " ".join(formats)
         text_filter = f"Images ({formatted})"
         self.image_path, _ = QFileDialog.getOpenFileName(
@@ -77,13 +88,13 @@ class ConfigMenu(SubWindow):
             self._config = ()
             self._config += (self.image_path, )
             print(self._config)
-        setText(self, {"path_input": self.image_path})
-        updateWindow(self)
+        set_text(self, {"path_input": self.image_path})
+        update_window(self)
         print(self._config)
 
     def save_title(self):
         "Saves the title displayed in QLineEdit"
-        title = str(getText(self, "title_input"))
+        title = str(get_text(self, "title_input"))
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and\
                 title != "" and os.path.exists(self._config[0]): # type: ignore
             self._config = remove(self._config)
@@ -93,7 +104,7 @@ class ConfigMenu(SubWindow):
             self._config = ()
             self._config += (self.image_path, title)
             print(self._config)
-        updateWindow(self)
+        update_window(self)
         print(self._config)
 
     def add_to_db(self):
@@ -105,7 +116,7 @@ class ConfigMenu(SubWindow):
             self.database.set_config(self, self._config)
             icon, title = self.database.get_config()
             icon = QIcon(icon)
-            setMultipleConfig(self.my_parent, icon, None, default_title=title)
+            set_multiple_config(self.my_parent, icon, None, default_title=title)
             print("Config setted for all windows")
             return None
         QMessageBox.warning(

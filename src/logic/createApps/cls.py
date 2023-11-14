@@ -1,12 +1,14 @@
 "CreateApps Module"
-from typing import Any
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 
-from utils import cwd, SubWindow, elementType
-from utils.config import setConfig
-from utils.setters import setText, connect
-from utils.others import getText, updateWindow
+from utils import cwd, SubWindow, ElementType
+from utils.config import set_config
+from utils.setters import set_text, connect
+from utils.others import get_text, update_window
 
 from logic import database as l_database
 from logic.apps import cls as apps
@@ -25,21 +27,23 @@ class CreateAppsMenu(SubWindow):
     - actual_path (str): The current path of the application being displayed.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase, appsMenu: apps.AppsMenu):
+    def __init__(self, parent: ElementType, icon: QIcon,\
+            database: l_database.BrainDatabase, apps_menu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.my_parent = parent
         self.database = database
-        self.appsMenu = appsMenu
+        # pylint: disable=invalid-name
+        self.appsMenu = apps_menu
         uic.loadUi(fr"{cwd}logic\createApps\create_apps_menu.ui", self)
-        setConfig(self, "Apps Create", self.icon, (760, 680))
+        set_config(self, "Apps Create", self.icon, (760, 680))
         self.actual_name = str(self.database.get_current_apps_name()[0])
         self.actual_path = str(self.database.get_current_apps_path()[0])
-        return None
 
+    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects buttons with methods, sets text in path lines and shows it"
-        setText(self, {
+        set_text(self, {
             "name_input": self.actual_name,
             "path_input": self.actual_path
         })
@@ -52,7 +56,6 @@ class CreateAppsMenu(SubWindow):
             "edit_button": self.update
         })
         self.show()
-        return None
 
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
@@ -60,7 +63,7 @@ class CreateAppsMenu(SubWindow):
             self.database.right_create_apps_menu()
             self.actual_name = str(self.database.get_current_apps_name()[0])
             self.actual_path = str(self.database.get_current_apps_path()[0])
-            setText(self, {
+            set_text(self, {
                 "name_input": self.actual_name,
                 "path_input": self.actual_path
             })
@@ -71,43 +74,40 @@ class CreateAppsMenu(SubWindow):
             self.database.left_create_apps_menu()
             self.actual_name = str(self.database.get_current_apps_name()[0])
             self.actual_path = str(self.database.get_current_apps_path()[0])
-            setText(self, {
+            set_text(self, {
                 "name_input": self.actual_name,
                 "path_input": self.actual_path
             })
 
     def add_to_db(self):
         "Adds info to database"
-        current_name = getText(self, "name_input") # type: ignore
-        current_path = getText(self, "path_input") # type: ignore
+        current_name = get_text(self, "name_input") # type: ignore
+        current_path = get_text(self, "path_input") # type: ignore
         current_name: str = f"{current_name}"
         current_path: str = fr"{current_path}"
         self.database.create_log_apps(
             (current_name, current_path), self) # type: ignore
-        updateWindow(self)
-        updateWindow(self.appsMenu)
-        return None
+        update_window(self)
+        update_window(self.appsMenu)
 
     def delete_from_db(self):
         "Deletes info from database."
-        current_name = getText(self, "name_input") # type: ignore
-        current_path = getText(self, "path_input") # type: ignore
+        current_name = get_text(self, "name_input") # type: ignore
+        current_path = get_text(self, "path_input") # type: ignore
         current_name: str = f"{current_name}"
         current_path: str = fr"{current_path}"
         self.database.delete_log_apps(
             (current_name, current_path), self)
-        updateWindow(self)
-        updateWindow(self.appsMenu)
-        return None
+        update_window(self)
+        update_window(self.appsMenu)
 
     def update_from_db(self):
         "Updates info to database"
-        current_name = getText(self, "name_input") # type: ignore
-        current_path = getText(self, "path_input") # type: ignore
+        current_name = get_text(self, "name_input") # type: ignore
+        current_path = get_text(self, "path_input") # type: ignore
         current_name: str = f"{current_name}"
         current_path: str = fr"{current_path}"
         self.database.update_log_apps(
             current_path, current_name, self)
-        updateWindow(self)
-        updateWindow(self.appsMenu)
-        return None
+        update_window(self)
+        update_window(self.appsMenu)

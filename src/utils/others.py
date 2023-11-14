@@ -4,24 +4,26 @@ from hashlib import sha256
 from typing import Any, Tuple
 from datetime import datetime
 
-from utils import elementType, attribute, config
+from utils import ElementType, attribute, config
 from logic import database as l_database
 
 
-def getText(element: elementType,
+def get_text(element: ElementType,
             attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None | str:
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
-        return tuple(getattr(element, attr).text() if isinstance(attr, attribute) and hasattr(element, attr) else "" for attr in attrs)
-    return getattr(element, attrs).text() if isinstance(attrs, attribute) and hasattr(element, attrs) else ""
+        return tuple(getattr(element, attr).text() \
+            if isinstance(attr, attribute) and hasattr(element, attr) else "" for attr in attrs)
+    return getattr(element, attrs).text() if isinstance(attrs, attribute) and \
+        hasattr(element, attrs) else ""
 
 
-def updateWindow(element: elementType) -> None:
+def update_window(element: ElementType) -> None:
     """
     Updates a window and reloads variables.
 
     Args::  
-        - element (elementType): The window element to be updated.
+        - element (ElementType): The window element to be updated.
 
     Raises:
         AttributeError: If an attribute error occurs during the update process.
@@ -29,41 +31,37 @@ def updateWindow(element: elementType) -> None:
     try:
         if hasattr(element, "db") and hasattr(element, "DB_PATH"):
             element.database = l_database.BrainDatabase(element.DB_PATH)
-            config.setConfig(element, element.windowTitle(),
+            config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-            return None
         elif hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
             element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
-            config.setConfig(element, element.windowTitle(),
+            config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-            return None
         elif hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG"):
             element.db_config = l_database.BrainDatabase(
                 element.DB_PATH_CONFIG)
-            config.setConfig(element, element.windowTitle(),
+            config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-            return None
-        elif (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")) and (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")):
+        elif (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")) \
+            and (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")):
             element.db_config = l_database.BrainDatabase(
                 element.DB_PATH_CONFIG)
             element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
-            config.setConfig(element, element.windowTitle(),
+            config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-            return None
         else:
-            config.setConfig(element, element.windowTitle(),
+            config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
             element.update()
-            return None
     except AttributeError as excp:
         raise AttributeError(excp) from excp
 
 
-def sha(element: elementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | str:
+def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | str:
     """
     Converts QLineEdit values to SHA256 and returns it as a tuple.
 
@@ -90,20 +88,21 @@ def sha(element: elementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
                     continue
             return objs_in_sha  # type: ignore
         raise IndexError("Only 2 items are allowed in the tuple")
-    return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest() if hasattr(element, objs) else ""
+    return sha256(str(getattr(element, objs).text()).encode('utf-8'))\
+        .hexdigest() if hasattr(element, objs) else ""
 
 
 def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tuple[bool]:
     """
     Compares the items inside 2 tuples and checks if they are the same.
 
-    Args:
-        result (tuple[str, ...]): The first tuple to compare.
-        comparation (tuple[str, ...]): The second tuple to compare.
+    Args::
+        - result (tuple[str, ...]): The first tuple to compare.
+        - comparation (tuple[str, ...]): The second tuple to compare.
 
     Returns:
-        bool | tuple[bool]: If the tuples are the same, returns True. Otherwise, returns False and a tuple
-        indicating which elements are different.
+        bool | tuple[bool]: If the tuples are the same, returns True. 
+            Otherwise, returns False and a tuple indicating which elements are different.
     """
     if len(result) != len(comparation):
         return False

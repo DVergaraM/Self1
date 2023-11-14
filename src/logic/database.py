@@ -1,16 +1,17 @@
-from typing import Callable, Any
-from sqlite3 import connect, Connection, DatabaseError
 "Database module from Logic Module"
+# pylint: disable=import-self
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+# pylint: disable=no-member
+# pylint: disable=not-callable
+# pylint: disable=redefined-builtin
+from typing import Callable
+from sqlite3 import connect, Connection, DatabaseError
 import os
-from typing import Any, Callable
 from PyQt5.QtWidgets import QMessageBox
-try:
-    from sqlite3 import (Connection,
-                         connect, DatabaseError)
-except ImportError as exc:
-    raise ImportError("Error by importing 'sqlite3' module.") from exc
 
-from utils import otuple_str, cwddb, elementType, cwd
+from utils import otuple_str, ElementType, cwd
 from utils import others
 
 def create_brain_tables(conn: Connection):
@@ -122,8 +123,7 @@ class ParentDatabase:
             self.DB_PATH = path_to_db
         else:
             self.DB_PATH = fr"{cwd}\brain_mine.db"
-        self._connection = self._create_connection()
-        return None
+        self._connection = self.create_connection()
 
     @property
     def connection(self) -> Connection:
@@ -137,7 +137,7 @@ class ParentDatabase:
         """
         return self._connection
 
-    def _create_connection(self, func: Callable[[Connection], Connection] = None) -> Connection: # type: ignore
+    def create_connection(self, func: Callable[[Connection], Connection] = None): # type: ignore
         """
         Creates a connection to the database.
 
@@ -184,14 +184,14 @@ class BrainDatabase(ParentDatabase):
     - get_current_apps_path(self): Returns the current application directory.
     - right_create_apps_menu(self): Moves right in the application list.
     - left_create_apps_menu(self): Moves left in the application list.
-    - create_log_apps(self, log: otuple_str, element: elementType): Creates an application log.
-    - delete_log_apps(self, log: tuple[str, str], element: elementType): Deletes an application log.
-    - update_log_apps(self, path: str, name: str, element: elementType): Updates an application log.
+    - create_log_apps(self, log: otuple_str, element: ElementType): Creates an application log.
+    - delete_log_apps(self, log: tuple[str, str], element: ElementType): Deletes an application log.
+    - update_log_apps(self, path: str, name: str, element: ElementType): Updates an application log.
     """
 
     def __init__(self, path_to_db: str):
         super().__init__(path_to_db, "brain")
-        self._connection = self._create_connection(create_brain_tables)
+        self._connection = self.create_connection(create_brain_tables)
         self.app_path_actual = 0
         self.create_apps_menu_actual = 0
         self.apps_paths = self.fetch_all_apps_paths()
@@ -238,13 +238,11 @@ class BrainDatabase(ParentDatabase):
         "Moves right in the Apps Directory list"
         self.app_path_actual += 1
         self.app_path_actual %= len(self.apps_paths)
-        return None
 
     def left_path(self):
         "Moves left in the Apps Directory list"
         self.app_path_actual -= 1
         self.app_path_actual %= len(self.apps_paths)
-        return None
 
     def get_current_apps_name(self):
         "Get the current Application name"
@@ -268,15 +266,13 @@ class BrainDatabase(ParentDatabase):
         "Moves right in the Apps list"
         self.create_apps_menu_actual += 1
         self.create_apps_menu_actual %= len(self.apps_ids)
-        return None
 
     def left_create_apps_menu(self):
         "Moves left in the Apps list"
         self.create_apps_menu_actual -= 1
         self.create_apps_menu_actual %= len(self.apps_ids)
-        return None
 
-    def create_log_apps(self, log: otuple_str, element: elementType):
+    def create_log_apps(self, log: otuple_str, element: ElementType):
         "Creates an Application Log"
         conn = self.connection
         cur = conn.cursor()
@@ -301,7 +297,7 @@ class BrainDatabase(ParentDatabase):
             element, 'Error', 'Data already in database')
         return None
 
-    def delete_log_apps(self, log: tuple[str, str], element: elementType):
+    def delete_log_apps(self, log: tuple[str, str], element: ElementType):
         "Deletes an Application Log"
         if len(log) == 2:
             conn = self.connection
@@ -322,15 +318,14 @@ class BrainDatabase(ParentDatabase):
                 QMessageBox.information(
                     element, "Deleted", "Elements deleted in database")
                 return None
-            else:
-                QMessageBox.warning(element, "Not Found",
+            QMessageBox.warning(element, "Not Found",
                                     "Elements not found in database")
-                return None
+            return None
         QMessageBox.warning(
             element, "Error", "Only 2 items allowed in tuple")
         return None
 
-    def update_log_apps(self, path: str, name: str, element: elementType):
+    def update_log_apps(self, path: str, name: str, element: ElementType):
         # TODO: Create a GUI that allows the user to update an App Directory according to the name
         "Updates an Application Log"
         conn = self.connection
@@ -343,7 +338,7 @@ class BrainDatabase(ParentDatabase):
         conn.close()
         QMessageBox.information(element, "Updated", "Path updated in database")
 
-    def set_config(self, element: elementType, config: tuple[str, str]):
+    def set_config(self, element: ElementType, config: tuple[str, str]):
         """Sets the config with a directory and title that will be used for all 
         Program's GUI and Stray"""
         assert len(config) == 2, "Config length must be 2"
@@ -358,10 +353,10 @@ class BrainDatabase(ParentDatabase):
         conn.commit()
         QMessageBox.information(element, "Information",
                                 "Your config has been saved")
-        others.updateWindow(element)
+        others.update_window(element)
         return cur.lastrowid
 
-    def update_config_icon(self, element: elementType, new_icon: str, title: str):
+    def update_config_icon(self, element: ElementType, new_icon: str, title: str):
         # TODO: Create a GUI that allows the user to set a new icon with ease
         "Updates the icon according to the title"
         conn = self.connection
@@ -376,7 +371,7 @@ class BrainDatabase(ParentDatabase):
         conn.close()
         QMessageBox.information(element, "Information", "Icon changed")
 
-    def update_config_title(self, element: elementType, new_title: str, icon: str):
+    def update_config_title(self, element: ElementType, new_title: str, icon: str):
         # TODO: Create a GUI that allows the user to set a new title with ease
         "Updates title according to the icon"
         conn = self.connection
@@ -426,13 +421,13 @@ class LoginDatabase(ParentDatabase):
         Get all logins and checks if an username and password exists in Database.
     add_user_logins(username: str, password: str)
         Adds a Login to Database according to some QLineEdit values in SHA256.
-    update_user_password_logins(element: elementType, username: str, password: str, new_password: str)
+    update_user_password_logins(element:ElementType, username:str, password:str, new_password:str)
         Updates the user's password in database.
     """
 
     def __init__(self, path_to_db: str):
         super().__init__(path_to_db, "login")
-        self._connection = self._create_connection(create_login_tables)
+        self._connection = self.create_connection(create_login_tables)
 
     def fetch_all_logins(self, username: str, password: str):
         "Get all logins and checks if an username and password exists in Database"
@@ -458,7 +453,7 @@ class LoginDatabase(ParentDatabase):
         conn.commit()
         return cur.lastrowid
 
-    def update_user_password_logins(self, element: elementType, username: str,
+    def update_user_password_logins(self, element: ElementType, username: str,
                                     password: str, new_password: str):
         # TODO: Create a GUI that allows the user to update his password with ease
         "Updates the user's password in database"
@@ -473,4 +468,3 @@ class LoginDatabase(ParentDatabase):
         conn.close()
         QMessageBox.information(
             element, "Password changed", "Your password has been updated")
-        return None

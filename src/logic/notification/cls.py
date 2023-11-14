@@ -1,16 +1,20 @@
 "Notification Module"
-from typing import Any, Callable
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+from typing import Callable
 from itertools import count
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
+from threading import Thread
 
-from utils import cwd, SubWindow, elementType
-from utils.config import setConfig
+from utils import cwd, SubWindow, ElementType
+from utils.config import set_config
 from utils.others import get_time
 from utils.setters import connect
 
 from logic import database as l_database
-from logic import MQThread, Thread
+from logic import MQThread
 from logic.apps import cls as apps
 
 
@@ -19,68 +23,67 @@ class NotificationMenu(SubWindow):
     Subclass of `SubWindow` that represents the notification menu.
 
     Args:
-        parent (elementType): The parent element of the notification menu.
+        parent (ElementType): The parent element of the notification menu.
         icon (QIcon): The icon to be displayed on the notification menu.
         db (l_database.BrainDatabase): The database object used by the notification menu.
         notifier (MQThread): The message queue thread used by the notification menu.
-        startT (Thread): The thread used to start the notification system.
-        stopT (MQThread): The message queue thread used to stop the notification system.
-        appsMenu (apps.AppsMenu): The apps menu object used by the notification menu.
+        start_t (Thread): The thread used to start the notification system.
+        stop_t (MQThread): The message queue thread used to stop the notification system.
+        apps_menu (apps.AppsMenu): The apps menu object used by the notification menu.
     """
 
-    def __init__(self, parent: elementType, icon: QIcon, database: l_database.BrainDatabase, notifier: MQThread | Callable,
-                 startT: Thread | MQThread | Callable, stopT: MQThread, appsMenu: apps.AppsMenu):
+    def __init__(self, parent: ElementType, icon: QIcon,
+                 database: l_database.BrainDatabase, notifier: MQThread | Callable,
+                 start_t: Thread | MQThread | Callable, stop_t: MQThread, apps_menu: apps.AppsMenu):
         super().__init__(size=(760, 680))
         self.icon = icon
         self.my_parent = parent
         self.database = database
         self.notifier = notifier
-        self.startT = startT
-        self.stopT = stopT
-        self.appsMenu = appsMenu
+        self.threads = (start_t, stop_t)
+        self.apps_menu = apps_menu
         self.counter = count()
         uic.loadUi(fr"{cwd}logic\notification\notification_menu.ui", self)
-        setConfig(self,
-                  "Notification Menu", self.icon, (760, 680))
+        set_config(self,
+                   "Notification Menu", self.icon, (760, 680))
 
+    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects and shows the buttons with methods"
         connect(self, {
-            "start_popups_button": self._start_thread,
+            "start_popups_button": self.start_thread,
             "stop_popups_button": self._stop_popups,
             "exit_button": self.close,
-            "apps_button_menu": self.appsMenu.loadShow
+            "apps_button_menu": self.apps_menu.loadShow
         })
         self.show()
-        return None
 
     def _stop_popups(self):
         "Stops Notification System"
-        self.stopT.start()
+        self.threads[1].start()
         format_date_all = get_time()
         print(
             f"{format_date_all} - Thread-{next(self.counter)} (stop)")
         self.notifier.exit()
-        return None
 
-    def _start_thread(self):
+    def start_thread(self):
         "Starts Notification System"
-        if isinstance(self.startT, Callable) and isinstance(self.notifier, Callable):
-            self.startT()
+        if isinstance(self.threads[0], Callable) and isinstance(self.notifier, Callable):
+            self.threads[0]()
             self.notifier()
             return None
-        elif isinstance(self.startT, (MQThread | Thread)) and isinstance(self.notifier, Callable):
-            self.startT.start()
+        if isinstance(self.threads[0], (MQThread | Thread))\
+                and isinstance(self.notifier, Callable):
+            self.threads[0].start()
             self.notifier()
-            return None
-        elif isinstance(self.startT, Callable) and isinstance(self.notifier, (MQThread | Thread)):
-            self.startT()
+        if isinstance(self.threads[0], Callable)\
+                and isinstance(self.notifier, (MQThread | Thread)):
+            self.threads[0]()
             self.notifier.start()
-            return None
-        elif isinstance(self.startT, (MQThread | Thread)) and isinstance(self.notifier, (MQThread | Thread)):
-            self.startT.start()
+        if isinstance(self.threads[0], (MQThread | Thread))\
+                and isinstance(self.notifier, (MQThread | Thread)):
+            self.threads[0].start()
             self.notifier.start()
-            return None
-        else:
-            raise TypeError(
-                f"Expected {MQThread} or {Thread} for startT and {MQThread} or {Thread} for notifier, got {type(self.startT)} and {type(self.notifier)} instead.")
+        raise TypeError(
+            f"Expected MQThread or Thread for start_t and MQThread or Thread for notifier, \
+                got {type(self.threads[0])} and {type(self.notifier)} instead.")

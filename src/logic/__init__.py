@@ -1,6 +1,12 @@
-from typing import Callable, Any, Iterator, Union, Tuple
+"Logic Module"
+# pylint: disable=import-self
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+# pylint: disable=no-member
+# pylint: disable=not-callable
+from typing import Callable, Any
 import os
-from datetime import datetime
 from itertools import count
 import time as tm
 from PyQt5.QtCore import QThread
@@ -10,9 +16,7 @@ from pystray import (Menu, MenuItem as Item, Icon)
 import pytz
 from winotify import Notification as _Notifier
 from winotify import audio
-import schedule as _schedule
 import PIL.Image as Img
-from threading import Thread
 
 from logic.login import cls as login
 from utils.others import get_time
@@ -51,29 +55,39 @@ class Notification(_Notifier):
         self.set_audio(sound, loop=False)
         if launch is not None:
             self.add_actions("Click Here!", launch)
-            return None
-        return None
 
     def run(self) -> None:
         "Shows Notification with log"
         self.show()
         format_date_all = get_time()
         print(f"{format_date_all} - Task: '{self.msg}'")
-        return None
 
 
 class MQThread(QThread):
     """
-    A subclass of `PyQt5.QtCore.QThread` that allows for running one or more target methods in a loop or once.
+    A subclass of `PyQt5.QtCore.QThread` that allows for
+    running one or more target methods in a loop or once.
 
     :param targets: A callable or a tuple of callables to be run.
     :type targets: Callable[[], Any] | tuple[Callable[[], Any]]
-    :param loops: A boolean or a tuple of booleans indicating whether each target should be run in a loop or once.
+    :param loops: A boolean or a tuple of booleans indicating whether each 
+        target should be run in a loop or once.
     :type loops: bool | tuple[bool]
     """
 
     def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
                  loops: bool | tuple[bool]):
+        """
+        Initializes the class instance with the given targets and loops.
+
+        Args:
+        - targets: A callable or a tuple of callables.
+        - loops: A bool or a tuple of bools.
+
+        Raises:
+        - TypeError: If targets is not a callable or a tuple of callables, \
+            or if loops is not a bool or a tuple of bools.
+        """
         super().__init__()
         self.is_tuple = False
         self.counter = count()
@@ -81,23 +95,24 @@ class MQThread(QThread):
             self.targets = (targets,)
             self.names = (targets.__name__,)
             self.loops = (loops,)
-            return None
         elif isinstance(targets, tuple) and isinstance(loops, tuple) and \
-                all(isinstance(target, Callable) for target in targets) and all(isinstance(loop, bool) for loop in loops):
+                all(isinstance(target, Callable) for target in targets) and\
+            all(isinstance(loop, bool) for loop in loops):
             self.targets = targets
             self.names = tuple(target.__name__ for target in targets)
             self.loops = loops
             self.is_tuple = True
-            return None
         else:
             raise TypeError(
-                "'targets' must be a callable or a tuple of callables, and 'loop' must be a bool or a tuple of bools")
+                "'targets' must be a callable or a tuple of callables, \
+                    and 'loop' must be a bool or a tuple of bools")
 
     def run(self):
         """
         Runs the target(s) method(s) according to some variables initialized in __init__
 
-        Loops through the targets and names, and if the corresponding loop is True, runs the target method in a loop
+        Loops through the targets and names, and if the corresponding loop is True, 
+            runs the target method in a loop
         until the isFinished method returns True. Otherwise, runs the target method once.
         """
         for loop, target, name in zip(self.loops, self.targets, self.names):
@@ -110,14 +125,12 @@ class MQThread(QThread):
                 format_date_all = get_time()
                 print(f"{format_date_all} - {name} (run)")
                 target()
-        return None
-    
+
     def stop(self):
         """
         Stops the thread.
         """
         self.terminate()
-        return None
 
 
 class Stray:
@@ -141,7 +154,6 @@ class Stray:
         self._image = image
         self.methods = methods
         self.icon = None
-        return None
 
     @property
     def title(self):
@@ -189,7 +201,6 @@ class Stray:
         )
         self.icon = Icon(self.title, self.image, menu=menu, title=self.title)
         self.icon.run()
-        return None
 
     def __helper__(self, icon, item):
         notifier_start, notifier_stop, open_config, show_ui, close_ui, *_ = self.methods
@@ -226,7 +237,6 @@ class Stray:
                     f"{format_date_all} - Closing {self.icon_name}")
                 tm.sleep(5)
                 icon.stop()
-        return None
 
 
 def msgBox(log: login.LoginSystem):
