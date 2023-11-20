@@ -3,6 +3,7 @@
 from hashlib import sha256
 from typing import Any, Tuple
 from datetime import datetime
+from hashlib import sha256
 
 from utils import ElementType, attribute, config
 from logic import database as l_database
@@ -110,25 +111,12 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tup
 
 
 def remove(elements: tuple) -> tuple:
-    """
-    Removes duplicate elements in a tuple.
-
-    Args:
-        elements (tuple): The tuple to remove duplicates from.
-
-    Returns:
-        tuple: A new tuple with the duplicate elements removed.
-    """
+    "Removes duped elements in tuple"
     return tuple(set(elements))
 
 
 def get_time_log() -> str:
-    """
-    Returns the current time in the format of day-month-year_hour-minute-second.
-
-    Returns:
-    str: A string representing the current time in the format of day-month-year_hour-minute-second.
-    """
+    "Returns the current time"
     date = datetime.now()
     format_date = f"{date.day}-{date.month}-{date.year}_"
     format_hour = f"{date.hour}-{date.minute}-{date.second}"
@@ -136,9 +124,7 @@ def get_time_log() -> str:
 
 
 def get_time():
-    """
-    Returns the current time in the format of [day-month-year hour:minute:second].
-    """
+    "Returns the current time"
     date = datetime.now()
     format_date = f"[{date.day}-{date.month}-{date.year} "
     format_time = f"{date.hour}:{date.minute}:{date.second}]"

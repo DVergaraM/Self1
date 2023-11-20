@@ -55,8 +55,7 @@ class RegisterSystem(QDialog):
 
     def add_to_db(self):
         "Adds the QLineEdit values to database if not exists"
-        i_username, i_password = sha(
-            self, ("username_input", "password_input"))
+        i_username, i_password = sha(self, ("username_input", "password_input"))
         login = self.db_login.fetch_all_logins(i_username, i_password)
 
         if len(login) >= 1:

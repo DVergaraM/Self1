@@ -34,7 +34,6 @@ class Gui(QMainWindow):
     It loads the main GUI, sets the title, icon and fixed size for GUI, creates threads for 
     running executables, creates menus, and makes the connections between buttons and methods.
     """
-
     def __init__(self) -> None:
         super().__init__()
         # Loads Main GUI
@@ -110,7 +109,7 @@ class Gui(QMainWindow):
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
             self, self.icon, self.database, self.create_apps_menu)
-
+        
         # Makes the connections between buttons and methods
         connect(self, {
             "notification_menu_button": self.notification_menu.loadShow,
@@ -138,6 +137,7 @@ class Gui(QMainWindow):
         return "Gui()"
 
 
+
 def main(argv: list[str]):
     "Main function"
     app = App(argv)
@@ -155,3 +155,5 @@ def main(argv: list[str]):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
+# TODO: Create a GUI for scheduling activities with certain hours

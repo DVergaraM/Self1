@@ -52,8 +52,9 @@ def connect(element: ElementType, \
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.clicked.connect(meth)
-    if isinstance(objs, dict) and all(isinstance(key, attribute) and
-                                        isinstance(value, method) for key, value in objs.items()):
+            return None
+    elif isinstance(objs, dict) and all(isinstance(key, attribute) and\
+        isinstance(value, method) for key, value in objs.items()):
         for attr, meth in objs.items():
             if hasattr(element, attr):
                 obj = getattr(element, attr)
@@ -82,8 +83,9 @@ def text_changed_connect(element: ElementType,
         if (isinstance(attr, attribute) and isinstance(meth, method)) and hasattr(element, attr):
             obj = getattr(element, attr)
             obj.textChanged.connect(meth)
-    if isinstance(objs, dict) and all(isinstance(meth, method) and
-                                        isinstance(lst, list) for meth, lst in objs.items()):
+            return None
+    elif isinstance(objs, dict) and all(isinstance(meth, method) and\
+        isinstance(lst, list) for meth, lst in objs.items()):
         for meth, lst in objs.items():
             for attr in lst:
                 if hasattr(element, attr):
@@ -111,7 +113,7 @@ def enable_button(element: ElementType,
         None
     '''
     if isinstance(data, tuple) and len(data) == 2:
-        attr, value = data  # Unzip the data inside in two variables
+        attr, value = data # Unzip the data inside in two variables
         if hasattr(element, attr):
             attr = getattr(element, attr)
             attr.setEnabled(value)

@@ -99,6 +99,11 @@ class AppsMenu(SubWindow):
         format_date_all = get_time_log()
         name = path.split("\\")[-1].removesuffix('.exe"').title().strip()
         self.o_thread.setProgram(path)
-        self.o_thread.start(self.o_thread.program() if name == "Code" else self.o_thread.program(),
-                            [fr"> {cwd_log}\logs\log-{format_date_all.replace('_', ' ')}.log"])
-        print(f"[{format_date_all}] - {name} (run)")
+        if name == "Code":
+            self.o_thread.start(self.o_thread.program())
+        else:
+            self.o_thread.start(self.o_thread.program(), [
+                               fr"> {cwd_log}\logs\log-{format_date_all}.log"])
+        format_date_all = format_date_all.replace("_", " ")
+        print(
+            f"[{format_date_all}] - {name} (run)")

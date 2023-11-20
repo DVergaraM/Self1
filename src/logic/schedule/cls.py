@@ -15,7 +15,6 @@ from logic import database as l_database
 from logic import MQThread
 from logic.schedule.schedule import Schedule as LogicSchedule
 
-
 class ScheduleMenu(SubWindow):
     """
     Subclass of `SubWindow` that represents a window for managing a schedule of tasks.
@@ -58,7 +57,7 @@ class ScheduleMenu(SubWindow):
             "exit_button": self.close,
         })
         self.show()
-
+        
     def _add_task(self):
         "Adds a task to the schedule"
         time = str(get_text(self, "time_input"))
