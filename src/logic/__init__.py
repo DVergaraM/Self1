@@ -13,7 +13,6 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from PyQt5.QtGui import QIcon, QPixmap
 from pystray import (Menu, MenuItem as Item, Icon)
-import pytz
 from winotify import Notification as _Notifier
 from winotify import audio
 import PIL.Image as Img
@@ -49,18 +48,37 @@ class Notification(_Notifier):
     """
 
     def __init__(self, app_id: str = "Second Brain", title: str = "Notifier",
-                 msg: str = "", icon: str = "", launch: str | Callable | None = None,
+                 msg: str = "", icon: str = "", launch: str | Callable[[], Any] | None = None,
                  duration='long', sound: audio.Sound = audio.Reminder) -> None:
+        """
+        Initializes a new instance of the Notification class.
+
+        Args:
+            app_id (str, optional): The ID of the application. Defaults to "Second Brain".
+            title (str, optional): The title of the notification. Defaults to "Notifier".
+            msg (str, optional): The message of the notification. Defaults to "".
+            icon (str, optional): The path to the icon file. Defaults to "".
+            launch (str | Callable[[], Any] | None, optional): The action to perform when the notification is clicked. Defaults to None.
+            duration (str, optional): The duration of the notification. Defaults to 'long'.
+            sound (audio.Sound, optional): The sound to play when the notification is displayed. Defaults to audio.Reminder.
+        """
         super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
-        if launch is not None:
+        self._launch = None
+        if launch:
             self.add_actions("Click Here!", launch)
+            self._launch = launch
 
     def run(self) -> None:
         "Shows Notification with log"
         self.show()
         format_date_all = get_time()
         print(f"{format_date_all} - Task: '{self.msg}'")
+        
+    @property
+    def launch(self):
+        "Launch property"
+        return self._launch
 
 
 class MQThread(QThread):
@@ -115,7 +133,7 @@ class MQThread(QThread):
             runs the target method in a loop
         until the isFinished method returns True. Otherwise, runs the target method once.
         """
-        for loop, target, name in zip(self.loops, self.targets, self.names):
+        for loop, target, name in zip(self.loops, self.targets, self.names): # type: ignore
             if loop:
                 format_date_all = get_time()
                 print(f"{format_date_all} - {name} (run)")
@@ -149,7 +167,18 @@ class Stray:
         The Stray icon object.
     """
 
-    def __init__(self, icon_name: str, image: Img, methods: tuple[Callable, ...]): # type: ignore
+    def __init__(self, icon_name: str, image: Img.Image, methods: tuple[Callable, ...]):
+        """
+        Initializes a Logic object.
+
+        Args:
+            icon_name (str): The name of the icon.
+            image (Img): The image of the icon.
+            methods (tuple[Callable, ...]): A tuple of methods to be executed.
+
+        Returns:
+            None
+        """
         self.icon_name = icon_name
         self._image = image
         self.methods = methods
@@ -162,7 +191,15 @@ class Stray:
 
     @title.setter
     def title(self, value: str):
-        "Title setter"
+        """
+        Sets the title of the object.
+
+        Args:
+        - value (str): The title to be set.
+
+        Raises:
+        - ValueError: If value is not an instance of str or is the same as the current title.
+        """
         if isinstance(value, str) and value != self.icon_name:
             self.icon_name = value
         else:
@@ -176,6 +213,15 @@ class Stray:
 
     @image.setter
     def image(self, value):
+        """
+        Sets the image for the object.
+
+        Args:
+            value (PIL.Image): The image to set.
+
+        Raises:
+            ValueError: If `value` is not an instance of PIL.Image or is the same as the current image.
+        """
         if isinstance(value, Img.Image) and value != self._image:
             self._image = value
         else:
@@ -267,10 +313,10 @@ def App(argv: list[str]):
     Returns:
         QApplication: The created QApplication instance.
     """
-    cwd_assets = fr"{os.getcwd()}\assets"
+    cwd_assets = os.path.join(os.getcwd(), "assets")
     app = QApplication(argv)
     icon = QIcon()
-    icon.addPixmap(QPixmap(fr"{cwd_assets}\default.png"),
+    icon.addPixmap(QPixmap(os.path.join(cwd_assets, "default.png")),
                    QIcon.Mode.Selected, QIcon.State.On)
     app.setWindowIcon(icon)
     app.setDesktopFileName("Second Brain")

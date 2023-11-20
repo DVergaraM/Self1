@@ -32,6 +32,7 @@ class Schedule:
         self._amount_tasks = 0
         self.notifier = kwargs["notifier"] if "notifier" in kwargs else None
         self.start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
+        self.database = kwargs["database"] if "database" in kwargs else None
         if isinstance(timezone, str):
             self.timezone = pytz.timezone(timezone)
         elif isinstance(timezone, pytz.BaseTzInfo):
@@ -68,6 +69,7 @@ class Schedule:
             job = _schedule.every().day.at(time).do(
                 self.run_task, method, args if args else [])
             self._tasks.append((time, method, job))
+            print(self._tasks)
             self._amount_tasks += 1
             print("Added method")
             return True
@@ -75,6 +77,7 @@ class Schedule:
             job = _schedule.every().day.at(time).do(
                 self.run_task, self.open_web, [method])
             self._tasks.append((time, self.open_web, job))
+            print(self._tasks)
             self._amount_tasks += 1
             print("Added URL")
             return True

@@ -1,6 +1,7 @@
 "Others module from Utils module"
 
 from hashlib import sha256
+from importlib.resources import path
 from typing import Any, Tuple
 from datetime import datetime
 from hashlib import sha256
@@ -30,7 +31,7 @@ def update_window(element: ElementType) -> None:
         AttributeError: If an attribute error occurs during the update process.
     """
     try:
-        if hasattr(element, "db") and hasattr(element, "DB_PATH"):
+        if hasattr(element, "database") and hasattr(element, "DB_PATH"):
             element.database = l_database.BrainDatabase(element.DB_PATH)
             config.set_config(element, element.windowTitle(),
                              element.windowIcon(), element.size())
@@ -93,7 +94,7 @@ def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
         .hexdigest() if hasattr(element, objs) else ""
 
 
-def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tuple[bool]:
+def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
     """
     Compares the items inside 2 tuples and checks if they are the same.
 
@@ -106,7 +107,10 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tup
             Otherwise, returns False and a tuple indicating which elements are different.
     """
     if len(result) != len(comparation):
-        return False
+        t = ()
+        for _ in range((len(result) + len(comparation)) // 2):
+            t += (False, )
+        return t
     return tuple(element != comp for element, comp in zip(result, comparation)) # type: ignore
 
 
