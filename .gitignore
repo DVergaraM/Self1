@@ -5,6 +5,8 @@ __pycache__/
 .history/*
 organizador_materias.py
 visor_materias.py
+.github/
+.history/
 .swp
 *.md
 ?.py
