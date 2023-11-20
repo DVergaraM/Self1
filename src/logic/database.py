@@ -60,7 +60,7 @@ def create_brain_tables(conn: Connection):
                     time VARCHAR(100) NOT NULL,
                     method_name VARCHAR(30) NOT NULL,
                     url VARCHAR(150),
-                    job VARCHAR(350) NOT NULL
+                    job VARCHAR(450) NOT NULL
                 )
                 """)
     cur.execute("""
@@ -441,6 +441,31 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchone()
+    
+    def create_task(self, log: otuple_str, element: ElementType):
+        "Creates an Schedule Log"
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time, method_name, url, job COUNT(*) FROM Tasks
+        GROUP BY time, method_name, url, job HAVING COUNT(*) > 1
+        """
+
+        cur.execute(sql)
+        results = cur.fetchall()
+        if len(results) == 0:
+            sql = '''
+            INSERT INTO Tasks(time, method_name, url, job)
+            VALUES(?, ?, ?, ?)
+            '''
+            cur.execute(sql, log)  # type: ignore
+            conn.commit()
+            QMessageBox.information(
+                element, 'Database', 'Information added to database')
+            return cur.lastrowid
+        QMessageBox.warning(
+            element, 'Error', 'Data already in database')
+        return None
 
 
 class LoginDatabase(ParentDatabase):
