@@ -2,11 +2,13 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
+# pylint: disable=unused-import
+# pylint: disable=too-many-arguments
 from typing import Callable
 from itertools import count
+from threading import Thread
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
-from threading import Thread
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
@@ -47,7 +49,6 @@ class NotificationMenu(SubWindow):
         set_config(self,
                    "Notification Menu", self.icon, (760, 680))
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects and shows the buttons with methods"
         connect(self, {
@@ -64,7 +65,6 @@ class NotificationMenu(SubWindow):
         format_date_all = get_time()
         print(
             f"{format_date_all} - Thread-{next(self.counter)} (stop)")
-        self.notifier.exit()
 
     def start_thread(self):
         "Starts Notification System"

@@ -1,4 +1,6 @@
 "Utils Module"
+# pylint: disable=invalid-name
+# pylint: disable=no-name-in-module
 from typing import Any, Callable, Literal, Type, TypeAlias, TypeVar
 import os
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel
@@ -31,7 +33,6 @@ class SubWindow(QWidget):
         return self.size()
 
 
-# pylint: disable=invalid-name
 ElementType = TypeVar("ElementType", QMainWindow, SubWindow, QWidget, QDialog)
 """
 `TypeVar` of:
@@ -40,15 +41,10 @@ ElementType = TypeVar("ElementType", QMainWindow, SubWindow, QWidget, QDialog)
 - `PyQt5.QtWidgets.QDialog`
 - `src.logic.SubWindow`
 """
-# pylint: disable=invalid-name
 attribute: TypeAlias = str
-# pylint: disable=invalid-name
 method: TypeAlias = Callable
-# pylint: disable=invalid-name
 cwd: Literal[r"\src\\"] = fr"{os.getcwd()}\src\\"  # type: ignore
-# pylint: disable=invalid-name
 otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)
-# pylint: disable=invalid-name
 cwddb: Literal[r"\src\login.db"] = fr"{os.getcwd()}\src\login.db" # type: ignore
 
 

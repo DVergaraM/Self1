@@ -1,9 +1,11 @@
 "Config module from Utils module"
+# pylint: disable=no-name-in-module
+# pylint: disable=cyclic-import
 from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
 
-from utils import ElementType, others, props
+from . import ElementType, others, props
 
 
 def set_config(element: ElementType, title: str | None = None, icon: QIcon | None = None,

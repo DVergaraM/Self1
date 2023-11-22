@@ -5,6 +5,7 @@
 # pylint: disable=import-error
 # pylint: disable=no-member
 # pylint: disable=not-callable
+# pylint: disable=too-many-arguments
 from typing import Callable, Any
 import os
 from itertools import count
@@ -48,37 +49,30 @@ class Notification(_Notifier):
     """
 
     def __init__(self, app_id: str = "Second Brain", title: str = "Notifier",
-                 msg: str = "", icon: str = "", launch: str | Callable[[], Any] | None = None,
+                 msg: str = "", icon: str = "", launch: str = "",
                  duration='long', sound: audio.Sound = audio.Reminder) -> None:
         """
         Initializes a new instance of the Notification class.
 
         Args:
-            app_id (str, optional): The ID of the application. Defaults to "Second Brain".
-            title (str, optional): The title of the notification. Defaults to "Notifier".
-            msg (str, optional): The message of the notification. Defaults to "".
-            icon (str, optional): The path to the icon file. Defaults to "".
-            launch (str | Callable[[], Any] | None, optional): The action to perform when the notification is clicked. Defaults to None.
-            duration (str, optional): The duration of the notification. Defaults to 'long'.
-            sound (audio.Sound, optional): The sound to play when the notification is displayed. Defaults to audio.Reminder.
+            app_id: The ID of the application. Defaults to "Second Brain".
+            title: The title of the notification. Defaults to "Notifier".
+            msg: The message of the notification. Defaults to "".
+            icon: The path to the icon file. Defaults to "".
+            launch: The action to perform when the notification is clicked. Defaults to None.
+            duration: The duration of the notification. Defaults to 'long'.
+            sound: The sound to play when the notification is displayed. Defaults to audio.Reminder.
         """
-        super().__init__(app_id, title, msg, icon, duration)
+        super().__init__(app_id, title, msg, icon, duration, launch)
         self.set_audio(sound, loop=False)
-        self._launch = None
-        if launch:
-            self.add_actions("Click Here!", launch)
-            self._launch = launch
+
 
     def run(self) -> None:
         "Shows Notification with log"
         self.show()
         format_date_all = get_time()
         print(f"{format_date_all} - Task: '{self.msg}'")
-        
-    @property
-    def launch(self):
-        "Launch property"
-        return self._launch
+
 
 
 class MQThread(QThread):
@@ -220,7 +214,8 @@ class Stray:
             value (PIL.Image): The image to set.
 
         Raises:
-            ValueError: If `value` is not an instance of PIL.Image or is the same as the current image.
+            ValueError: If `value` is not an instance of PIL.Image 
+                or is the same as the current image.
         """
         if isinstance(value, Img.Image) and value != self._image:
             self._image = value

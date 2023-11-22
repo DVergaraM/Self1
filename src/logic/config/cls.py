@@ -1,7 +1,8 @@
-"Config Module"
-# pylint: disable=invalid-name
-# pylint: disable=no-name-in-module
+"Config Menu Module"
 # pylint: disable=import-error
+# pylint: disable=no-name-in-module
+# pylint: disable=no-member
+# pylint: disable=invalid-name
 import os
 from PyQt5.QtGui import QIcon, QImageReader
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
@@ -9,8 +10,8 @@ from PyQt5 import uic
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config, set_multiple_config
-from utils.setters import set_text, enable_button, text_changed_connect, connect
-from utils.others import remove, update_window, get_text
+from utils.setters import set_text, text_changed_connect, connect, enable_button
+from utils.others import update_window, get_text, remove
 
 from logic import database as l_database
 
@@ -38,7 +39,6 @@ class ConfigMenu(SubWindow):
         uic.loadUi(fr"{cwd}logic\config\config_menu.ui", self)
         set_config(self, "Config Menu", self.icon)
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects buttons with methods and shows GUI"
         text_changed_connect(self, {
@@ -58,10 +58,7 @@ class ConfigMenu(SubWindow):
 
     def validate_all(self):
         """
-        Validates if the title_input and path_input fields are not empty.
-        If both fields are not empty, the
-        save_all_button is enabled.
-        Otherwise, the save_all_button is disabled.
+        Validates the title and path inputs and enables or disables the save_all_button accordingly.
         """
         if all([get_text(self, "title_input") != "", get_text(self, "path_input") != ""]):
             enable_button(self, {"save_all_button": True})
@@ -72,10 +69,10 @@ class ConfigMenu(SubWindow):
     def browse_icon(self):
         "Looks for an image to set up as App Icon"
         realpath = os.path.realpath("C:/Users")
-        supportedFormats = QImageReader.supportedImageFormats() # type: ignore
+        supportedFormats = QImageReader.supportedImageFormats()
         formats = []
-        for sF in supportedFormats: # type: ignore
-            formats.append(f"*.{sF.data().decode()}") # type: ignore
+        for sF in supportedFormats:
+            formats.append(f"*.{sF.data().decode()}")
         formatted = " ".join(formats)
         text_filter = f"Images ({formatted})"
         self.image_path, _ = QFileDialog.getOpenFileName(
@@ -96,7 +93,7 @@ class ConfigMenu(SubWindow):
         "Saves the title displayed in QLineEdit"
         title = str(get_text(self, "title_input"))
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and\
-                title != "" and os.path.exists(self._config[0]): # type: ignore
+                title != "" and os.path.exists(self._config[0]):
             self._config = remove(self._config)
             self._config += (title, )
             print(self._config)

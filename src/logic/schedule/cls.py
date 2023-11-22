@@ -57,7 +57,7 @@ class ScheduleMenu(SubWindow):
             "exit_button": self.close,
         })
         self.show()
-        
+
     def _add_task(self):
         "Adds a task to the schedule"
         time = str(get_text(self, "time_input"))

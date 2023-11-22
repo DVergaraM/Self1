@@ -1,64 +1,71 @@
 "Others module from Utils module"
-
+# pylint: disable=import-outside-toplevel
 from hashlib import sha256
-from importlib.resources import path
-from typing import Any, Tuple
+from typing import Any, Tuple, overload
 from datetime import datetime
-from hashlib import sha256
 
-from utils import ElementType, attribute, config
-from logic import database as l_database
+from . import ElementType, attribute, config
 
 
 def get_text(element: ElementType,
-            attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None | str:
+             attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None | str:
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
-        return tuple(getattr(element, attr).text() \
-            if isinstance(attr, attribute) and hasattr(element, attr) else "" for attr in attrs)
-    return getattr(element, attrs).text() if isinstance(attrs, attribute) and \
-        hasattr(element, attrs) else ""
+        return tuple(getattr(element, attr).text() if isinstance(attr, attribute)
+                     and hasattr(element, attr) else "" for attr in attrs)
+    return getattr(element, attrs).text() if isinstance(attrs, attribute)\
+        and hasattr(element, attrs) else ""
+
+
+def update_database(element: ElementType, db_attr: str, path_attr: str):
+    """
+    Update the database attribute of an element based on the given db_attr and path_attr.
+
+    Args:
+        element (ElementType): The element to update the database attribute.
+        db_attr (str): The name of the database attribute to update.
+        path_attr (str): The name of the path attribute containing the database path.
+
+    Returns:
+        None
+    """
+    from logic.database import BrainDatabase, LoginDatabase
+    if hasattr(element, db_attr) and hasattr(element, path_attr):
+        if db_attr == "db_login":
+            element.db_login = LoginDatabase(getattr(element, path_attr))
+        else:
+            setattr(element, db_attr, BrainDatabase(
+                getattr(element, path_attr)))
+
+
+def update_element(element: ElementType):
+    """
+    Updates the specified element with the current configuration settings.
+
+    Args:
+        element (ElementType): The element to be updated.
+    """
+    config.set_config(element, element.windowTitle(),
+                      element.windowIcon(), element.size())
+    element.update()
 
 
 def update_window(element: ElementType) -> None:
     """
-    Updates a window and reloads variables.
+    Updates the window with the given element.
 
-    Args::  
-        - element (ElementType): The window element to be updated.
+    Args:
+        element (ElementType): The element to update the window with.
 
     Raises:
         AttributeError: If an attribute error occurs during the update process.
     """
     try:
-        if hasattr(element, "database") and hasattr(element, "DB_PATH"):
-            element.database = l_database.BrainDatabase(element.DB_PATH)
-            config.set_config(element, element.windowTitle(),
-                             element.windowIcon(), element.size())
-            element.update()
-        elif hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN"):
-            element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
-            config.set_config(element, element.windowTitle(),
-                             element.windowIcon(), element.size())
-            element.update()
-        elif hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG"):
-            element.db_config = l_database.BrainDatabase(
-                element.DB_PATH_CONFIG)
-            config.set_config(element, element.windowTitle(),
-                             element.windowIcon(), element.size())
-            element.update()
-        elif (hasattr(element, "db_config") and hasattr(element, "DB_PATH_CONFIG")) \
-            and (hasattr(element, "db_login") and hasattr(element, "DB_PATH_LOGIN")):
-            element.db_config = l_database.BrainDatabase(
-                element.DB_PATH_CONFIG)
-            element.db_login = l_database.LoginDatabase(element.DB_PATH_LOGIN)
-            config.set_config(element, element.windowTitle(),
-                             element.windowIcon(), element.size())
-            element.update()
-        else:
-            config.set_config(element, element.windowTitle(),
-                             element.windowIcon(), element.size())
-            element.update()
+        update_database(element, "db", "DB_PATH")
+        update_database(element, "database", "DB_PATH")
+        update_database(element, "db_login", "DB_PATH_LOGIN")
+        update_database(element, "db_config", "DB_PATH_CONFIG")
+        update_element(element)
     except AttributeError as excp:
         raise AttributeError(excp) from excp
 
@@ -90,37 +97,65 @@ def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
                     continue
             return objs_in_sha  # type: ignore
         raise IndexError("Only 2 items are allowed in the tuple")
-    return sha256(str(getattr(element, objs).text()).encode('utf-8'))\
-        .hexdigest() if hasattr(element, objs) else ""
+    return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest()\
+        if hasattr(element, objs) else ""
 
 
-def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
+def sha_256(objs: Tuple[str]) -> Tuple[str]:
+    """
+    Converts a tuple of strings to SHA256 and returns it as a tuple.
+
+    Args:
+        objs (Tuple[str]): A tuple containing the strings to be hashed.
+
+    Returns:
+        Tuple[str]: A tuple containing the hashed values of the strings.
+    """
+    objs_in_sha = ()
+    for _, obj in enumerate(objs):
+        objsha: str = sha256(str(obj).encode('utf-8')).hexdigest()
+        objs_in_sha += (objsha, )
+    return objs_in_sha # type: ignore
+
+
+def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tuple[bool]:
     """
     Compares the items inside 2 tuples and checks if they are the same.
 
-    Args::
-        - result (tuple[str, ...]): The first tuple to compare.
-        - comparation (tuple[str, ...]): The second tuple to compare.
+    Args:
+        result (tuple[str, ...]): The first tuple to compare.
+        comparation (tuple[str, ...]): The second tuple to compare.
 
     Returns:
-        bool | tuple[bool]: If the tuples are the same, returns True. 
-            Otherwise, returns False and a tuple indicating which elements are different.
+        bool | tuple[bool]: If the tuples are the same, returns True. Otherwise, returns False
+        indicating which elements are different.
     """
     if len(result) != len(comparation):
-        t = ()
-        for _ in range((len(result) + len(comparation)) // 2):
-            t += (False, )
-        return t
-    return tuple(element != comp for element, comp in zip(result, comparation)) # type: ignore
+        return False
+    return tuple(element != comp for element, comp
+                 in zip(result, comparation))  # type: ignore
 
 
 def remove(elements: tuple) -> tuple:
-    "Removes duped elements in tuple"
+    """
+    Removes duplicate elements in a tuple.
+
+    Args:
+        elements (tuple): The tuple to remove duplicates from.
+
+    Returns:
+        tuple: A new tuple with the duplicate elements removed.
+    """
     return tuple(set(elements))
 
 
 def get_time_log() -> str:
-    "Returns the current time"
+    """
+    Returns the current time in the format of day-month-year_hour-minute-second.
+
+    Returns:
+    str: A string representing the current time in the format of day-month-year_hour-minute-second.
+    """
     date = datetime.now()
     format_date = f"{date.day}-{date.month}-{date.year}_"
     format_hour = f"{date.hour}-{date.minute}-{date.second}"
@@ -128,7 +163,9 @@ def get_time_log() -> str:
 
 
 def get_time():
-    "Returns the current time"
+    """
+    Returns the current time in the format of [day-month-year hour:minute:second].
+    """
     date = datetime.now()
     format_date = f"[{date.day}-{date.month}-{date.year} "
     format_time = f"{date.hour}:{date.minute}:{date.second}]"

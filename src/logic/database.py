@@ -6,13 +6,13 @@
 # pylint: disable=no-member
 # pylint: disable=not-callable
 # pylint: disable=redefined-builtin
+# pylint: disable=cyclic-import
 from typing import Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
 from PyQt5.QtWidgets import QMessageBox
 
-from utils import otuple_str, ElementType, cwd
-from utils import others
+from utils import otuple_str, ElementType, cwd, others
 
 
 def create_brain_tables(conn: Connection):
@@ -29,8 +29,8 @@ def create_brain_tables(conn: Connection):
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS Config(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    image_path TEXT NOT NULL,
-                    title VARCHAR(30) NOT NULL
+                    image_path VARCHAR(200) NOT NULL,
+                    title VARCHAR(20) NOT NULL
                 )
                 """)
     cur.execute("""
@@ -106,21 +106,6 @@ def create_login_tables(conn: Connection):
     cur.close()
     del cur
     return conn
-
-
-r"""
-def run(self):
-        "Runs the program displayed in QLineEdit"
-        text = get_text(self, "path_line")
-        path = fr"{text}"
-        cwd_log = os.getcwd()
-        format_date_all = get_time_log()
-        name = path.split("\\")[-1].removesuffix('.exe"').title().strip()
-        self.o_thread.setProgram(path)
-        self.o_thread.start(self.o_thread.program() if name == "Code" else self.o_thread.program(),
-                            [fr"> {cwd_log}\logs\log-{format_date_all.replace('_', ' ')}.log"])
-        print(f"[{format_date_all}] - {name} (run)")
-"""
 
 
 class ParentDatabase:
@@ -362,15 +347,14 @@ class BrainDatabase(ParentDatabase):
             element, "Error", "Only 2 items allowed in tuple")
         return None
 
-    def update_log_apps(self, path: str, name: str, element: ElementType):
-        # TODO: Create a GUI that allows the user to update an App Directory according to the name
+    def update_log_apps(self, new_path: str, name: str, element: ElementType):
         "Updates an Application Log"
         conn = self.connection
         cur = conn.cursor()
         sql = """
         UPDATE Apps SET path = ? WHERE name = ?
         """
-        cur.execute(sql, (path, name))
+        cur.execute(sql, (new_path, name))
         conn.commit()
         conn.close()
         QMessageBox.information(element, "Updated", "Path updated in database")
@@ -381,12 +365,16 @@ class BrainDatabase(ParentDatabase):
         assert len(config) == 2, "Config length must be 2"
         conn = self.connection
         cur = conn.cursor()
-
+        image_path, title = config
+        if len(title) > 20 and len(image_path) > 200:
+            image_path, title = title, image_path
+        if len(title) > len(image_path):
+            title, image_path = image_path, title
         sql = """
         INSERT INTO Config(image_path, title)
         VALUES(?, ?)
         """
-        cur.execute(sql, config)
+        cur.execute(sql, (image_path, title))
         conn.commit()
         QMessageBox.information(element, "Information",
                                 "Your config has been saved")
@@ -394,7 +382,6 @@ class BrainDatabase(ParentDatabase):
         return cur.lastrowid
 
     def update_config_icon(self, element: ElementType, new_icon: str, title: str):
-        # TODO: Create a GUI that allows the user to set a new icon with ease
         "Updates the icon according to the title"
         conn = self.connection
         cur = conn.cursor()
@@ -409,7 +396,6 @@ class BrainDatabase(ParentDatabase):
         QMessageBox.information(element, "Information", "Icon changed")
 
     def update_config_title(self, element: ElementType, new_title: str, icon: str):
-        # TODO: Create a GUI that allows the user to set a new title with ease
         "Updates title according to the icon"
         conn = self.connection
         cur = conn.cursor()
@@ -440,8 +426,11 @@ class BrainDatabase(ParentDatabase):
         SELECT image_path, title FROM Config
         """
         cur.execute(sql)
-        return cur.fetchone()
-    
+        result = cur.fetchone()
+        if result is not None:
+            return result
+        return (f"{os.getcwd()}/assets/default.png", "Second Brain")
+
     def create_task(self, log: otuple_str, element: ElementType):
         "Creates an Schedule Log"
         conn = self.connection
@@ -454,10 +443,12 @@ class BrainDatabase(ParentDatabase):
         cur.execute(sql)
         results = cur.fetchall()
         if len(results) == 0:
+            #time, method_name, url, job = log # type: ignore
             sql = '''
             INSERT INTO Tasks(time, method_name, url, job)
             VALUES(?, ?, ?, ?)
             '''
+            #if len(time) > 5
             cur.execute(sql, log)  # type: ignore
             conn.commit()
             QMessageBox.information(
@@ -517,7 +508,6 @@ class LoginDatabase(ParentDatabase):
 
     def update_user_password_logins(self, element: ElementType, username: str,
                                     password: str, new_password: str):
-        # TODO: Create a GUI that allows the user to update his password with ease
         "Updates the user's password in database"
         conn = self.connection
         cur = conn.cursor()

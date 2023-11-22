@@ -59,7 +59,7 @@ class CreateAppsMenu(SubWindow):
 
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
-        with self.connection:
+        with self.database.connection:
             self.database.right_create_apps_menu()
             self.actual_name = str(self.database.get_current_apps_name()[0])
             self.actual_path = str(self.database.get_current_apps_path()[0])
@@ -70,7 +70,7 @@ class CreateAppsMenu(SubWindow):
 
     def retroceder(self):
         "Loops back through the paths in database and sets it up in QLineEdit"
-        with self.connection:
+        with self.database.connection:
             self.database.left_create_apps_menu()
             self.actual_name = str(self.database.get_current_apps_name()[0])
             self.actual_path = str(self.database.get_current_apps_path()[0])
@@ -104,10 +104,10 @@ class CreateAppsMenu(SubWindow):
     def update_from_db(self):
         "Updates info to database"
         current_name = get_text(self, "name_input") # type: ignore
-        current_path = get_text(self, "path_input") # type: ignore
+        new_path = get_text(self, "path_input") # type: ignore
         current_name: str = f"{current_name}"
-        current_path: str = fr"{current_path}"
+        new_path: str = fr"{new_path}"
         self.database.update_log_apps(
-            current_path, current_name, self)
+            new_path, current_name, self)
         update_window(self)
         update_window(self.appsMenu)

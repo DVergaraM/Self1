@@ -37,15 +37,13 @@ class CreateMenu(SubWindow):
         """
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.my_parent = parent
+        self._my_parent = parent
         self.database = database
-        # pylint: disable=invalid-name
         self.createApps = create_app
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
         set_config(self,
                    "Notification Menu", self.icon, (760, 680))
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         """
         Loads the GUI, connects buttons with methods, and shows the window.
@@ -56,8 +54,7 @@ class CreateMenu(SubWindow):
         })
         self.show()
 
-    def add_to_db(self):
-        """
-        Adds the current instance of the App class to the database.
-        """
-        # TODO: Create the logic part to save apps to database in the App table
+    @property
+    def my_parent(self):
+        "Returns the parent of the current instance"
+        return self._my_parent

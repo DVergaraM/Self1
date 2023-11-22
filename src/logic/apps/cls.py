@@ -64,14 +64,12 @@ class AppsMenu(SubWindow):
     # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects, sets and show GUI"
-        set_text(self, {
-            "path_line": fr'"{self.actual}"'
-        })
+        set_text(self, ("path_line", fr'"{self.actual}"'))
         connect(self, {
             "exit_button": self.close,
             "right_button": self.avanzar,
             "left_button": self.retroceder,
-            "run_button": self.run
+            "run_button": self.run,
         })
         self.show()
 
@@ -80,7 +78,7 @@ class AppsMenu(SubWindow):
         with self.connection:
             self.database.right_path()
             self.actual: Any = self.database.get_current_apps_path_apps()[0]
-            set_text(self, {"path_line": fr'"{self.actual}"'})
+            self.path_line.setText(fr'"{self.actual}"')
             return None
 
     def retroceder(self):
@@ -88,7 +86,7 @@ class AppsMenu(SubWindow):
         with self.connection:
             self.database.left_path()
             self.actual: Any = self.database.get_current_apps_path_apps()[0]
-            set_text(self, {"path_line": fr'"{self.actual}"'})
+            self.path_line.setText(fr'"{self.actual}"')
             return None
 
     def run(self):
