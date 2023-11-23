@@ -1,6 +1,7 @@
 "Config module from Utils module"
 # pylint: disable=no-name-in-module
 # pylint: disable=cyclic-import
+# pylint: disable=import-error
 from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize

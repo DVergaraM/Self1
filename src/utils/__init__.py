@@ -1,6 +1,7 @@
 "Utils Module"
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
+# pylint: disable=import-error
 from typing import Any, Callable, Type, TypeAlias, TypeVar
 import os
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel

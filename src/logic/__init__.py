@@ -65,13 +65,17 @@ class Notification(_Notifier):
         """
         super().__init__(app_id, title, msg, icon, duration, launch)
         self.set_audio(sound, loop=False)
+        self._time = get_time()
 
+    @property
+    def time(self):
+        "Returns the current time in the format of [day-month-year hour:minute:second]."
+        return self._time
 
     def run(self) -> None:
         "Shows Notification with log"
         self.show()
-        format_date_all = get_time()
-        print(f"{format_date_all} - Task: '{self.msg}'")
+        print(f"{self.time} - Task: '{self.msg}'")
 
 
 

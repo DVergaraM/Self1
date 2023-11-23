@@ -1,6 +1,7 @@
 "Main File of Second Brain"
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=import-error
 import os
 import sys
 from io import BytesIO
