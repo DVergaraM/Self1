@@ -1,14 +1,14 @@
 "Others module from Utils module"
 # pylint: disable=import-outside-toplevel
 from hashlib import sha256
-from typing import Any, Tuple, overload
+from typing import Any, Tuple
 from datetime import datetime
 
-from . import ElementType, attribute, config
+from . import ElementType, attribute
 
 
 def get_text(element: ElementType,
-             attrs: tuple[attribute] | attribute) -> tuple[()] | tuple[Any] | Any | None | str:
+             attrs: tuple[attribute, ...] | attribute):
     "Gets a single or multiple QLineEdit value(s) and return it/them"
     if isinstance(attrs, tuple):
         return tuple(getattr(element, attr).text() if isinstance(attr, attribute)
@@ -45,6 +45,7 @@ def update_element(element: ElementType):
     Args:
         element (ElementType): The element to be updated.
     """
+    from utils import config
     config.set_config(element, element.windowTitle(),
                       element.windowIcon(), element.size())
     element.update()
@@ -70,7 +71,7 @@ def update_window(element: ElementType) -> None:
         raise AttributeError(excp) from excp
 
 
-def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | str:
+def sha(element: ElementType, objs: Tuple[str, ...] | str):
     """
     Converts QLineEdit values to SHA256 and returns it as a tuple.
 
@@ -85,7 +86,7 @@ def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
         TypeError: If the objs parameter is not a tuple of strings.
     """
     if isinstance(objs, tuple):
-        if len(objs) == 2:
+        if len(objs) >= 2:
             objs_in_sha = ()
             for _, obj in enumerate(objs):
                 if hasattr(element, obj):
@@ -95,13 +96,13 @@ def sha(element: ElementType, objs: Tuple[str, str] | str) -> Tuple[str, str] | 
                     objs_in_sha += (objsha, )
                 else:
                     continue
-            return objs_in_sha  # type: ignore
-        raise IndexError("Only 2 items are allowed in the tuple")
+            return objs_in_sha # type: ignore
+        raise IndexError("At least 2 items are allowed in the tuple")
     return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest()\
         if hasattr(element, objs) else ""
 
 
-def sha_256(objs: Tuple[str]) -> Tuple[str]:
+def sha_256(objs: str | Tuple[str]) -> str | Tuple[str]:
     """
     Converts a tuple of strings to SHA256 and returns it as a tuple.
 
@@ -111,14 +112,16 @@ def sha_256(objs: Tuple[str]) -> Tuple[str]:
     Returns:
         Tuple[str]: A tuple containing the hashed values of the strings.
     """
+    if isinstance(objs, str):
+        return sha256(str(objs).encode('utf-8')).hexdigest()
     objs_in_sha = ()
     for _, obj in enumerate(objs):
-        objsha: str = sha256(str(obj).encode('utf-8')).hexdigest()
+        objsha = sha256(str(obj).encode('utf-8')).hexdigest()
         objs_in_sha += (objsha, )
     return objs_in_sha # type: ignore
 
 
-def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tuple[bool]:
+def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
     """
     Compares the items inside 2 tuples and checks if they are the same.
 
@@ -133,7 +136,7 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]) -> bool | tup
     if len(result) != len(comparation):
         return False
     return tuple(element != comp for element, comp
-                 in zip(result, comparation))  # type: ignore
+                 in zip(result, comparation))
 
 
 def remove(elements: tuple) -> tuple:

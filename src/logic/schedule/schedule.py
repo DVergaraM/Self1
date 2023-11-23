@@ -65,21 +65,16 @@ class Schedule:
         :return: True if the task was added successfully, False otherwise.
         :rtype: bool
         """
-        if isinstance(method, Callable) and self.is_time(time):
-            job = _schedule.every().day.at(time).do(
-                self.run_task, method, args if args else [])
-            self._tasks.append((time, method, job))
-            print(self._tasks)
+        if self.is_time(time) and isinstance(method, (Callable, str)):
+            if isinstance(method, Callable):
+                job = _schedule.every().day.at(time).do(self.run_task, method, args if args else [])
+                self._tasks.append((time, method, job))
+                print("Added method")
+            else:
+                job = _schedule.every().day.at(time).do(self.run_task, self.open_web, [method])
+                self._tasks.append((time, self.open_web, job))
+                print("Added URL")
             self._amount_tasks += 1
-            print("Added method")
-            return True
-        if isinstance(method, str) and self.is_time(time):
-            job = _schedule.every().day.at(time).do(
-                self.run_task, self.open_web, [method])
-            self._tasks.append((time, self.open_web, job))
-            print(self._tasks)
-            self._amount_tasks += 1
-            print("Added URL")
             return True
         return False
 
@@ -93,18 +88,12 @@ class Schedule:
         :rtype: bool
         """
         for t in self._tasks:
-            if isinstance(method_name, Callable):
-                if t[1].__name__ == method_name.__name__:
-                    _schedule.cancel_job(t[2])
-                    self._tasks.remove(t)
-                    self._amount_tasks -= 1
-                    return True
-            if isinstance(method_name, str):
-                if t[1] == method_name:
-                    _schedule.cancel_job(t[2])
-                    self._tasks.remove(t)
-                    self._amount_tasks -= 1
-                    return True
+            if (isinstance(method_name, Callable) and t[1].__name__ == method_name.__name__) or \
+            (isinstance(method_name, str) and t[1] == method_name):
+                _schedule.cancel_job(t[2])
+                self._tasks.remove(t)
+                self._amount_tasks -= 1
+                return True
         print("Still", self._tasks, self._amount_tasks)
         return False
 

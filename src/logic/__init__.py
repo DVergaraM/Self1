@@ -161,7 +161,7 @@ class Stray:
         The Stray icon object.
     """
 
-    def __init__(self, icon_name: str, image: Img.Image, methods: tuple[Callable, ...]):
+    def __init__(self, icon_name: str, image: Img.Image, methods: tuple[Callable[[], Any], ...]):
         """
         Initializes a Logic object.
 

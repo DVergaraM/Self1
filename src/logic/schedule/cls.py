@@ -82,4 +82,4 @@ class ScheduleMenu(SubWindow):
         """
         if self._running:
             self._running = False
-            self.schedule.stop()
+            self.schedule.stop() # type: ignore

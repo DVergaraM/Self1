@@ -43,7 +43,6 @@ class Gui(QMainWindow):
         default = "https://i.imgur.com/PgUSXzh.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = BrainDatabase(DB_PATH)
-        self.connection = self.database.connection
         icon, self.__title = None, None
         icon, self.__title = self.database.get_config()
         self.__title = str(self.__title)

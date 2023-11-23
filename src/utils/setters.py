@@ -73,7 +73,7 @@ def text_changed_connect(element: ElementType,
     Connects a button with a method depending of a QLineEdit.
 
     Args:
-        element (ElementType): The element to connect the method to.
+        element: The element to connect the method to.
         objs: A tuple or dictionary containing the attributes and methods to connect.
 
     Raises:
@@ -104,8 +104,8 @@ def enable_button(element: ElementType,
     Enables or disables a button
 
     Args:
-        element (ElementType): object to check if it has the attributes
-        data (dict[attribute, bool] | tuple[attribute, bool]): dictionary or tuple to assign values
+        element: Object to check if it has the attributes
+        data: Dictionary or tuple to assign values
 
     Raises:
         TypeError: 'data' param must have the correct type.

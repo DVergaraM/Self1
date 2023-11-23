@@ -30,6 +30,7 @@ class LoginSystem(QDialog):
         self.db_login = LoginDatabase(self.DB_PATH_LOGIN)
         icon, _ = db_config.get_config()
         self.icon = QIcon(icon)
+        self._username = None
         update_window(self)
         set_config(self, "Login", self.icon, (760, 680))  # )(1240, 780))
         text_changed_connect(self, {
@@ -60,14 +61,13 @@ class LoginSystem(QDialog):
         i_username, i_password = sha(self, attrs) # type: ignore
 
         login = self.db_login.fetch_all_logins(i_username, i_password)
-        self._username = None
 
         if 0 < len(login) < 3:
             self.accept()
-            self._username = f"{get_text(self, 'username_input')}"
             update_window(self)
             return None
         update_window(self)
+        self._username = f"{get_text(self, 'username_input')}"
         QMessageBox.warning(
             self, 'Error', 'Bad user or password')
         return None
@@ -80,9 +80,10 @@ class LoginSystem(QDialog):
             update_window(self)
             return True
         return False
-    
+
     def open_credentials_change(self):
-        credential_ui = cred.ChangeCredentials()
+        "Opens the credentials change dialog for the user."
+        credential_ui = cred.ChangeCredentials(self._username) # type: ignore
         update_window(self)
         if credential_ui.exec_() == QDialog.DialogCode.Accepted:
             update_window(self)

@@ -131,17 +131,13 @@ class ParentDatabase:
         """
         Initializes the ParentDatabase object.
 
-        Parameters:
-        -----------
-        path_to_db : str
-            The path to the database file.
+        Args::
+        path_to_db: The path to the database file.
         type : str
             The type of database (either "brain" or "login").
         """
         self.name = self.__class__.__name__.lower()
-        if os.path.exists(path_to_db) and type == "brain":
-            self.DB_PATH = path_to_db
-        elif os.path.exists(path_to_db) and type == "login":
+        if os.path.exists(path_to_db) and type in ["brain", "login"]:
             self.DB_PATH = path_to_db
         else:
             self.DB_PATH = fr"{cwd}\brain_mine.db"
@@ -151,11 +147,6 @@ class ParentDatabase:
     def connection(self) -> Connection:
         """
         Returns the connection to the database.
-
-        Returns:
-        --------
-        Connection
-            The connection to the database.
         """
         return self._connection
 
@@ -164,17 +155,12 @@ class ParentDatabase:
         Creates a connection to the database.
 
         Parameters:
-        -----------
-        func : Callable[[], Any], optional
-            A function to be applied to the connection, by default None.
+            func: A function to be applied to the connection, by default None.
 
-        Returns:
-        --------
-        Any
-            The result of applying the function to the connection, if provided.
+        Returns: Connection
         """
         try:
-            conn = connect(self.DB_PATH)
+            conn = connect(self.DB_PATH) # type: ignore
             return func(conn) if func else conn
         except DatabaseError as excp:
             raise DatabaseError(excp) from excp
@@ -431,7 +417,7 @@ class BrainDatabase(ParentDatabase):
             return result
         return (f"{os.getcwd()}/assets/default.png", "Second Brain")
 
-    def create_task(self, log: otuple_str, element: ElementType):
+    def create_task(self, log: tuple[str, ...], element: ElementType):
         "Creates an Schedule Log"
         conn = self.connection
         cur = conn.cursor()
@@ -482,8 +468,10 @@ class LoginDatabase(ParentDatabase):
         super().__init__(path_to_db, "login")
         self._connection = self.create_connection(create_login_tables)
 
-    def fetch_all_logins(self, username: str, password: str):
+    def fetch_all_logins(self, username: str, password: str, **kwargs):
         "Get all logins and checks if an username and password exists in Database"
+        if "encrypted" in kwargs and not kwargs["encrypted"]:
+            username = str(others.sha_256(username))
         conn = self.connection
         cur = conn.cursor()
         sql = """
@@ -506,8 +494,8 @@ class LoginDatabase(ParentDatabase):
         conn.commit()
         return cur.lastrowid
 
-    def update_user_password_logins(self, element: ElementType, username: str,
-                                    password: str, new_password: str):
+    def update_user_password_logins(self, new_password: str,
+                                    username: str, password: str):
         "Updates the user's password in database"
         conn = self.connection
         cur = conn.cursor()
@@ -515,8 +503,7 @@ class LoginDatabase(ParentDatabase):
         sql = """
         UPDATE Login SET password = ? WHERE (username = ? AND password = ?)
         """
-        cur.execute(sql, (new_password, username, password))
+        u_name = str(others.sha_256(username))
+        cur.execute(sql, (new_password, u_name, password))
         conn.commit()
         conn.close()
-        QMessageBox.information(
-            element, "Password changed", "Your password has been updated")

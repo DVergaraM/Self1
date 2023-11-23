@@ -113,7 +113,7 @@ class ConfigMenu(SubWindow):
             self.database.set_config(self, self._config)
             icon, title = self.database.get_config()
             icon = QIcon(icon)
-            set_multiple_config(self.my_parent, icon, None, default_title=title)
+            set_multiple_config(self.my_parent, icon, default_title=title)
             print("Config setted for all windows")
             return None
         QMessageBox.warning(

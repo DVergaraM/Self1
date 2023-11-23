@@ -1,7 +1,7 @@
 "Utils Module"
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
-from typing import Any, Callable, Literal, Type, TypeAlias, TypeVar
+from typing import Any, Callable, Type, TypeAlias, TypeVar
 import os
 from PyQt5.QtWidgets import QMainWindow, QWidget, QDialog, QLabel
 
@@ -43,12 +43,12 @@ ElementType = TypeVar("ElementType", QMainWindow, SubWindow, QWidget, QDialog)
 """
 attribute: TypeAlias = str
 method: TypeAlias = Callable
-cwd: Literal[r"\src\\"] = fr"{os.getcwd()}\src\\"  # type: ignore
-otuple_str = TypeVar("otuple_str", tuple[str], tuple[tuple[str]], None)
-cwddb: Literal[r"\src\login.db"] = fr"{os.getcwd()}\src\login.db" # type: ignore
+cwd = fr"{os.getcwd()}\src\\"
+otuple_str = TypeVar("otuple_str", tuple[str, ...], None)
+cwddb = fr"{os.getcwd()}\src\login.db"
 
 
-def props(cls: Type[Any]) -> list[str]:  # type: ignore
+def props(cls: Type[Any]) -> list[str]:
     """
     Returns a list of the public properties of a class.
 

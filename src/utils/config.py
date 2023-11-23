@@ -36,7 +36,8 @@ def set_config(element: ElementType, title: str | None = None, icon: QIcon | Non
             "'size' must be an instance of tuple or PyQt5.QtCore.QSize")
 
 
-def set_multiple_config(element: ElementType, icon: QIcon, properties: list[Any] | None, **kwargs):
+def set_multiple_config(element: ElementType, icon: QIcon,\
+        properties: list[Any] | None = None, **kwargs):
     """
     Set the configuration for multiple elements.
 
@@ -63,12 +64,10 @@ def set_multiple_config(element: ElementType, icon: QIcon, properties: list[Any]
         sizes += (prop.size(), )
 
     if default_title:
-        element.setWindowTitle(default_title)
-
-    element.setWindowIcon(icon)
+        set_config(element, default_title, icon)
+    else:
+        set_config(element, icon=icon)
 
     for prop, title, size in zip(properties, titles, sizes):
-        prop.setWindowTitle(title)
-        prop.setWindowIcon(icon)
-        prop.setFixedSize(size)
+        set_config(prop, title, icon, size)
         others.update_window(prop)
