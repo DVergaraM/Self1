@@ -47,7 +47,7 @@ The Second Brain application has the following dependencies:
 
 To run the Second Brain application, run the `src/` folder using Python:  
 
-```
+```bash
 python setup.py && python src
 ```
   
