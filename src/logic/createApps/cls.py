@@ -27,7 +27,8 @@ class CreateAppsMenu(SubWindow):
     - actual_path (str): The current path of the application being displayed.
     """
 
-    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase, apps_menu: apps.AppsMenu):
+    def __init__(self, parent: ElementType, icon: QIcon, \
+        database: l_database.BrainDatabase, apps_menu: apps.AppsMenu):
         """
         Initializes the class object.
 

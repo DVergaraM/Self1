@@ -189,7 +189,8 @@ def get_time_log() -> str:
     """
     Returns the current time in the format of day-month-year_hour-minute-second.
 
-    :return: A string representing the current time in the format of day-month-year_hour-minute-second.
+    :return: A string representing the current time in the format of \
+        day-month-year_hour-minute-second.
     :rtype: str
     """
     date = datetime.now()

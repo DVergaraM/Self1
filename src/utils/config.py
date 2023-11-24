@@ -51,7 +51,8 @@ def set_multiple_config(element: ElementType, icon: QIcon,\
     :type element: ElementType
     :param icon: The icon to set for all elements.
     :type icon: QIcon
-    :param properties: The list of elements to configure. If None, all menu elements will be configured.
+    :param properties: The list of elements to configure. If None, \
+        all menu elements will be configured.
     :type properties: list[Any] | None
     :param **kwargs: Additional arguments.
 

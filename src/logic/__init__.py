@@ -66,7 +66,8 @@ class Notification(_Notifier):
         :type launch: str
         :param duration: The duration of the notification. Defaults to 'long'.
         :type duration: str
-        :param sound: The sound to play when the notification is displayed. Defaults to audio.Reminder.
+        :param sound: The sound to play when the notification is displayed. \
+            Defaults to audio.Reminder.
         :type sound: audio.Sound
         """
         super().__init__(app_id, title, msg, icon, duration, launch)
@@ -91,8 +92,8 @@ class Notification(_Notifier):
         :return: A string representation of the Notification object.
         :rtype: str
         """
-        return f"Notification(app_id={self.app_id}, title={self.title}, msg={self.msg}, icon={self.icon}, \
-            launch={self.launch}, duration={self.duration}, sound={self._sound})"
+        return f"Notification(app_id={self.app_id}, title={self.title}, msg={self.msg}, \
+            icon={self.icon}, launch={self.launch}, duration={self.duration}, sound={self._sound})"
 
 
 

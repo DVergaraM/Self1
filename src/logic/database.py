@@ -150,7 +150,7 @@ class ParentDatabase:
         """
         return self._connection
 
-    def create_connection(self, func: Callable[[Connection], Connection] = None) -> Connection: # type: ignore
+    def create_connection(self, func: Callable[[Connection], Connection] = None): # type: ignore
         """
         Creates a connection to the database.
 

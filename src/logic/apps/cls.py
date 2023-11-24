@@ -40,7 +40,7 @@ class AppsMenu(SubWindow):
         run(self):
             Runs the program displayed in QLineEdit.
     """
-    
+
     def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
                  thread: QProcess):
         """
