@@ -23,8 +23,8 @@ class RegisterSystem(QDialog):
     def __init__(self) -> None:
         super().__init__()
         uic.loadUi(fr"{cwd}logic\register\register_window.ui", self)
-        DB_PATH_CONFIG = fr"{cwd}brain_mine.db" # pylint: disable=invalid-name
-        DB_PATH_LOGIN = fr"{cwd}login.db" # pylint: disable=invalid-name
+        DB_PATH_CONFIG = fr"{cwd}brain_mine.db"
+        DB_PATH_LOGIN = fr"{cwd}login.db"
         database = BrainDatabase(DB_PATH_CONFIG)
         self.db_login = LoginDatabase(DB_PATH_LOGIN)
         icon, _ = database.get_config()
@@ -62,11 +62,10 @@ class RegisterSystem(QDialog):
             update_window(self)
             QMessageBox.warning(
                 self, "Error", "Username already exists\nTry a new one")
-        else:
-            self.db_login.add_user_logins(i_username, i_password)
-            QMessageBox.information(
-                self, "Success", "Username and password created.")
-            update_window(self)
-            self.accept()
             return None
+        self.db_login.add_user_logins(i_username, i_password)
+        QMessageBox.information(
+            self, "Success", "Username and password created.")
+        update_window(self)
+        self.accept()
         return None

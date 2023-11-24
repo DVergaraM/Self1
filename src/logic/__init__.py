@@ -54,17 +54,24 @@ class Notification(_Notifier):
         """
         Initializes a new instance of the Notification class.
 
-        Args:
-            app_id: The ID of the application. Defaults to "Second Brain".
-            title: The title of the notification. Defaults to "Notifier".
-            msg: The message of the notification. Defaults to "".
-            icon: The path to the icon file. Defaults to "".
-            launch: The action to perform when the notification is clicked. Defaults to None.
-            duration: The duration of the notification. Defaults to 'long'.
-            sound: The sound to play when the notification is displayed. Defaults to audio.Reminder.
+        :param app_id: The ID of the application. Defaults to "Second Brain".
+        :type app_id: str
+        :param title: The title of the notification. Defaults to "Notifier".
+        :type title: str
+        :param msg: The message of the notification. Defaults to "".
+        :type msg: str
+        :param icon: The path to the icon file. Defaults to "".
+        :type icon: str
+        :param launch: The action to perform when the notification is clicked. Defaults to None.
+        :type launch: str
+        :param duration: The duration of the notification. Defaults to 'long'.
+        :type duration: str
+        :param sound: The sound to play when the notification is displayed. Defaults to audio.Reminder.
+        :type sound: audio.Sound
         """
         super().__init__(app_id, title, msg, icon, duration, launch)
         self.set_audio(sound, loop=False)
+        self._sound = sound
         self._time = get_time()
 
     @property
@@ -76,6 +83,16 @@ class Notification(_Notifier):
         "Shows Notification with log"
         self.show()
         print(f"{self.time} - Task: '{self.msg}'")
+
+    def __repr__(self):
+        """
+        Returns a string representation of the Notification object.
+
+        :return: A string representation of the Notification object.
+        :rtype: str
+        """
+        return f"Notification(app_id={self.app_id}, title={self.title}, msg={self.msg}, icon={self.icon}, \
+            launch={self.launch}, duration={self.duration}, sound={self._sound})"
 
 
 
@@ -91,17 +108,17 @@ class MQThread(QThread):
     :type loops: bool | tuple[bool]
     """
 
-    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any]],
-                 loops: bool | tuple[bool]):
+    def __init__(self, targets: Callable[[], Any] | tuple[Callable[[], Any], ...],
+                 loops: bool | tuple[bool, ...]):
         """
         Initializes the class instance with the given targets and loops.
 
-        Args:
-        - targets: A callable or a tuple of callables.
-        - loops: A bool or a tuple of bools.
+        :param targets: A callable or a tuple of callables.
+        :type targets: Callable[[], Any] | tuple[Callable[[], Any], ...]
+        :param loops: A bool or a tuple of bools.
+        :type loops: bool | tuple[bool, ...]
 
-        Raises:
-        - TypeError: If targets is not a callable or a tuple of callables, \
+        :raises TypeError: If targets is not a callable or a tuple of callables, \
             or if loops is not a bool or a tuple of bools.
         """
         super().__init__()
@@ -153,34 +170,31 @@ class Stray:
     """
     This class allows the user to create a Windows Stray Icon with some methods, icon and title.
 
-    Attributes:
-    -----------
-    icon_name : str
-        The name of the icon.
-    _image : Img
-        The image of the icon.
-    methods : tuple[Callable, ...]
-        A tuple of methods that can be called from the Stray menu.
-    icon : Icon
-        The Stray icon object.
+    Attributes::
+    - icon_name: The name of the icon.
+    - _image: The image of the icon.
+    - methods: A tuple of methods that can be called from the Stray menu.
+    - icon: The Stray icon object.
     """
 
     def __init__(self, icon_name: str, image: Img.Image, methods: tuple[Callable[[], Any], ...]):
         """
         Initializes a Logic object.
 
-        Args:
-            icon_name (str): The name of the icon.
-            image (Img): The image of the icon.
-            methods (tuple[Callable, ...]): A tuple of methods to be executed.
+        :param icon_name: The name of the icon.
+        :type icon_name: str
+        :param image: The image of the icon.
+        :type image: Img.Image
+        :param methods: A tuple of methods to be executed.
+        :type methods: tuple[Callable[[], Any], ...]
 
-        Returns:
-            None
+        :return: None
         """
         self.icon_name = icon_name
         self._image = image
         self.methods = methods
         self.icon = None
+
 
     @property
     def title(self):
@@ -192,17 +206,17 @@ class Stray:
         """
         Sets the title of the object.
 
-        Args:
-        - value (str): The title to be set.
+        :param value: The title to be set.
+        :type value: str
 
-        Raises:
-        - ValueError: If value is not an instance of str or is the same as the current title.
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not an instance of str or is the same as the current title.
         """
         if isinstance(value, str) and value != self.icon_name:
             self.icon_name = value
         else:
-            raise ValueError(
-                "'value' is not an instance of str or is the same")
+            raise ValueError("'value' is not an instance of str or is the same")
 
     @property
     def image(self):
@@ -288,11 +302,11 @@ def msgBox(log: login.LoginSystem):
     """
     Creates a QMessageBox instance with some addons
 
-    Args:
-        log (login.LoginSystem): An instance of the LoginSystem class
+    :param log: An instance of the LoginSystem class
+    :type log: login.LoginSystem
 
-    Returns:
-        QMessageBox: An instance of the QMessageBox class
+    :return: An instance of the QMessageBox class
+    :rtype: QMessageBox
     """
     msg = QMessageBox()
     msg.setWindowIcon(log.icon)
@@ -306,11 +320,11 @@ def App(argv: list[str]):
     """
     Creates a QApplication instance with default values.
 
-    Args:
-        argv (list[str]): List of command line arguments.
+    :param argv: List of command line arguments.
+    :type argv: list[str]
 
-    Returns:
-        QApplication: The created QApplication instance.
+    :return: The created QApplication instance.
+    :rtype: QApplication
     """
     cwd_assets = os.path.join(os.getcwd(), "assets")
     app = QApplication(argv)

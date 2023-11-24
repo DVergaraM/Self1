@@ -1,6 +1,7 @@
 "Installs the required packages"
 import os
 
+
 def install_req():
     """
     Installs the required packages specified in the requirements.txt file.
@@ -16,5 +17,6 @@ def install_req():
         return None
     except os.error as excp:
         raise os.error(excp) from excp
+
 
 install_req()

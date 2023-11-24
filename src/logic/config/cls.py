@@ -11,7 +11,7 @@ from PyQt5 import uic
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config, set_multiple_config
 from utils.setters import set_text, text_changed_connect, connect, enable_button
-from utils.others import update_window, get_text, remove
+from utils.others import get_time, update_window, get_text, remove
 
 from logic import database as l_database
 
@@ -21,7 +21,7 @@ class ConfigMenu(SubWindow):
     A subwindow for configuring the application's settings.
 
     Args:
-        parent (Any): The parent widget.
+        parent (ElementType): The parent widget.
         icon (QIcon): The icon to be displayed in the GUI.
         db (l_database.BrainDatabase): The database where the items are stored.
     """
@@ -29,6 +29,14 @@ class ConfigMenu(SubWindow):
     def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase):
         '''
         Initializes the ConfigMenu class.
+
+        :param parent: The parent element.
+        :type parent: ElementType
+        :param icon: The icon for the config menu.
+        :type icon: QIcon
+        :param database: The database object.
+        :type database: l_database.BrainDatabase
+        :rtype: None
         '''
         super().__init__(size=(510, 460))
         self.icon = icon
@@ -80,14 +88,11 @@ class ConfigMenu(SubWindow):
         if (len(self._config) % 2 == 1 or len(self._config) >= 3) and self.image_path != "":
             self._config = remove(self._config)
             self._config += (self.image_path, )
-            print(self._config)
         else:
             self._config = ()
             self._config += (self.image_path, )
-            print(self._config)
         set_text(self, {"path_input": self.image_path})
         update_window(self)
-        print(self._config)
 
     def save_title(self):
         "Saves the title displayed in QLineEdit"
@@ -96,13 +101,10 @@ class ConfigMenu(SubWindow):
                 title != "" and os.path.exists(self._config[0]):
             self._config = remove(self._config)
             self._config += (title, )
-            print(self._config)
         else:
             self._config = ()
             self._config += (self.image_path, title)
-            print(self._config)
         update_window(self)
-        print(self._config)
 
     def add_to_db(self):
         """Adds the information to Database and 
@@ -114,7 +116,7 @@ class ConfigMenu(SubWindow):
             icon, title = self.database.get_config()
             icon = QIcon(icon)
             set_multiple_config(self.my_parent, icon, default_title=title)
-            print("Config setted for all windows")
+            print(f"{get_time()} - Config setted for all windows")
             return None
         QMessageBox.warning(
             self, "Error", "Config only need 2 items inside!\nReopen GUI and try it again.")

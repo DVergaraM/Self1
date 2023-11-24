@@ -22,8 +22,14 @@ class ChangeCredentials(QDialog):
     registering a new user in the system.
     """
 
-    def __init__(self, username: str | None = None) -> None:  # type: ignore
-        print("Opened")
+    def __init__(self, username: str | None = None):  # type: ignore
+        """
+        Initializes the ChangeCredentials class.
+
+        :param username: The username.
+        :type username: str | None, optional
+        :rtype: None
+        """
         super().__init__()
         uic.loadUi(
             fr"{cwd}logic\changeCredentials\change_password_window.ui", self)

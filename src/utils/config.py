@@ -14,14 +14,19 @@ def set_config(element: ElementType, title: str | None = None, icon: QIcon | Non
     """
     Sets the configuration of an element with ease.
 
-    Args:
-        element (ElementType): The element to set the configuration for.
-        title (str | None, optional): The title to set for the element.
-        icon (QIcon | None, optional): The icon to set for the element.
-        size (QSize | tuple[int, int] | None, optional): The size to set for the element.
+    :param element: The element to set the configuration for.
+    :type element: ElementType
+    :param title: The title to set for the element, defaults to None.
+    :type title: str, optional
+    :param icon: The icon to set for the element, defaults to None.
+    :type icon: QIcon, optional
+    :param size: The size to set for the element, defaults to None.
+    :type size: QSize or tuple[int, int], optional
 
-    Raises:
-        TypeError: If size is not an instance of tuple or PyQt5.QtCore.QSize.
+    :return: None
+    :rtype: None
+
+    :raises TypeError: If size is not an instance of tuple or PyQt5.QtCore.QSize.
     """
     title = title or element.windowTitle()
     icon = icon or element.windowIcon()
@@ -42,15 +47,18 @@ def set_multiple_config(element: ElementType, icon: QIcon,\
     """
     Set the configuration for multiple elements.
 
-    Args::
-        - element (ElementType): The main element to configure.
-        - icon (QIcon): The icon to set for all elements.
-        - properties (list[Any] | None): The list of elements to configure. 
-            If None, all menu elements will be configured.
-        - **kwargs: Additional arguments.
-        
-    Returns:
-        None
+    :param element: The main element to configure.
+    :type element: ElementType
+    :param icon: The icon to set for all elements.
+    :type icon: QIcon
+    :param properties: The list of elements to configure. If None, all menu elements will be configured.
+    :type properties: list[Any] | None
+    :param **kwargs: Additional arguments.
+
+    :return: None
+    :rtype: None
+    :raises KeyError: If 'default_title' is not present in kwargs.
+
     """
     if not properties:
         properties = [getattr(element, obj) for obj in props(

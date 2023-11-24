@@ -46,7 +46,6 @@ attribute: TypeAlias = str
 method: TypeAlias = Callable
 cwd = fr"{os.getcwd()}\src\\"
 otuple_str = TypeVar("otuple_str", tuple[str, ...], None)
-cwddb = fr"{os.getcwd()}\src\login.db"
 
 
 def props(cls: Type[Any]) -> list[str]:
@@ -61,3 +60,15 @@ def props(cls: Type[Any]) -> list[str]:
     """
     properties = [i for i in cls.__dict__.keys() if i[:1] != '_']
     return properties
+
+__template__ = """
+__description__
+
+:param parameter_1: __description__
+:type parameter_1: __type__
+
+__end__
+:return: __description__
+:rtype: __type__
+:raises __ErrorType__: __description__
+"""

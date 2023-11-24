@@ -25,15 +25,19 @@ class CreateMenu(SubWindow):
     """
 
     def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
-                 create_app: createApps.CreateAppsMenu):
+                     create_app: createApps.CreateAppsMenu):
         """
         Initializes a new instance of the `CreateMenu` class.
 
-        Args:
-            parent (Any): A reference to the parent object.
-            icon (QIcon): The icon to be displayed in the GUI.
-            db (l_database.BrainDatabase): The database where items will be stored.
-            createApp (createApps.CreateAppsMenu): A menu for saving apps to the database.
+        :param parent: A reference to the parent object.
+        :type parent: ElementType
+        :param icon: The icon to be displayed in the GUI.
+        :type icon: QIcon
+        :param database: The database where items will be stored.
+        :type database: l_database.BrainDatabase
+        :param create_app: A menu for saving apps to the database.
+        :type create_app: createApps.CreateAppsMenu
+        :rtype: None
         """
         super().__init__(size=(760, 680))
         self.icon = icon

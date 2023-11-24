@@ -19,11 +19,11 @@ def create_brain_tables(conn: Connection):
     """
     Creates the necessary tables for the SBrain application in the given database connection.
 
-    Args:
-        conn (sqlite3.Connection): The connection to the SQLite database.
+    :param conn: The connection to the SQLite database.
+    :type conn: sqlite3.Connection
 
-    Returns:
-        sqlite3.Connection: The same connection object passed as an argument.
+    :return: The same connection object passed as an argument.
+    :rtype: sqlite3.Connection
     """
     cur = conn.cursor()
     cur.execute("""
@@ -82,11 +82,11 @@ def create_login_tables(conn: Connection):
     """
     Creates the necessary tables for the login system in the specified database connection.
 
-    Args:
-        conn: A SQLite database connection object.
+    :param conn: A SQLite database connection object.
+    :type conn: sqlite3.Connection
 
-    Returns:
-        The same database connection object passed as an argument.
+    :return: The same database connection object passed as an argument.
+    :rtype: sqlite3.Connection
     """
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS Activities")
@@ -131,10 +131,10 @@ class ParentDatabase:
         """
         Initializes the ParentDatabase object.
 
-        Args::
-        path_to_db: The path to the database file.
-        type : str
-            The type of database (either "brain" or "login").
+        :param path_to_db: The path to the database file.
+        :type path_to_db: str
+        :param type: The type of database (either "brain" or "login").
+        :type type: str
         """
         self.name = self.__class__.__name__.lower()
         if os.path.exists(path_to_db) and type in ["brain", "login"]:
@@ -150,17 +150,18 @@ class ParentDatabase:
         """
         return self._connection
 
-    def create_connection(self, func: Callable[[Connection], Connection] = None): # type: ignore
+    def create_connection(self, func: Callable[[Connection], Connection] = None) -> Connection: # type: ignore
         """
         Creates a connection to the database.
 
-        Parameters:
-            func: A function to be applied to the connection, by default None.
+        :param func: A function to be applied to the connection, by default None.
+        :type func: Callable[[Connection], Connection]
 
-        Returns: Connection
+        :return: The connection object.
+        :rtype: Connection
         """
         try:
-            conn = connect(self.DB_PATH) # type: ignore
+            conn = connect(self.DB_PATH)
             return func(conn) if func else conn
         except DatabaseError as excp:
             raise DatabaseError(excp) from excp
@@ -281,7 +282,17 @@ class BrainDatabase(ParentDatabase):
         self.create_apps_menu_actual %= len(self.apps_ids)
 
     def create_log_apps(self, log: otuple_str, element: ElementType):
-        "Creates an Application Log"
+        """
+        Creates an Application Log
+
+        :param log: The log to be inserted into the database
+        :type log: otuple_str
+        :param element: The element to display the message box
+        :type element: ElementType
+
+        :return: The ID of the inserted log if successful, None otherwise
+        :rtype: int or None
+        """
         conn = self.connection
         cur = conn.cursor()
         sql = """
@@ -306,7 +317,17 @@ class BrainDatabase(ParentDatabase):
         return None
 
     def delete_log_apps(self, log: tuple[str, str], element: ElementType):
-        "Deletes an Application Log"
+        """
+        Deletes an Application Log
+
+        :param log: A tuple containing the name and path of the log
+        :type log: tuple[str, str]
+        :param element: The element to display the message box
+        :type element: ElementType
+
+        :return: None
+        :rtype: None
+        """
         if len(log) == 2:
             conn = self.connection
             cur = conn.cursor()
@@ -334,7 +355,19 @@ class BrainDatabase(ParentDatabase):
         return None
 
     def update_log_apps(self, new_path: str, name: str, element: ElementType):
-        "Updates an Application Log"
+        """
+        Updates an Application Log.
+
+        :param new_path: The new path to update.
+        :type new_path: str
+        :param name: The name of the application.
+        :type name: str
+        :param element: The element to display the information.
+        :type element: ElementType
+
+        :return: None
+        :rtype: None
+        """
         conn = self.connection
         cur = conn.cursor()
         sql = """
@@ -346,8 +379,17 @@ class BrainDatabase(ParentDatabase):
         QMessageBox.information(element, "Updated", "Path updated in database")
 
     def set_config(self, element: ElementType, config: tuple[str, str]):
-        """Sets the config with a directory and title that will be used for all 
-        Program's GUI and Stray"""
+        """
+        Sets the config with a directory and title that will be used for all Program's GUI and Stray
+
+        :param element: The element to display the information message box
+        :type element: ElementType
+        :param config: The configuration tuple containing the image path and title
+        :type config: tuple[str, str]
+        
+        :return: The last inserted row id
+        :rtype: int
+        """
         assert len(config) == 2, "Config length must be 2"
         conn = self.connection
         cur = conn.cursor()
@@ -368,7 +410,19 @@ class BrainDatabase(ParentDatabase):
         return cur.lastrowid
 
     def update_config_icon(self, element: ElementType, new_icon: str, title: str):
-        "Updates the icon according to the title"
+        """
+        Updates the icon according to the title.
+
+        :param element: The element to display the information.
+        :type element: ElementType
+        :param new_icon: The new icon path.
+        :type new_icon: str
+        :param title: The title of the configuration.
+        :type title: str
+
+        :return: None
+        :rtype: None
+        """
         conn = self.connection
         cur = conn.cursor()
 
@@ -382,7 +436,19 @@ class BrainDatabase(ParentDatabase):
         QMessageBox.information(element, "Information", "Icon changed")
 
     def update_config_title(self, element: ElementType, new_title: str, icon: str):
-        "Updates title according to the icon"
+        """
+        Updates the title of a configuration based on the provided icon.
+
+        :param element: The element to display the information message.
+        :type element: ElementType
+        :param new_title: The new title to set for the configuration.
+        :type new_title: str
+        :param icon: The icon associated with the configuration.
+        :type icon: str
+
+        :return: None
+        :rtype: None
+        """
         conn = self.connection
         cur = conn.cursor()
 
@@ -417,8 +483,18 @@ class BrainDatabase(ParentDatabase):
             return result
         return (f"{os.getcwd()}/assets/default.png", "Second Brain")
 
-    def create_task(self, log: tuple[str, ...], element: ElementType):
-        "Creates an Schedule Log"
+    def create_task(self, log: otuple_str, element: ElementType):
+        """
+        Creates an Schedule Log
+
+        :param log: The log information
+        :type log: otuple_str
+        :param element: The element to display the message box
+        :type element: ElementType
+
+        :return: The ID of the inserted task or None if data already exists
+        :rtype: int or None
+        """
         conn = self.connection
         cur = conn.cursor()
         sql = """
@@ -469,7 +545,19 @@ class LoginDatabase(ParentDatabase):
         self._connection = self.create_connection(create_login_tables)
 
     def fetch_all_logins(self, username: str, password: str, **kwargs):
-        "Get all logins and checks if an username and password exists in Database"
+        """
+        Get all logins and checks if an username and password exists in Database
+
+        :param username: The username to check
+        :type username: str
+        :param password: The password to check
+        :type password: str
+        :param kwargs: Additional keyword arguments
+        :type kwargs: dict
+
+        :return: A list of logins matching the username and password
+        :rtype: list
+        """
         if "encrypted" in kwargs and not kwargs["encrypted"]:
             username = str(others.sha_256(username))
         conn = self.connection
@@ -482,7 +570,17 @@ class LoginDatabase(ParentDatabase):
         return logins.fetchall()
 
     def add_user_logins(self, username: str, password: str):
-        "Adds a Login to Database according to some QLineEdit values in SHA256"
+        """
+        Adds a Login to Database according to some QLineEdit values in SHA256
+
+        :param username: The username of the login
+        :type username: str
+        :param password: The password of the login
+        :type password: str
+
+        :return: The ID of the inserted login
+        :rtype: int
+        """
         conn = self.connection
         cur = conn.cursor()
 
@@ -496,7 +594,19 @@ class LoginDatabase(ParentDatabase):
 
     def update_user_password_logins(self, new_password: str,
                                     username: str, password: str):
-        "Updates the user's password in database"
+        """
+        Updates the user's password in the database.
+
+        :param new_password: The new password to be set.
+        :type new_password: str
+        :param username: The username of the user.
+        :type username: str
+        :param password: The current password of the user.
+        :type password: str
+
+        :return: None
+        :rtype: None
+        """
         conn = self.connection
         cur = conn.cursor()
 

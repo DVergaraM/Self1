@@ -8,12 +8,15 @@ def set_text(element: ElementType,
     """
     Sets the text of a QLineEdit with some value.
 
-    Args:
-        element: The QLineEdit element to set the text on.
-        objs: A dictionary or tuple containing the attribute and value to set.
+    :param element: The QLineEdit element to set the text on.
+    :type element: ElementType
+    :param objs: A dictionary or tuple containing the attribute and value to set.
+    :type objs: Union[dict[attribute, int | str], tuple[attribute, int | str]]
 
-    Raises:
-        TypeError: If 'objs' and/or 'data' params have the incorrect type.
+    :return: None
+    :rtype: None
+
+    :raises TypeError: If 'objs' and/or 'data' params have the incorrect type.
     """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, data = objs
@@ -39,15 +42,18 @@ def connect(element: ElementType, objs: tuple[attribute, method] | dict[attribut
     """
     Connects a button or a group of buttons with a method or a group of methods.
 
-    Args:
-        element (ElementType): Element where the attributes are going to be.
-        objs: The button or group of buttons to connect with the method or group of methods to.
+    :param element: Element where the attributes are going to be.
+    :type element: ElementType
+    :param objs: The button or group of buttons to connect with the method or group of methods to.
+    :type objs: tuple[attribute, method] | dict[attribute, method]
 
-    Raises:
-        TypeError: If the 'objs' parameter is not a tuple or a dictionary, 
-            or if it is a tuple but does not have exactly two elements, 
-            or if it is a dictionary but not all its keys are of type 'attribute' 
-            and all its values are of type 'method'.
+    :return: None
+    :rtype: None
+
+    :raises TypeError: If the 'objs' parameter is not a tuple or a dictionary, \
+        or if it is a tuple but does not have exactly two elements, \
+            or if it is a dictionary but not all its keys are of type 'attribute' \
+                and all its values are of type 'method'.
     """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
@@ -63,21 +69,23 @@ def connect(element: ElementType, objs: tuple[attribute, method] | dict[attribut
             else:
                 continue
     else:
-        raise TypeError(
-            "'obj' and/or 'method' params must have the correct type")
+        raise TypeError("'obj' and/or 'method' params must have the correct type")
 
 
 def text_changed_connect(element: ElementType,
                        objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
     """
-    Connects a button with a method depending of a QLineEdit.
+    Connects a button with a method depending on a QLineEdit.
 
-    Args:
-        element: The element to connect the method to.
-        objs: A tuple or dictionary containing the attributes and methods to connect.
+    :param element: The element to connect the method to.
+    :type element: ElementType
+    :param objs: A tuple or dictionary containing the attributes and methods to connect.
+    :type objs: tuple[attribute, method] | dict[method, list[attribute]]
 
-    Raises:
-        TypeError: If 'objs' and/or 'method' params must have the correct type.
+    :return: None
+    :rtype: None
+    
+    :raises TypeError: If 'objs' and/or 'method' params must have the correct type.
     """
     if isinstance(objs, tuple) and len(objs) == 2:
         attr, meth = objs
@@ -94,8 +102,7 @@ def text_changed_connect(element: ElementType,
                 else:
                     continue
     else:
-        raise TypeError(
-            "'obj' and/or 'method' params must have the correct type")
+        raise TypeError("'obj' and/or 'method' params must have the correct type")
 
 
 def enable_button(element: ElementType,
@@ -103,15 +110,15 @@ def enable_button(element: ElementType,
     '''
     Enables or disables a button
 
-    Args:
-        element: Object to check if it has the attributes
-        data: Dictionary or tuple to assign values
+    :param element: Object to check if it has the attributes
+    :type element: ElementType
+    :param data: Dictionary or tuple to assign values
+    :type data: dict[attribute, bool] | tuple[attribute, bool]
 
-    Raises:
-        TypeError: 'data' param must have the correct type.
+    :raises TypeError: 'data' param must have the correct type.
 
-    Returns:
-        None
+    :return: None
+    :rtype: None
     '''
     if isinstance(data, tuple) and len(data) == 2:
         attr, value = data  # Unzip the data inside in two variables

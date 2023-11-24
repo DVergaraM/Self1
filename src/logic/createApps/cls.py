@@ -27,20 +27,30 @@ class CreateAppsMenu(SubWindow):
     - actual_path (str): The current path of the application being displayed.
     """
 
-    def __init__(self, parent: ElementType, icon: QIcon,\
-            database: l_database.BrainDatabase, apps_menu: apps.AppsMenu):
+    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase, apps_menu: apps.AppsMenu):
+        """
+        Initializes the class object.
+
+        :param parent: The parent element.
+        :type parent: ElementType
+        :param icon: The icon for the class object.
+        :type icon: QIcon
+        :param database: The database object.
+        :type database: l_database.BrainDatabase
+        :param apps_menu: The apps menu object.
+        :type apps_menu: apps.AppsMenu
+        :rtype: None
+        """
         super().__init__(size=(760, 680))
         self.icon = icon
         self.my_parent = parent
         self.database = database
-        # pylint: disable=invalid-name
         self.appsMenu = apps_menu
         uic.loadUi(fr"{cwd}logic\createApps\create_apps_menu.ui", self)
         set_config(self, "Apps Create", self.icon, (760, 680))
         self.actual_name = str(self.database.get_current_apps_name()[0])
         self.actual_path = str(self.database.get_current_apps_path()[0])
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects buttons with methods, sets text in path lines and shows it"
         set_text(self, {
@@ -81,10 +91,8 @@ class CreateAppsMenu(SubWindow):
 
     def add_to_db(self):
         "Adds info to database"
-        current_name = get_text(self, "name_input") # type: ignore
-        current_path = get_text(self, "path_input") # type: ignore
-        current_name: str = f"{current_name}"
-        current_path: str = fr"{current_path}"
+        current_name = f"{get_text(self, 'name_input')}"
+        current_path = fr"{get_text(self, 'path_input')}"
         self.database.create_log_apps(
             (current_name, current_path), self) # type: ignore
         update_window(self)
@@ -92,10 +100,8 @@ class CreateAppsMenu(SubWindow):
 
     def delete_from_db(self):
         "Deletes info from database."
-        current_name = get_text(self, "name_input") # type: ignore
-        current_path = get_text(self, "path_input") # type: ignore
-        current_name: str = f"{current_name}"
-        current_path: str = fr"{current_path}"
+        current_name = f'{get_text(self, "name_input")}'
+        current_path = fr'{get_text(self, "path_input")}'
         self.database.delete_log_apps(
             (current_name, current_path), self)
         update_window(self)
@@ -103,10 +109,8 @@ class CreateAppsMenu(SubWindow):
 
     def update_from_db(self):
         "Updates info to database"
-        current_name = get_text(self, "name_input") # type: ignore
-        new_path = get_text(self, "path_input") # type: ignore
-        current_name: str = f"{current_name}"
-        new_path: str = fr"{new_path}"
+        current_name = f'{get_text(self, "name_input")}'
+        new_path = fr'{get_text(self, "path_input")}'
         self.database.update_log_apps(
             new_path, current_name, self)
         update_window(self)

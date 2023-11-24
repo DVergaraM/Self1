@@ -40,28 +40,31 @@ class AppsMenu(SubWindow):
         run(self):
             Runs the program displayed in QLineEdit.
     """
-
+    
     def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
                  thread: QProcess):
-        '''
+        """
+        Adds a new task to the schedule.
 
-        Args::
-            parent (Self): Different of of `self` but to implement inside other class with `self`
-            icon (QIcon): Icon to be setted up in the GUI
-            db (database.Database): Db where is going to look for items
-            thread (QProcess): Thread where the programs will run from db
-        '''
+        :param parent: Main instance of the Menu.
+        :type parent: ElementType
+        :param icon: Icon to be set in the config.
+        :type icon: QIcon
+        :param database: The BrainDatabase instance used for database operations.
+        :type database: l_database.BrainDatabase
+        :param thread: The QProcess instance used for running the task.
+        :type thread: QProcess
+        :rtype: None
+        """
         super().__init__(size=(760, 680))
-        self.icon = icon
         self.my_parent = parent
         self.database = database
         self.o_thread = thread
         self.connection = self.database.connection
         uic.loadUi(fr"{cwd}logic\apps\apps_menu.ui", self)
-        set_config(self, "Apps Menu", self.icon, (760, 680))
+        set_config(self, "Apps Menu", icon, (760, 680))
         self.actual = str(self.database.get_current_apps_path_apps()[0])
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects, sets and show GUI"
         set_text(self, ("path_line", fr'"{self.actual}"'))

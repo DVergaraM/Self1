@@ -41,21 +41,20 @@ class Gui(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         # Loads Main GUI
-        default = "https://i.imgur.com/PgUSXzh.png"
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = BrainDatabase(DB_PATH)
         icon, self.__title = None, None
         icon, self.__title = self.database.get_config()
         self.__title = str(self.__title)
-        if self.__title and os.path.exists(self.__title):
+        if self.__title and not os.path.exists(self.__title):
             self.__title = "Second Brain"
         if icon and os.path.exists(icon):
             pil = Img.open(icon)
             self.icon = QIcon(icon)
-            print("With Icon")
+            print(f"{get_time()} - Icon loaded using Database")
         else:
             try:
-                default = "https://i.imgur.com/PgUSXzh.png"
+                default = "https://daniel-vergara-m.github.io/assets/img-logo.jpeg"
                 response = requests.get(default, timeout=5000)
                 if response.status_code == 200:
                     pil = Img.open(BytesIO(response.content))
@@ -65,11 +64,11 @@ class Gui(QMainWindow):
                     img = QImage(pil.tobytes(), pil.width,
                                  pil.height, QImage.Format.Format_RGB888)
                     self.icon = QIcon(QPixmap().convertFromImage(img))
-                    print("With URL")
+                    print(f"{get_time()} - Icon loaded using URL")
                 else:
                     pil = Img.open(fr"{os.getcwd()}\assets\default.png")
                     self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
-                    print("With path")
+                    print(f"{get_time()} - Icon loaded using Path")
             except requests.ConnectTimeout as excp:
                 raise requests.ConnectTimeout(excp) from excp
         # Sets title, icon and fixed size for GUI
@@ -140,13 +139,17 @@ class Gui(QMainWindow):
 
 
 def main(argv: list[str]):
-    "Main function"
+    """
+    Main function
+
+    :param argv: List of command-line arguments
+    :type argv: list[str]
+    """
     app = App(argv)
     login = LoginSystem()
     if login.exec_() == QDialog.DialogCode.Accepted:
-        format_date_all = get_time()
         print(
-            f"{format_date_all} - Opening Stray...")
+            f"{get_time()} - Opening Stray...")
 
         msg = msgBox(login)
         QTimer.singleShot(3*1000, lambda: msg.done(0))

@@ -9,7 +9,19 @@ from . import ElementType, attribute
 
 def get_text(element: ElementType,
              attrs: tuple[attribute, ...] | attribute):
-    "Gets a single or multiple QLineEdit value(s) and return it/them"
+    """
+    Gets a single or multiple QLineEdit value(s) and returns it/them
+
+    :param element: The element from which to get the text
+    :type element: ElementType
+    :param attrs: The attribute(s) of the element to retrieve the text from
+    :type attrs: tuple[attribute, ...] | attribute
+
+    :return: The text value(s) of the element
+    :rtype: str | tuple[str, ...]
+
+    :raises AttributeError: If the attribute(s) do not exist on the element
+    """
     if isinstance(attrs, tuple):
         return tuple(getattr(element, attr).text() if isinstance(attr, attribute)
                      and hasattr(element, attr) else "" for attr in attrs)
@@ -21,13 +33,17 @@ def update_database(element: ElementType, db_attr: str, path_attr: str):
     """
     Update the database attribute of an element based on the given db_attr and path_attr.
 
-    Args:
-        element (ElementType): The element to update the database attribute.
-        db_attr (str): The name of the database attribute to update.
-        path_attr (str): The name of the path attribute containing the database path.
+    :param element: The element to update the database attribute.
+    :type element: ElementType
+    :param db_attr: The name of the database attribute to update.
+    :type db_attr: str
+    :param path_attr: The name of the path attribute containing the database path.
+    :type path_attr: str
 
-    Returns:
-        None
+    :return: None
+    :rtype: None
+
+    :raises AttributeError: If the element does not have the specified db_attr or path_attr.
     """
     from logic.database import BrainDatabase, LoginDatabase
     if hasattr(element, db_attr) and hasattr(element, path_attr):
@@ -42,8 +58,13 @@ def update_element(element: ElementType):
     """
     Updates the specified element with the current configuration settings.
 
-    Args:
-        element (ElementType): The element to be updated.
+    :param element: The element to be updated.
+    :type element: ElementType
+
+    :return: None
+    :rtype: None
+
+    :raises: None
     """
     from utils import config
     config.set_config(element, element.windowTitle(),
@@ -55,11 +76,13 @@ def update_window(element: ElementType) -> None:
     """
     Updates the window with the given element.
 
-    Args:
-        element (ElementType): The element to update the window with.
+    :param element: The element to update the window with.
+    :type element: ElementType
 
-    Raises:
-        AttributeError: If an attribute error occurs during the update process.
+    :return: None
+    :rtype: None
+
+    :raises AttributeError: If an attribute error occurs during the update process.
     """
     try:
         update_database(element, "db", "DB_PATH")
@@ -75,15 +98,17 @@ def sha(element: ElementType, objs: Tuple[str, ...] | str):
     """
     Converts QLineEdit values to SHA256 and returns it as a tuple.
 
-    Args:
-        element (Any): The element containing the attributes to be hashed.
-        objs (Tuple[str, str]): A tuple containing the names of the attributes to be hashed.
+    :param element: The element containing the attributes to be hashed.
+    :type element: Any
+    :param objs: A tuple containing the names of the attributes to be hashed.
+                 If a single string is provided, it will be treated as a single attribute name.
+    :type objs: Tuple[str, ...] | str
 
-    Returns:
-        Tuple[str, str]: A tuple containing the hashed values of the attributes.
-    Raises:
-        IndexError: If the tuple contains more than 2 items.
-        TypeError: If the objs parameter is not a tuple of strings.
+    :return: A tuple containing the hashed values of the attributes.
+    :rtype: Tuple[str, ...]
+
+    :raises IndexError: If the tuple contains more than 2 items.
+    :raises TypeError: If the objs parameter is not a tuple of strings.
     """
     if isinstance(objs, tuple):
         if len(objs) >= 2:
@@ -106,11 +131,14 @@ def sha_256(objs: str | Tuple[str]) -> str | Tuple[str]:
     """
     Converts a tuple of strings to SHA256 and returns it as a tuple.
 
-    Args:
-        objs (Tuple[str]): A tuple containing the strings to be hashed.
+    :param objs: A tuple containing the strings to be hashed.
+    :type objs: Tuple[str]
 
-    Returns:
-        Tuple[str]: A tuple containing the hashed values of the strings.
+    :return: A tuple containing the hashed values of the strings.
+    :rtype: Tuple[str]
+
+    :raises TypeError: If objs is not a string or a tuple.
+
     """
     if isinstance(objs, str):
         return sha256(str(objs).encode('utf-8')).hexdigest()
@@ -125,13 +153,16 @@ def compare(result: tuple[str, ...], comparation: tuple[str, ...]):
     """
     Compares the items inside 2 tuples and checks if they are the same.
 
-    Args:
-        result (tuple[str, ...]): The first tuple to compare.
-        comparation (tuple[str, ...]): The second tuple to compare.
+    :param result: The first tuple to compare.
+    :type result: tuple[str, ...]
+    :param comparation: The second tuple to compare.
+    :type comparation: tuple[str, ...]
 
-    Returns:
-        bool | tuple[bool]: If the tuples are the same, returns True. Otherwise, returns False
+    :return: If the tuples are the same, returns True. Otherwise, returns False
         indicating which elements are different.
+    :rtype: bool | tuple[bool]
+
+    :raises: None
     """
     if len(result) != len(comparation):
         return False
@@ -143,11 +174,13 @@ def remove(elements: tuple) -> tuple:
     """
     Removes duplicate elements in a tuple.
 
-    Args:
-        elements (tuple): The tuple to remove duplicates from.
+    :param elements: The tuple to remove duplicates from.
+    :type elements: tuple
 
-    Returns:
-        tuple: A new tuple with the duplicate elements removed.
+    :return: A new tuple with the duplicate elements removed.
+    :rtype: tuple
+
+    :raises: None
     """
     return tuple(set(elements))
 
@@ -156,8 +189,8 @@ def get_time_log() -> str:
     """
     Returns the current time in the format of day-month-year_hour-minute-second.
 
-    Returns:
-    str: A string representing the current time in the format of day-month-year_hour-minute-second.
+    :return: A string representing the current time in the format of day-month-year_hour-minute-second.
+    :rtype: str
     """
     date = datetime.now()
     format_date = f"{date.day}-{date.month}-{date.year}_"
@@ -168,6 +201,9 @@ def get_time_log() -> str:
 def get_time():
     """
     Returns the current time in the format of [day-month-year hour:minute:second].
+
+    :return: The current time in the format of [day-month-year hour:minute:second].
+    :rtype: str
     """
     date = datetime.now()
     format_date = f"[{date.day}-{date.month}-{date.year} "

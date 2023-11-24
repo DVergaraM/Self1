@@ -37,6 +37,25 @@ class NotificationMenu(SubWindow):
     def __init__(self, parent: ElementType, icon: QIcon,
                  database: l_database.BrainDatabase, notifier: MQThread | Callable,
                  start_t: Thread | MQThread | Callable, stop_t: MQThread, apps_menu: apps.AppsMenu):
+        """
+        Initialize the NotificationMenu class.
+        
+        :param parent: The parent element.
+        :type parent: ElementType
+        :param icon: The icon for the notification menu.
+        :type icon: QIcon
+        :param database: The BrainDatabase object.
+        :type database: l_database.BrainDatabase
+        :param notifier: The MQThread or Callable object for notification.
+        :type notifier: MQThread | Callable
+        :param start_t: The Thread, MQThread, or Callable object for starting the notification.
+        :type start_t: Thread | MQThread | Callable
+        :param stop_t: The MQThread object for stopping the notification.
+        :type stop_t: MQThread
+        :param apps_menu: The AppsMenu object.
+        :type apps_menu: apps.AppsMenu
+        :rtype: None
+        """
         super().__init__(size=(760, 680))
         self.icon = icon
         self.my_parent = parent
@@ -68,22 +87,20 @@ class NotificationMenu(SubWindow):
 
     def start_thread(self):
         "Starts Notification System"
-        if isinstance(self.threads[0], Callable) and isinstance(self.notifier, Callable):
-            self.threads[0]()
-            self.notifier()
-            return None
-        if isinstance(self.threads[0], (MQThread | Thread))\
-                and isinstance(self.notifier, Callable):
-            self.threads[0].start()
-            self.notifier()
-        if isinstance(self.threads[0], Callable)\
-                and isinstance(self.notifier, (MQThread | Thread)):
-            self.threads[0]()
-            self.notifier.start()
-        if isinstance(self.threads[0], (MQThread | Thread))\
-                and isinstance(self.notifier, (MQThread | Thread)):
-            self.threads[0].start()
-            self.notifier.start()
-        raise TypeError(
-            f"Expected MQThread or Thread for start_t and MQThread or Thread for notifier, \
-                got {type(self.threads[0])} and {type(self.notifier)} instead.")
+        thread = self.threads[0]
+        notifier = self.notifier
+
+        if callable(thread):
+            thread()
+        elif isinstance(thread, (MQThread, Thread)):
+            thread.start()
+        else:
+            raise TypeError(f"Expected MQThread or Thread for start_t, got {type(thread)} instead.")
+
+        if callable(notifier):
+            notifier()
+        elif isinstance(notifier, (MQThread, Thread)):
+            notifier.start()
+        else:
+            raise TypeError(
+                f"Expected MQThread or Thread for notifier, got {type(notifier)} instead.")

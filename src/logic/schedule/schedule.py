@@ -27,6 +27,7 @@ class Schedule:
         :type timezone: Union[str, pytz.BaseTzInfo]
         :param kwargs: Additional arguments to configure the Schedule instance.
         :type kwargs: dict
+        :rtype: None
         """
         self._tasks: list[tuple] = []
         self._amount_tasks = 0
@@ -96,6 +97,12 @@ class Schedule:
                 return True
         print("Still", self._tasks, self._amount_tasks)
         return False
+
+    def get_jobs(self):
+        """
+        Returns a list of all the jobs in the schedule.
+        """
+        return _schedule.get_jobs(), self.tasks
 
     def run_task(self, method: Callable, args: list | tuple) -> None:
         """

@@ -37,6 +37,19 @@ class ScheduleMenu(SubWindow):
 
     def __init__(self, parent: ElementType, icon: QIcon,
                  database: l_database.BrainDatabase, **kwargs):
+        """
+        Initializes an instance of the class.
+
+        :param parent: The parent element.
+        :type parent: ElementType
+        :param icon: The icon.
+        :type icon: QIcon
+        :param database: The database.
+        :type database: l_database.BrainDatabase
+        :param kwargs: Additional keyword arguments.
+        :type kwargs: dict
+        :rtype: None
+        """
         super().__init__(size=(760, 680))
         self.icon = icon
         self.my_parent = parent
