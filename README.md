@@ -1,13 +1,10 @@
 # Second Brain - Source Code
 
-
 This folder contains the source code for the Second Brain application. Second Brain is a personal knowledge management system that allows users to store and organize information in a centralized location.
 
-
 ## File Structure
-  
-The `src/` folder contains the following files and subfolders:
 
+The `src/` folder contains the following files and subfolders:
 
 - `__main__.py`: The main file of the application that initializes the GUI and starts the event loop.
 
@@ -16,10 +13,10 @@ The `src/` folder contains the following files and subfolders:
 - `utils/`: A subfolder containing utility modules for setting configuration options and making connections between GUI elements and methods.
 
 The `assets/` folder contains the following files:
+
 - `default.png`: Default icon for the App.
 - `secondbrain.jpg`: Backup icon for default.
 
-  
 ## Dependencies
 
 The Second Brain application has the following dependencies:
@@ -27,39 +24,37 @@ The Second Brain application has the following dependencies:
 - Python 3.10 or higher
 
 - [PyQt5](https://pypi.org/project/PyQt5/)
-    - For the GUIs and threads
+
+  - For the GUIs and threads
 
 - [PyStray](https://pypi.org/project/pystray/)
-    - For the System Tray Icon
+
+  - For the System Tray Icon
 
 - [Winotify](https://pypi.org/project/winotify/)
-    - For the Notification System
+
+  - For the Notification System
 
 - [Schedule](https://pypi.org/project/schedule/)
-    - For running methods at certain hours
+
+  - For running methods at certain hours
 
 - [Pillow](https://pypi.org/project/Pillow/)
-    - For loading images
-
+  - For loading images
 
 ## Running the Application
 
-
-To run the Second Brain application, run the `src/` folder using Python:  
+To run the Second Brain application, run the `src/` folder using Python:
 
 ```bash
 python setup.py && python src
 ```
-  
-This will start the application and display the login dialog. Once you have logged in, you will be taken to the main GUI of the application.
 
-  
+This will start the application and display the login dialog. Once you have logged in, you will be taken to the main GUI of the application.
 
 ## Contributing
 
 If you would like to contribute to the Second Brain application, please fork this repository and submit a pull request with your changes. We welcome contributions of all kinds, including bug fixes, new features, and documentation improvements.
-
-  
 
 ## License
 
