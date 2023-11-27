@@ -121,7 +121,7 @@ def sha(element: ElementType, objs: Tuple[str, ...] | str):
                     objs_in_sha += (objsha, )
                 else:
                     continue
-            return objs_in_sha # type: ignore
+            return objs_in_sha  # type: ignore
         raise IndexError("At least 2 items are allowed in the tuple")
     return sha256(str(getattr(element, objs).text()).encode('utf-8')).hexdigest()\
         if hasattr(element, objs) else ""
@@ -146,7 +146,7 @@ def sha_256(objs: str | Tuple[str]) -> str | Tuple[str]:
     for _, obj in enumerate(objs):
         objsha = sha256(str(obj).encode('utf-8')).hexdigest()
         objs_in_sha += (objsha, )
-    return objs_in_sha # type: ignore
+    return objs_in_sha  # type: ignore
 
 
 def compare(result: tuple[str, ...], comparation: tuple[str, ...]):

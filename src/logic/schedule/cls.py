@@ -3,17 +3,18 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QEvent
 from PyQt5 import uic
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
-from utils.others import get_text
+from utils.others import get_text, get_time
 from utils.setters import connect, set_text
 
 from logic import database as l_database
 from logic import MQThread
 from logic.schedule.schedule import Schedule as LogicSchedule
+
 
 class ScheduleMenu(SubWindow):
     """
@@ -52,13 +53,13 @@ class ScheduleMenu(SubWindow):
         """
         super().__init__(size=(760, 680))
         self.icon = icon
-        self.my_parent = parent
-        self.database = database
         notifier = kwargs["notifier"] if "notifier" in kwargs else None
         start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
+        self.database = database
         self.schedule = LogicSchedule(
-            notifier=notifier, start_thread=start_thread)
+            notifier=notifier, start_thread=start_thread, database=self.database, parent=parent)
         self._thread = MQThread(self.schedule.start, False)  # type: ignore
+        self.load_tasks()
         uic.loadUi(fr"{cwd}logic\schedule\schedule_menu.ui", self)
         set_config(self, "Schedule Menu", self.icon, (760, 680))
 
@@ -75,12 +76,13 @@ class ScheduleMenu(SubWindow):
         "Adds a task to the schedule"
         time = str(get_text(self, "time_input"))
         method = str(get_text(self, "url_input"))
-        self.schedule.add_task(time, method)
+        self.schedule.add_task_to_db(time, method)
+        # self.schedule.add_task(time, method)
         set_text(self, {
             "time_input": "",
             "url_input": ""
         })
-        QMessageBox.information(self, "Schedule", "Task saved successfully")
+        # QMessageBox.information(self, "Schedule", "Task saved successfully")
 
     def start(self):
         """
@@ -95,4 +97,26 @@ class ScheduleMenu(SubWindow):
         """
         if self._running:
             self._running = False
-            self.schedule.stop() # type: ignore
+            self.schedule.stop()  # type: ignore
+
+    def load_tasks(self):
+        """
+        Loads the tasks from the database.
+        """
+        tasks = self.database.fetch_all_tasks()
+        for task in tasks:
+            print(task)
+            self.schedule.add_task(task[0], task[1])
+        print(f"{get_time()} - Tasks loaded")
+
+    def closeEvent(self, event: QEvent):
+        """
+        Overrides the `closeEvent` method of the `QWidget` class.
+
+        :param event: The event.
+        :type event: QCloseEvent
+        :rtype: None
+        """
+        self.stop()
+        self._thread.wait()
+        event.accept()

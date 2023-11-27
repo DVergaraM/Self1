@@ -7,7 +7,7 @@
 # pylint: disable=not-callable
 # pylint: disable=redefined-builtin
 # pylint: disable=cyclic-import
-from typing import Callable
+from typing import Any, Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
 from PyQt5.QtWidgets import QMessageBox
@@ -150,7 +150,7 @@ class ParentDatabase:
         """
         return self._connection
 
-    def create_connection(self, func: Callable[[Connection], Connection] = None): # type: ignore
+    def create_connection(self, func: Callable[[Connection], Connection] | None = None):
         """
         Creates a connection to the database.
 
@@ -386,7 +386,7 @@ class BrainDatabase(ParentDatabase):
         :type element: ElementType
         :param config: The configuration tuple containing the image path and title
         :type config: tuple[str, str]
-        
+
         :return: The last inserted row id
         :rtype: int
         """
@@ -483,7 +483,7 @@ class BrainDatabase(ParentDatabase):
             return result
         return (f"{os.getcwd()}/assets/default.png", "Second Brain")
 
-    def create_task(self, log: otuple_str, element: ElementType):
+    def create_task(self, log: otuple_str, element: ElementType = None):  # type: ignore
         """
         Creates an Schedule Log
 
@@ -498,27 +498,116 @@ class BrainDatabase(ParentDatabase):
         conn = self.connection
         cur = conn.cursor()
         sql = """
-        SELECT time, method_name, url, job COUNT(*) FROM Tasks
+        SELECT time, method_name, url, job, COUNT(*) FROM Tasks
         GROUP BY time, method_name, url, job HAVING COUNT(*) > 1
         """
 
         cur.execute(sql)
         results = cur.fetchall()
         if len(results) == 0:
-            #time, method_name, url, job = log # type: ignore
+            # time, method_name, url, job = log # type: ignore
             sql = '''
             INSERT INTO Tasks(time, method_name, url, job)
             VALUES(?, ?, ?, ?)
             '''
-            #if len(time) > 5
+            # if len(time) > 5
             cur.execute(sql, log)  # type: ignore
             conn.commit()
-            QMessageBox.information(
-                element, 'Database', 'Information added to database')
+            if element:
+                QMessageBox.information(
+                    element, 'Database', 'Information added to database')
+            else:
+                print("[INFO] - Information added to database")
             return cur.lastrowid
-        QMessageBox.warning(
-            element, 'Error', 'Data already in database')
+        if element:
+            QMessageBox.warning(
+                element, 'Error', 'Data already in database')
+        else:
+            print("[WARN] - Data already in database")
         return None
+
+    def remove_task(self, job: Any, element: ElementType = None) -> bool:  # type: ignore
+        """
+        Removes a task from the schedule.
+
+        :param element: The element to display the information.
+        :type element: ElementType
+        :param job: The job to remove.
+        :type job: Any
+
+        :return: True if the task was removed successfully, False otherwise.
+        :rtype: bool
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT job COUNT(*) FROM Tasks
+        GROUP BY job HAVING COUNT(*) > 1
+        """
+        cur.execute(sql)
+        results = cur.fetchall()
+        if 0 < len(results) < 2:
+            sql = """
+            DELETE FROM Tasks WHERE job = ?
+            """
+            cur.execute(sql, (job,))
+            conn.commit()
+            if element:
+                QMessageBox.information(element, "Information", "Task removed")
+            else:
+                print("[INFO] - Task removed")
+            return True
+        if element:
+            QMessageBox.warning(element, "Warning",
+                                "There's no Job in Database")
+        else:
+            print("[WARN] - There's no Job in Database")
+        return False
+
+    def delete_task(self, job: Any, element: ElementType):
+        """
+        Deletes a task from the database.
+
+        :param task: The task to delete.
+        :type task: str
+
+        :return: True if the task was deleted successfully, False otherwise.
+        :rtype: bool
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT method_name COUNT(*) FROM Tasks
+        GROUP BY method_name HAVING COUNT(*) > 1
+        """
+        cur.execute(sql)
+        results = cur.fetchall()
+        if 0 < len(results) < 2:
+            sql = """
+            DELETE FROM Tasks WHERE job = ?
+            """
+            cur.execute(sql, (job,))
+            conn.commit()
+            QMessageBox.information(
+                element, "Information", "Task deleted from database")
+            return True
+        QMessageBox.warning(element, "Warning", "There's no Task in Database")
+        return False
+
+    def fetch_all_tasks(self):
+        """
+        Fetches all tasks from the database.
+
+        :return: A list of all tasks.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time, method_name, url, job FROM Tasks
+        """
+        cur.execute(sql)
+        return cur.fetchall()
 
 
 class LoginDatabase(ParentDatabase):

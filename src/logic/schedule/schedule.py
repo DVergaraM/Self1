@@ -5,7 +5,8 @@
 # pylint: disable=import-error
 # pylint: disable=no-member
 # pylint: disable=not-callable
-from typing import Callable, Tuple, Any, Union, Iterator
+from hashlib import sha256
+from typing import Callable, Tuple, Any, TypeVar, Union, Iterator
 import time as tm
 import re
 import webbrowser as wb
@@ -15,10 +16,14 @@ import validators
 from logic import MQThread
 
 
+args_type = TypeVar("args_type", Tuple[Any], list[Any], None, Any, str)
+
+
 class Schedule:
     """
     Schedule class is responsible for managing tasks that will be executed at specific times.
     """
+
     def __init__(self, timezone: Union[str, pytz.BaseTzInfo] = "America/Bogota", **kwargs) -> None:
         """
         Initializes a new instance of the Schedule class.
@@ -34,6 +39,7 @@ class Schedule:
         self.notifier = kwargs["notifier"] if "notifier" in kwargs else None
         self.start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
         self.database = kwargs["database"] if "database" in kwargs else None
+        self.parent = kwargs["parent"] if "parent" in kwargs else None
         if isinstance(timezone, str):
             self.timezone = pytz.timezone(timezone)
         elif isinstance(timezone, pytz.BaseTzInfo):
@@ -68,16 +74,49 @@ class Schedule:
         """
         if self.is_time(time) and isinstance(method, (Callable, str)):
             if isinstance(method, Callable):
-                job = _schedule.every().day.at(time).do(self.run_task, method, args if args else [])
+                job = _schedule.every().day.at(time).do(
+                    self.run_task, method, args if args else [])
                 self._tasks.append((time, method, job))
                 print("Added method")
             else:
-                job = _schedule.every().day.at(time).do(self.run_task, self.open_web, [method])
+                job = _schedule.every().day.at(time).do(
+                    self.run_task, self.open_web, [method])
                 self._tasks.append((time, self.open_web, job))
                 print("Added URL")
             self._amount_tasks += 1
             return True
         return False
+
+    def add_task_to_db(self, time: str, method: Union[Callable, str],
+                       args: args_type | str = None):
+        """
+        Adds a new task to the database.
+
+        :param time: The time at which the task should be executed.
+        :type time: str
+        :param method: The method to execute when the task is executed.
+        :type method: Union[Callable, str]
+        :param args: The arguments to pass to the method when it is executed.
+        :type args: Union[Tuple[Any], list[Any], None]
+        """
+        if self.database:
+            if self.is_time(time) and isinstance(method, (Callable, str)):
+                if isinstance(method, Callable):
+                    job = _schedule.every().day.at(time).do(
+                        self.run_task_db, method, args if args else [])
+                    if args is None:
+                        args = "No args"
+                    else:
+                        args = ", ".join([str(arg) for arg in args])
+                    self.database.create_task(
+                        (time, method.__name__, args, str(job)))
+                    print("Added task method to database")
+                else:
+                    args = []  # type: ignore
+                    args.append(method)  # type: ignore
+                    job = _schedule.every().day.at(time).do(self.run_task_db, self.open_web, args)
+                    args = ", ".join(args)  # type: ignore
+                    self.database.create_task((time, method, args, str(job)))
 
     def remove_task(self, method_name: Union[str, Callable]) -> bool:
         """
@@ -90,12 +129,25 @@ class Schedule:
         """
         for t in self._tasks:
             if (isinstance(method_name, Callable) and t[1].__name__ == method_name.__name__) or \
-            (isinstance(method_name, str) and t[1] == method_name):
+                    (isinstance(method_name, str) and t[1] == method_name):
                 _schedule.cancel_job(t[2])
                 self._tasks.remove(t)
                 self._amount_tasks -= 1
                 return True
         print("Still", self._tasks, self._amount_tasks)
+        return False
+
+    def remove_task_database(self, job: Any) -> bool:
+        """
+        Removes a task from the database.
+
+        :param method_name: The name of the method to remove.
+        :type method_name: str
+        :return: True if the task was removed successfully, False otherwise.
+        :rtype: bool
+        """
+        if self.database:
+            return self.database.remove_task(job, self.parent)
         return False
 
     def get_jobs(self):
@@ -116,6 +168,20 @@ class Schedule:
         method(*args)
         tm.sleep(1.25)
         self.remove_task(method)
+
+    def run_task_db(self, method: Callable, args: list | tuple) -> None:
+        """
+        Executes a task.
+
+        :param method: The method to execute.
+        :type method: Callable
+        :param args: The arguments to pass to the method.
+        :type args: list | tuple
+        """
+        method(*args)
+        tm.sleep(1.25)
+        if self.parent:
+            self.remove_task_database(method)
 
     def total_tasks(self) -> int:
         """
@@ -174,6 +240,16 @@ class Schedule:
             return False
         except wb.Error as excp:
             raise wb.Error(excp) from excp
+
+    @staticmethod
+    def get_function_identifier(method: Callable[[], Any]):
+        method_code = method.__code__.co_code
+        method_name = method.__name__
+
+        unique_string = f"{method_name}{method_code}"
+
+        identifier = sha256(unique_string.encode()).hexdigest()
+        return identifier
 
     @staticmethod
     def is_time(time: str) -> bool:
