@@ -57,7 +57,7 @@ class ScheduleMenu(SubWindow):
         start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
         self.database = database
         self.schedule = LogicSchedule(
-            notifier=notifier, start_thread=start_thread, database=self.database, parent=parent)
+            notifier=notifier, start_thread=start_thread, database=database, parent=parent)
         self._thread = MQThread(self.schedule.start, False)  # type: ignore
         self.load_tasks()
         uic.loadUi(fr"{cwd}logic\schedule\schedule_menu.ui", self)
@@ -103,7 +103,7 @@ class ScheduleMenu(SubWindow):
         """
         Loads the tasks from the database.
         """
-        tasks = self.database.fetch_all_tasks()
+        tasks = self.schedule.database.fetch_all_tasks() # type: ignore
         for task in tasks:
             print(task)
             self.schedule.add_task(task[0], task[1])

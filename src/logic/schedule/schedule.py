@@ -5,7 +5,6 @@
 # pylint: disable=import-error
 # pylint: disable=no-member
 # pylint: disable=not-callable
-from hashlib import sha256
 from typing import Callable, Tuple, Any, TypeVar, Union, Iterator
 import time as tm
 import re
@@ -16,7 +15,7 @@ import validators
 from logic import MQThread
 
 
-args_type = TypeVar("args_type", Tuple[Any], list[Any], None, Any, str)
+ArgsType = TypeVar("ArgsType", Tuple[Any], list[Any], None, Any, str)
 
 
 class Schedule:
@@ -59,7 +58,7 @@ class Schedule:
         return self._tasks
 
     def add_task(self, time: str, method: Union[Callable, str],
-                 args: Tuple[Any] | list[Any] = None) -> bool:  # type: ignore
+                 args: Tuple[Any] | list[Any] | tuple[()] | None = None) -> bool:
         """
         Adds a new task to the schedule.
 
@@ -74,6 +73,7 @@ class Schedule:
         """
         if self.is_time(time) and isinstance(method, (Callable, str)):
             if isinstance(method, Callable):
+                args = args if args else [] if isinstance(args, list) else ()
                 job = _schedule.every().day.at(time).do(
                     self.run_task, method, args if args else [])
                 self._tasks.append((time, method, job))
@@ -88,7 +88,7 @@ class Schedule:
         return False
 
     def add_task_to_db(self, time: str, method: Union[Callable, str],
-                       args: args_type | str = None):
+                       args: ArgsType | str = None):
         """
         Adds a new task to the database.
 
