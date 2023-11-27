@@ -242,16 +242,6 @@ class Schedule:
             raise wb.Error(excp) from excp
 
     @staticmethod
-    def get_function_identifier(method: Callable[[], Any]):
-        method_code = method.__code__.co_code
-        method_name = method.__name__
-
-        unique_string = f"{method_name}{method_code}"
-
-        identifier = sha256(unique_string.encode()).hexdigest()
-        return identifier
-
-    @staticmethod
     def is_time(time: str) -> bool:
         """
         Determines whether a string represents a valid time in the format HH:MM.

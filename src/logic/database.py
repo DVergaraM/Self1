@@ -7,6 +7,7 @@
 # pylint: disable=not-callable
 # pylint: disable=redefined-builtin
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-public-methods
 from typing import Any, Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
