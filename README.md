@@ -1,9 +1,3 @@
----
-runme:
-  id: 01HGDZFCZJ235857HZH2KJXAER
-  version: v2.0
----
-
 # Second Brain - Source Code
 
 This folder contains the source code for the Second Brain application. Second Brain is a personal knowledge management system that allows users to store and organize information in a centralized location.
@@ -28,29 +22,29 @@ The Second Brain application has the following dependencies:
 - Python 3.10 or higher
 - [PyQt5](https://pypi.org/project/PyQt5/)
 
-   - For the GUIs and threads
+  - For the GUIs and threads
 
 - [PyStray](https://pypi.org/project/pystray/)
 
-   - For the System Tray Icon
+  - For the System Tray Icon
 
 - [Winotify](https://pypi.org/project/winotify/)
 
-   - For the Notification System
+  - For the Notification System
 
 - [Schedule](https://pypi.org/project/schedule/)
 
-   - For running methods at certain hours
+  - For running methods at certain hours
 
 - [Pillow](https://pypi.org/project/Pillow/)
 
-   - For loading images
+  - For loading images
 
 ## Running the Application
 
 To run the Second Brain application, run the `src/` folder using Python:
 
-```bash {"id":"01HGDZFCZFKVSZ2NK7XKSK9Z9S","name":"run_sbrai"}
+```bash
 python setup.py && python src
 
 ```
