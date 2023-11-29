@@ -1,3 +1,9 @@
+---
+runme:
+  id: 01HGDZFCZJ235857HZH2KJXAER
+  version: v2.0
+---
+
 # Second Brain - Source Code
 
 This folder contains the source code for the Second Brain application. Second Brain is a personal knowledge management system that allows users to store and organize information in a centralized location.
@@ -7,9 +13,7 @@ This folder contains the source code for the Second Brain application. Second Br
 The `src/` folder contains the following files and subfolders:
 
 - `__main__.py`: The main file of the application that initializes the GUI and starts the event loop.
-
 - `logic/`: A subfolder containing the core logic of the application, including modules for managing notifications, running threads, and interacting with the database.
-
 - `utils/`: A subfolder containing utility modules for setting configuration options and making connections between GUI elements and methods.
 
 The `assets/` folder contains the following files:
@@ -22,32 +26,33 @@ The `assets/` folder contains the following files:
 The Second Brain application has the following dependencies:
 
 - Python 3.10 or higher
-
 - [PyQt5](https://pypi.org/project/PyQt5/)
 
-  - For the GUIs and threads
+   - For the GUIs and threads
 
 - [PyStray](https://pypi.org/project/pystray/)
 
-  - For the System Tray Icon
+   - For the System Tray Icon
 
 - [Winotify](https://pypi.org/project/winotify/)
 
-  - For the Notification System
+   - For the Notification System
 
 - [Schedule](https://pypi.org/project/schedule/)
 
-  - For running methods at certain hours
+   - For running methods at certain hours
 
 - [Pillow](https://pypi.org/project/Pillow/)
-  - For loading images
+
+   - For loading images
 
 ## Running the Application
 
 To run the Second Brain application, run the `src/` folder using Python:
 
-```bash
+```bash {"id":"01HGDZFCZFKVSZ2NK7XKSK9Z9S","name":"run_sbrai"}
 python setup.py && python src
+
 ```
 
 This will start the application and display the login dialog. Once you have logged in, you will be taken to the main GUI of the application.

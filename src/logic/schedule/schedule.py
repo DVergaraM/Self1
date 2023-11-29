@@ -13,6 +13,7 @@ import pytz
 import schedule as _schedule
 import validators
 from logic import MQThread
+from utils.others import get_time
 
 
 ArgsType = TypeVar("ArgsType", Tuple[Any], list[Any], None, Any, str)
@@ -39,6 +40,7 @@ class Schedule:
         self.start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
         self.database = kwargs["database"] if "database" in kwargs else None
         self.parent = kwargs["parent"] if "parent" in kwargs else None
+        self.kwargs = kwargs
         if isinstance(timezone, str):
             self.timezone = pytz.timezone(timezone)
         elif isinstance(timezone, pytz.BaseTzInfo):
@@ -75,14 +77,14 @@ class Schedule:
             if isinstance(method, Callable):
                 args = args if args else [] if isinstance(args, list) else ()
                 job = _schedule.every().day.at(time).do(
-                    self.run_task, method, args if args else [])
+                    self.run_task, method, args if args else [], time)
                 self._tasks.append((time, method, job))
-                print("Added method")
+                print(f"{get_time()} - Added method")
             else:
                 job = _schedule.every().day.at(time).do(
-                    self.run_task, self.open_web, [method])
+                    self.run_task, self.open_web, [method], time)
                 self._tasks.append((time, self.open_web, job))
-                print("Added URL")
+                print(f"{get_time()} - Added URL")
             self._amount_tasks += 1
             return True
         return False
@@ -103,7 +105,7 @@ class Schedule:
             if self.is_time(time) and isinstance(method, (Callable, str)):
                 if isinstance(method, Callable):
                     job = _schedule.every().day.at(time).do(
-                        self.run_task_db, method, args if args else [])
+                        self.run_task, method, args if args else [], time)
                     if args is None:
                         args = "No args"
                     else:
@@ -114,7 +116,8 @@ class Schedule:
                 else:
                     args = []  # type: ignore
                     args.append(method)  # type: ignore
-                    job = _schedule.every().day.at(time).do(self.run_task_db, self.open_web, args)
+                    job = _schedule.every().day.at(time).do(
+                        self.run_task, self.open_web, args, time)
                     args = ", ".join(args)  # type: ignore
                     self.database.create_task((time, method, args, str(job)))
 
@@ -133,11 +136,13 @@ class Schedule:
                 _schedule.cancel_job(t[2])
                 self._tasks.remove(t)
                 self._amount_tasks -= 1
+                print(f"{get_time()} - Removed")
                 return True
-        print("Still", self._tasks, self._amount_tasks)
+
+        print(f"{get_time()} - Still")
         return False
 
-    def remove_task_database(self, job: Any) -> bool:
+    def remove_task_database(self, time: Any) -> bool:
         """
         Removes a task from the database.
 
@@ -147,7 +152,7 @@ class Schedule:
         :rtype: bool
         """
         if self.database:
-            return self.database.remove_task(job, self.parent)
+            return self.database.remove_task(time)
         return False
 
     def get_jobs(self):
@@ -156,7 +161,7 @@ class Schedule:
         """
         return _schedule.get_jobs(), self.tasks
 
-    def run_task(self, method: Callable, args: list | tuple) -> None:
+    def run_task(self, method: Callable, args: list | tuple, time: Any) -> None:
         """
         Executes a task.
 
@@ -168,20 +173,7 @@ class Schedule:
         method(*args)
         tm.sleep(1.25)
         self.remove_task(method)
-
-    def run_task_db(self, method: Callable, args: list | tuple) -> None:
-        """
-        Executes a task.
-
-        :param method: The method to execute.
-        :type method: Callable
-        :param args: The arguments to pass to the method.
-        :type args: list | tuple
-        """
-        method(*args)
-        tm.sleep(1.25)
-        if self.parent:
-            self.remove_task_database(method)
+        _ = time
 
     def total_tasks(self) -> int:
         """
@@ -298,3 +290,9 @@ class Schedule:
         :rtype: Any
         """
         return next(iter(self._tasks))
+    
+    def __repr__(self):
+        return f"Schedule(timezone={self.timezone}, kwargs={self.kwargs})"
+    
+    def __len__(self):
+        return len(self._tasks)

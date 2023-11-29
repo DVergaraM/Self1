@@ -204,9 +204,12 @@ class BrainDatabase(ParentDatabase):
         self._connection = self.create_connection(create_brain_tables)
         self.app_path_actual = 0
         self.create_apps_menu_actual = 0
+        self.delete_task_menu_actual = 0
         self.apps_paths = self.fetch_all_apps_paths()
         self.apps_names = self.fetch_all_apps_names()
         self.apps_ids = self.fetch_all_apps_ids()
+        self.tasks_menu_time = self.fetch_all_tasks_time()
+        self.tasks_menu_url = self.fetch_all_tasks_url()
 
     def fetch_all_apps_paths(self):
         "Get all Applications directories"
@@ -344,7 +347,6 @@ class BrainDatabase(ParentDatabase):
                 """
                 cur.execute(sql, log)
                 conn.commit()
-                conn.close()
                 QMessageBox.information(
                     element, "Deleted", "Elements deleted in database")
                 return None
@@ -376,7 +378,6 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql, (new_path, name))
         conn.commit()
-        conn.close()
         QMessageBox.information(element, "Updated", "Path updated in database")
 
     def set_config(self, element: ElementType, config: tuple[str, str]):
@@ -433,7 +434,6 @@ class BrainDatabase(ParentDatabase):
 
         cur.execute(sql, (new_icon, title))
         conn.commit()
-        conn.close()
         QMessageBox.information(element, "Information", "Icon changed")
 
     def update_config_title(self, element: ElementType, new_title: str, icon: str):
@@ -458,7 +458,6 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql, (new_title, icon))
         conn.commit()
-        conn.close()
         QMessageBox.information(element, "Information", "Title changed")
 
     def delete_config(self):
@@ -527,7 +526,7 @@ class BrainDatabase(ParentDatabase):
             print("[WARN] - Data already in database")
         return None
 
-    def remove_task(self, job: Any, element: ElementType = None) -> bool:  # type: ignore
+    def remove_task(self, time: str, element: ElementType | None = None) -> bool:  # type: ignore
         """
         Removes a task from the schedule.
 
@@ -539,30 +538,33 @@ class BrainDatabase(ParentDatabase):
         :return: True if the task was removed successfully, False otherwise.
         :rtype: bool
         """
-        conn = self.connection
+        conn = connect(self.DB_PATH)
         cur = conn.cursor()
         sql = """
-        SELECT job COUNT(*) FROM Tasks
-        GROUP BY job HAVING COUNT(*) > 1
-        """
+                SELECT time, COUNT(*) FROM Tasks
+                GROUP BY time HAVING COUNT(*) > 0
+                """
         cur.execute(sql)
         results = cur.fetchall()
-        if 0 < len(results) < 2:
-            sql = """
-            DELETE FROM Tasks WHERE job = ?
-            """
-            cur.execute(sql, (job,))
-            conn.commit()
-            if element:
-                QMessageBox.information(element, "Information", "Task removed")
+
+        for result in results:  # type: ignore
+            if result[0] == time:
+                sql = """
+                DELETE FROM Tasks WHERE time = ?
+                """
+                cur.execute(sql, (result[0],))
+                conn.commit()
+                if cur.rowcount > 0:
+                    if element:
+                        QMessageBox.information(
+                            element, "Information", "Task removed")
+                    else:
+                        print("[INFO] - Task removed")
+                    return True
+                else:
+                    print("[WARN] - No rows were deleted")
             else:
-                print("[INFO] - Task removed")
-            return True
-        if element:
-            QMessageBox.warning(element, "Warning",
-                                "There's no Job in Database")
-        else:
-            print("[WARN] - There's no Job in Database")
+                pass
         return False
 
     def delete_task(self, job: Any, element: ElementType):
@@ -578,7 +580,7 @@ class BrainDatabase(ParentDatabase):
         conn = self.connection
         cur = conn.cursor()
         sql = """
-        SELECT method_name COUNT(*) FROM Tasks
+        SELECT method_name, COUNT(*) FROM Tasks
         GROUP BY method_name HAVING COUNT(*) > 1
         """
         cur.execute(sql)
@@ -595,6 +597,21 @@ class BrainDatabase(ParentDatabase):
         QMessageBox.warning(element, "Warning", "There's no Task in Database")
         return False
 
+    def fetch_all_tasks_time(self):
+        """
+        Fetches all tasks from the database.
+
+        :return: A list of all tasks.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time FROM Tasks
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+    
     def fetch_all_tasks(self):
         """
         Fetches all tasks from the database.
@@ -609,6 +626,43 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
+    
+    def fetch_all_tasks_url(self):
+        """
+        Fetches all tasks from the database.
+
+        :return: A list of all tasks.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT url FROM Tasks
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+    
+    def get_current_delete_task_menu_time(self):
+        "Get the current Task Time"
+        if len(self.tasks_menu_time) != 0:
+            return self.tasks_menu_time[self.delete_task_menu_actual]
+        raise IndexError("There are no items in database to look for")
+    
+    def get_current_delete_task_menu_url(self):
+        "Get the current Task URL"
+        if len(self.tasks_menu_url) != 0:
+            return self.tasks_menu_url[self.delete_task_menu_actual]
+        raise IndexError("There are no items in database to look")
+
+    def right_delete_task_menu(self):
+        "Moves right in the Apps list"
+        self.delete_task_menu_actual += 1
+        self.delete_task_menu_actual %= len(self.tasks_menu_time)
+
+    def left_delete_task_menu(self):
+        "Moves left in the Apps list"
+        self.delete_task_menu_actual -= 1
+        self.delete_task_menu_actual %= len(self.tasks_menu_time)
 
 
 class LoginDatabase(ParentDatabase):
@@ -706,4 +760,3 @@ class LoginDatabase(ParentDatabase):
         u_name = str(others.sha_256(username))
         cur.execute(sql, (new_password, u_name, password))
         conn.commit()
-        conn.close()

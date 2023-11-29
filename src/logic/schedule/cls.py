@@ -13,6 +13,7 @@ from utils.setters import connect, set_text
 
 from logic import database as l_database
 from logic import MQThread
+from logic.deleteTask.cls import DeleteTaskMenu as Manager
 from logic.schedule.schedule import Schedule as LogicSchedule
 
 
@@ -37,7 +38,7 @@ class ScheduleMenu(SubWindow):
     _running = False
 
     def __init__(self, parent: ElementType, icon: QIcon,
-                 database: l_database.BrainDatabase, **kwargs):
+                 database: l_database.BrainDatabase, manager: Manager, **kwargs):
         """
         Initializes an instance of the class.
 
@@ -56,19 +57,20 @@ class ScheduleMenu(SubWindow):
         notifier = kwargs["notifier"] if "notifier" in kwargs else None
         start_thread = kwargs["start_thread"] if "start_thread" in kwargs else None
         self.database = database
+        self.manager = manager
         self.schedule = LogicSchedule(
             notifier=notifier, start_thread=start_thread, database=database, parent=parent)
-        self._thread = MQThread(self.schedule.start, False)  # type: ignore
+        self._thread = MQThread(self.schedule.start, False)
         self.load_tasks()
         uic.loadUi(fr"{cwd}logic\schedule\schedule_menu.ui", self)
         set_config(self, "Schedule Menu", self.icon, (760, 680))
 
-    # pylint: disable=invalid-name
     def loadShow(self):
         "Loads, connects and show the buttons with methods"
         connect(self, {
             "save_button": self._add_task,
             "exit_button": self.close,
+            "delete_menu_button": self.open_manager
         })
         self.show()
 
@@ -77,12 +79,10 @@ class ScheduleMenu(SubWindow):
         time = str(get_text(self, "time_input"))
         method = str(get_text(self, "url_input"))
         self.schedule.add_task_to_db(time, method)
-        # self.schedule.add_task(time, method)
         set_text(self, {
             "time_input": "",
             "url_input": ""
         })
-        # QMessageBox.information(self, "Schedule", "Task saved successfully")
 
     def start(self):
         """
@@ -103,9 +103,8 @@ class ScheduleMenu(SubWindow):
         """
         Loads the tasks from the database.
         """
-        tasks = self.schedule.database.fetch_all_tasks() # type: ignore
+        tasks = self.schedule.database.fetch_all_tasks()  # type: ignore
         for task in tasks:
-            print(task)
             self.schedule.add_task(task[0], task[1])
         print(f"{get_time()} - Tasks loaded")
 
@@ -120,3 +119,6 @@ class ScheduleMenu(SubWindow):
         self.stop()
         self._thread.wait()
         event.accept()
+
+    def open_manager(self):
+        self.manager.loadShow()

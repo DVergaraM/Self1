@@ -14,6 +14,7 @@ import requests
 
 from logic import Notification, Stray, MQThread, App, msgBox
 from logic.database import BrainDatabase
+from logic.deleteTask.cls import DeleteTaskMenu
 from logic.login.cls import LoginSystem
 from logic.apps.cls import AppsMenu
 from logic.config.cls import ConfigMenu
@@ -86,10 +87,10 @@ class Gui(QMainWindow):
         stop_thread = MQThread(stop_notifications.run, False)
         # Creates a Thread for running executables that are in Database
         o_thread = QProcess()
-
+        self.delete_task_menu = DeleteTaskMenu(self, self.icon, self.database)
         # Loads Schedule Menu
         self.schedule_menu = ScheduleMenu(
-            self, self.icon, self.database, notifier=start_thread)
+            self, self.icon, self.database, self.delete_task_menu, notifier=start_thread)
 
         # # # # # # # #
         #    Menus    #

@@ -11,12 +11,12 @@ from PyQt5 import uic
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
 from utils.setters import set_text, connect
-from utils.others import get_time_log, get_text
+from utils.others import get_time_log, get_text, update_window
 
 from logic import database as l_database
 
 
-class AppsMenu(SubWindow):
+class DeleteTaskMenu(SubWindow):
     """
     Subclass of `SubWindow` that represents the applications menu window.
 
@@ -41,8 +41,7 @@ class AppsMenu(SubWindow):
             Runs the program displayed in QLineEdit.
     """
 
-    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
-                 thread: QProcess):
+    def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase):
         """
         Adds a new task to the schedule.
 
@@ -52,67 +51,73 @@ class AppsMenu(SubWindow):
         :type icon: QIcon
         :param database: The BrainDatabase instance used for database operations.
         :type database: l_database.BrainDatabase
-        :param thread: The QProcess instance used for running the task.
-        :type thread: QProcess
         :rtype: None
         """
         super().__init__(size=(760, 680))
         self.my_parent = parent
         self.database = database
-        self.o_thread = thread
         self.connection = self.database.connection
-        uic.loadUi(fr"{cwd}logic\apps\apps_menu.ui", self)
-        set_config(self, "Apps Menu", icon, (760, 680))
-        self.actual = str(self.database.get_current_apps_path_apps()[0])
+        uic.loadUi(fr"{cwd}logic\deleteTask\delete_task_menu.ui", self)
+        set_config(self, "Tasks Menu", icon, (760, 680))
+        self.actual_time = str(
+            self.database.get_current_delete_task_menu_time()[0])
+        self.actual_url = str(
+            self.database.get_current_delete_task_menu_url()[0])
 
     def loadShow(self):
         "Loads, connects, sets and show GUI"
-        set_text(self, ("path_line", fr'"{self.actual}"'))
+        print("Open")
+        set_text(self, {
+            "time_line": self.actual_time,
+            "url_line": self.actual_url
+        })
         connect(self, {
             "exit_button": self.close,
             "right_button": self.avanzar,
             "left_button": self.retroceder,
-            "run_button": self.run,
+            "delete_button": self.delete_from_db,
         })
         self.show()
 
     def avanzar(self):
         "Loops front through the paths in database and sets it up in QLineEdit"
         with self.connection:
-            self.database.right_path()
-            self.actual: Any = self.database.get_current_apps_path_apps()[0]
-            self.path_line.setText(fr'"{self.actual}"')
-            return None
+            self.database.right_delete_task_menu()
+            self.actual_time = str(
+                self.database.get_current_delete_task_menu_time()[0])
+            self.actual_url = str(
+                self.database.get_current_delete_task_menu_url()[0])
+            set_text(self, {
+                "time_line": self.actual_time,
+                "url_line": self.actual_url
+            })
+        return self.actual_time, self.actual_url
 
     def retroceder(self):
         "Loops back through the paths in database and sets it up in QLineEdit"
         with self.connection:
-            self.database.left_path()
-            self.actual: Any = self.database.get_current_apps_path_apps()[0]
-            self.path_line.setText(fr'"{self.actual}"')
-            return None
+            self.database.left_delete_task_menu()
+            self.actual_time = str(
+                self.database.get_current_delete_task_menu_time()[0])
+            self.actual_url = str(
+                self.database.get_current_delete_task_menu_url()[0])
+            set_text(self, {
+                "time_line": self.actual_time,
+                "url_line": self.actual_url
+            })
+        return self.actual_time, self.actual_url
 
-    def run(self):
-        "Runs the program displayed in QLineEdit"
-        path = fr"{get_text(self, 'path_line')}"
-        cwd_log = os.getcwd()
-        format_date_all = get_time_log()
-        name = path.split("\\")[-1].removesuffix('.exe"').title().strip()
-        self.o_thread.setProgram(path)
-        if name == "Code":
-            self.o_thread.execute(self.o_thread.program())
-        else:
-            self.o_thread.execute(self.o_thread.program(), [
-                               fr"> {cwd_log}\logs\log-{format_date_all}.log"])
-        format_date_all = format_date_all.replace("_", " ")
-        print(
-            f"[{format_date_all}] - {name} (run)")
-
-    def stop(self):
-        if not self.o_thread.finished:
-            self.o_thread.disconnect()
-            self.o_thread.kill()
-            self.o_thread.close()
-            return True
-        return False
-            
+    def delete_from_db(self):
+        "Deletes the task displayed in QLineEdit"
+        current_time = str(get_text(self, "time_line"))
+        cwd = os.getcwd()
+        self.database.remove_task(current_time)
+        update_window(self)
+        self.database = l_database.BrainDatabase(fr"{cwd}\src\brain_mine.db")
+        next_time, next_url = self.avanzar()
+        set_text(self, {
+            "time_line": next_time,
+            "url_line": next_url
+        })
+        update_window(self)
+        self.database = l_database.BrainDatabase(fr"{cwd}\src\brain_mine.db")
