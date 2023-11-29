@@ -121,4 +121,5 @@ class ScheduleMenu(SubWindow):
         event.accept()
 
     def open_manager(self):
+        "Opens Tasks Manager"
         self.manager.loadShow()
