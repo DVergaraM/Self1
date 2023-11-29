@@ -103,16 +103,7 @@ class AppsMenu(SubWindow):
             self.o_thread.execute(self.o_thread.program())
         else:
             self.o_thread.execute(self.o_thread.program(), [
-                               fr"> {cwd_log}\logs\log-{format_date_all}.log"])
+                fr"> {cwd_log}\logs\log-{format_date_all}.log"])
         format_date_all = format_date_all.replace("_", " ")
         print(
             f"[{format_date_all}] - {name} (run)")
-
-    def stop(self):
-        if not self.o_thread.finished:
-            self.o_thread.disconnect()
-            self.o_thread.kill()
-            self.o_thread.close()
-            return True
-        return False
-            

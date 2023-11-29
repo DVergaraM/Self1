@@ -8,6 +8,7 @@
 # pylint: disable=redefined-builtin
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes
 from typing import Any, Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
@@ -561,10 +562,7 @@ class BrainDatabase(ParentDatabase):
                     else:
                         print("[INFO] - Task removed")
                     return True
-                else:
-                    print("[WARN] - No rows were deleted")
-            else:
-                pass
+                print("[WARN] - No rows were deleted")
         return False
 
     def delete_task(self, job: Any, element: ElementType):
@@ -611,7 +609,7 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
-    
+
     def fetch_all_tasks(self):
         """
         Fetches all tasks from the database.
@@ -626,7 +624,7 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
-    
+
     def fetch_all_tasks_url(self):
         """
         Fetches all tasks from the database.
@@ -641,13 +639,13 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
-    
+
     def get_current_delete_task_menu_time(self):
         "Get the current Task Time"
         if len(self.tasks_menu_time) != 0:
             return self.tasks_menu_time[self.delete_task_menu_actual]
         raise IndexError("There are no items in database to look for")
-    
+
     def get_current_delete_task_menu_url(self):
         "Get the current Task URL"
         if len(self.tasks_menu_url) != 0:
