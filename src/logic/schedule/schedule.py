@@ -5,6 +5,7 @@
 # pylint: disable=import-error
 # pylint: disable=no-member
 # pylint: disable=not-callable
+# pylint: disable=too-many-instance-attributes
 from typing import Callable, Tuple, Any, TypeVar, Union, Iterator
 import time as tm
 import re
@@ -289,10 +290,10 @@ class Schedule:
         :return: The next item in the list of tasks currently scheduled.
         :rtype: Any
         """
-        return next(iter(self._tasks))
-    
+        return next(iter(self))
+
     def __repr__(self):
         return f"Schedule(timezone={self.timezone}, kwargs={self.kwargs})"
-    
+
     def __len__(self):
         return len(self._tasks)

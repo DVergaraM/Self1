@@ -3,15 +3,13 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 import os
-from typing import Any
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QProcess
 from PyQt5 import uic
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
 from utils.setters import set_text, connect
-from utils.others import get_time_log, get_text, update_window
+from utils.others import get_text, update_window
 
 from logic import database as l_database
 
@@ -66,7 +64,6 @@ class DeleteTaskMenu(SubWindow):
 
     def loadShow(self):
         "Loads, connects, sets and show GUI"
-        print("Open")
         set_text(self, {
             "time_line": self.actual_time,
             "url_line": self.actual_url
@@ -110,10 +107,11 @@ class DeleteTaskMenu(SubWindow):
     def delete_from_db(self):
         "Deletes the task displayed in QLineEdit"
         current_time = str(get_text(self, "time_line"))
-        cwd = os.getcwd()
+        current_working_directory = os.getcwd()
         self.database.remove_task(current_time)
         update_window(self)
-        self.database = l_database.BrainDatabase(fr"{cwd}\src\brain_mine.db")
+        self.database = l_database.BrainDatabase(
+            fr"{current_working_directory}\src\brain_mine.db")
         next_time, next_url = self.avanzar()
         set_text(self, {
             "time_line": next_time,
