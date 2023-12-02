@@ -2,6 +2,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 # pylint: disable=invalid-name
+from collections import deque
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
@@ -12,7 +13,7 @@ from logic.register import cls as reg
 from logic.changeCredentials import cls as cred
 from utils import cwd
 from utils.config import set_config
-from utils.others import compare, update_window, get_text, sha
+from utils.others import compare, update_window, get_text, sha, track
 from utils.setters import text_changed_connect, connect, enable_button
 
 
@@ -60,7 +61,7 @@ class LoginSystem(QDialog):
         attrs = ("username_input", "password_input")
         i_username, i_password = sha(self, attrs) # type: ignore
 
-        login = self.db_login.fetch_all_logins(i_username, i_password)
+        login = deque(self.db_login.fetch_all_logins(i_username, i_password))
 
         if 0 < len(login) < 2:
             self.accept()
@@ -83,7 +84,7 @@ class LoginSystem(QDialog):
 
     def open_credentials_change(self):
         "Opens the credentials change dialog for the user."
-        credential_ui = cred.ChangeCredentials(self._username) # type: ignore
+        credential_ui = cred.ChangeCredentials(self._username)
         update_window(self)
         if credential_ui.exec_() == QDialog.DialogCode.Accepted:
             update_window(self)

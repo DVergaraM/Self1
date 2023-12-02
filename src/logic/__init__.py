@@ -9,17 +9,20 @@
 from typing import Callable, Any
 import os
 from itertools import count
+from collections import deque
 import time as tm
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from PyQt5.QtGui import QIcon, QPixmap
 from pystray import (Menu, MenuItem as Item, Icon)
+import schedule as _schedule
 from winotify import Notification as _Notifier
 from winotify import audio
 import PIL.Image as Img
 
 from logic.login import cls as login
-from utils.others import get_time
+from logic.database import BrainDatabase
+from utils.others import get_time_status
 
 
 class Notification(_Notifier):
@@ -70,20 +73,21 @@ class Notification(_Notifier):
             Defaults to audio.Reminder.
         :type sound: audio.Sound
         """
-        super().__init__(app_id, title, msg, icon, duration, launch)
+        super().__init__(app_id, title, msg, icon, duration)
         self.set_audio(sound, loop=False)
+        if launch:
+            self.add_actions("Open", launch)
         self._sound = sound
-        self._time = get_time()
 
     @property
     def time(self):
         "Returns the current time in the format of [day-month-year hour:minute:second]."
-        return self._time
+        return get_time_status('Task')
 
     def run(self) -> None:
         "Shows Notification with log"
         self.show()
-        print(f"{self.time} - Task: '{self.msg}'")
+        print(f"{self.time}: '{self.title}'")
 
     def __repr__(self):
         """
@@ -94,7 +98,6 @@ class Notification(_Notifier):
         """
         return f"Notification(app_id={self.app_id}, title={self.title}, msg={self.msg}, \
             icon={self.icon}, launch={self.launch}, duration={self.duration}, sound={self._sound})"
-
 
 
 class MQThread(QThread):
@@ -131,7 +134,7 @@ class MQThread(QThread):
             self.loops = (loops,)
         elif isinstance(targets, tuple) and isinstance(loops, tuple) and \
                 all(isinstance(target, Callable) for target in targets) and\
-            all(isinstance(loop, bool) for loop in loops):
+        all(isinstance(loop, bool) for loop in loops):
             self.targets = targets
             self.names = tuple(target.__name__ for target in targets)
             self.loops = loops
@@ -149,14 +152,14 @@ class MQThread(QThread):
             runs the target method in a loop
         until the isFinished method returns True. Otherwise, runs the target method once.
         """
-        for loop, target, name in zip(self.loops, self.targets, self.names): # type: ignore
+        for loop, target, name in zip(self.loops, self.targets, self.names):  # type: ignore
             if loop:
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO | Thread')
                 print(f"{format_date_all} - {name} (run)")
                 while not self.isFinished():
                     target()
             else:
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO | Thread')
                 print(f"{format_date_all} - {name} (run)")
                 target()
 
@@ -196,7 +199,6 @@ class Stray:
         self.methods = methods
         self.icon = None
 
-
     @property
     def title(self):
         "Title"
@@ -217,7 +219,8 @@ class Stray:
         if isinstance(value, str) and value != self.icon_name:
             self.icon_name = value
         else:
-            raise ValueError("'value' is not an instance of str or is the same")
+            raise ValueError(
+                "'value' is not an instance of str or is the same")
 
     @property
     def image(self):
@@ -267,32 +270,32 @@ class Stray:
         item = str(item)
         match item:
             case "Start System":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Starting Notification System")
                 notifier_start()
             case "Stop System":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Stopping Notification System")
                 notifier_stop()
             case "Config":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Opening Config UI")
                 open_config()
             case "Open UI":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Opening UI")
                 show_ui()
             case "Close UI":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Closing UI")
                 close_ui()
             case "Exit":
-                format_date_all = get_time()
+                format_date_all = get_time_status('INFO')
                 print(
                     f"{format_date_all} - Closing {self.icon_name}")
                 tm.sleep(5)
@@ -336,3 +339,23 @@ def App(argv: list[str]):
     app.setDesktopFileName("Second Brain")
     app.setQuitOnLastWindowClosed(True)
     return app
+
+def load_schedule_notifications_from_db(icon: str, database: BrainDatabase):
+    try:
+        notifications = deque(database.fetch_all_notifications())
+
+        for notification in notifications:
+            notification = deque(notification)
+            display_notification = Notification(
+                "Second Brain", notification[1],
+                notification[2], icon,
+                notification[3], "short")
+            _schedule.every().day.at(notification[0]).do(
+                display_notification.run)
+    except:
+        print(
+            f"{get_time_status('ERROR')} - An error ocurred while loading notifications")
+        return False
+    finally:
+        print(f"{get_time_status('INFO')} - Notifications loaded successfully")
+        return True

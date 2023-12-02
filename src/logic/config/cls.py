@@ -3,6 +3,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=no-member
 # pylint: disable=invalid-name
+from collections import deque
 import os
 from PyQt5.QtGui import QIcon, QImageReader
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
@@ -113,7 +114,7 @@ class ConfigMenu(SubWindow):
         if len(self._config) == 2:
             self.database.delete_config()
             self.database.set_config(self, self._config)
-            icon, title = self.database.get_config()
+            icon, title = deque(self.database.get_config())
             icon = QIcon(icon)
             set_multiple_config(self.my_parent, icon, default_title=title)
             print(f"{get_time()} - Config setted for all windows")

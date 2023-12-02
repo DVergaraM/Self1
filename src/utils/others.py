@@ -1,5 +1,8 @@
 "Others module from Utils module"
 # pylint: disable=import-outside-toplevel
+import time
+import os
+import psutil
 from hashlib import sha256
 from typing import Any, Tuple
 from datetime import datetime
@@ -210,3 +213,39 @@ def get_time():
     format_date = f"[{date.day}-{date.month}-{date.year} "
     format_time = f"{date.hour}:{date.minute}:{date.second}]"
     return format_date + format_time
+
+def get_time_status(status: str):
+    """
+    Returns the current time in the format of [day-month-year hour:minute:second].
+
+    :return: The current time in the format of [day-month-year hour:minute:second].
+    :rtype: str
+    """
+    date = datetime.now()
+    format_date = f"[{date.day}-{date.month}-{date.year} "
+    format_time = f"{date.hour}:{date.minute}:{date.second}"
+    # [{format_date + format_time} - {status}]
+    return format_date + format_time + f" - {status}]"
+
+def elapsed_since(start):
+    return time.strftime("%H:%M:%S", time.gmtime(time.time() - start))
+
+
+def get_process_memory():
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss
+
+
+def track(func):
+    def wrapper(*args, **kwargs):
+        mem_before = get_process_memory()
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed_time = elapsed_since(start)
+        mem_after = get_process_memory()
+        print("{}: memory before: {:,}, after: {:,}, consumed: {:,}; exec time: {}".format(
+            func.__name__,
+            mem_before, mem_after, mem_after - mem_before,
+            elapsed_time))
+        return result
+    return wrapper

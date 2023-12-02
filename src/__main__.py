@@ -2,6 +2,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=import-error
+from collections import deque
 import os
 import sys
 from io import BytesIO
@@ -12,7 +13,8 @@ from PyQt5.QtGui import QIcon, QPixmap, QImage
 import PIL.Image as Img
 import requests
 
-from logic import Notification, Stray, MQThread, App, msgBox
+from logic import Notification, Stray, MQThread, App, load_schedule_notifications_from_db, msgBox
+from logic.createNotifications.cls import CreateNotificationsMenu
 from logic.database import BrainDatabase
 from logic.deleteTask.cls import DeleteTaskMenu
 from logic.login.cls import LoginSystem
@@ -24,7 +26,7 @@ from logic.notification.cls import NotificationMenu
 from logic.schedule.cls import ScheduleMenu
 
 from utils.config import set_config
-from utils.others import get_time
+from utils.others import get_time, get_time_status
 from utils.setters import connect
 
 cwd = fr"{os.getcwd()}\src\\"
@@ -45,14 +47,16 @@ class Gui(QMainWindow):
         uic.loadUi(fr'{cwd}main_window.ui', self)
         self.database = BrainDatabase(DB_PATH)
         icon, self.__title = None, None
-        icon, self.__title = self.database.get_config()
+        icon, self.__title = deque(self.database.get_config())
         self.__title = str(self.__title)
+        self.icon_name = ""
         if self.__title and not os.path.exists(self.__title):
             self.__title = "Second Brain"
         if icon and os.path.exists(icon):
             pil = Img.open(icon)
             self.icon = QIcon(icon)
-            print(f"{get_time()} - Icon loaded using Database")
+            self.icon_name = self.icon.name()
+            print(f"{get_time_status('INFO')} - Icon loaded using Database")
         else:
             try:
                 default = "https://daniel-vergara-m.github.io/assets/img-logo.jpeg"
@@ -65,11 +69,11 @@ class Gui(QMainWindow):
                     img = QImage(pil.tobytes(), pil.width,
                                  pil.height, QImage.Format.Format_RGB888)
                     self.icon = QIcon(QPixmap().convertFromImage(img))
-                    print(f"{get_time()} - Icon loaded using URL")
+                    print(f"{get_time_status('INFO')} - Icon loaded using URL")
                 else:
                     pil = Img.open(fr"{os.getcwd()}\assets\default.png")
                     self.icon = QIcon(fr"{os.getcwd()}\assets\default.png")
-                    print(f"{get_time()} - Icon loaded using Path")
+                    print(f"{get_time_status('INFO')} - Icon loaded using Path")
             except requests.ConnectTimeout as excp:
                 raise requests.ConnectTimeout(excp) from excp
         # Sets title, icon and fixed size for GUI
@@ -80,7 +84,7 @@ class Gui(QMainWindow):
             self.title, "Pop-Ups", "Notification System ON", icon, duration="short")  # type: ignore
         # Creates a Windows Pop-Up that displays that the system is off
         stop_notifications = Notification(self.title,  # type: ignore
-            "Pop-Ups", "Notification System OFF", icon, duration='short')  # type: ignore
+                                          "Pop-Ups", "Notification System OFF", icon, duration='short')  # type: ignore
         # Thread for running the "Start Notifications" Pop-Up
         start_thread = MQThread(start_notifications.run, False)
         # Thread for running the "Stop Notifications" Pop-Up
@@ -104,13 +108,15 @@ class Gui(QMainWindow):
         # Loads Create Apps Menu GUI
         self.create_apps_menu = CreateAppsMenu(
             self, self.icon, self.database, self.apps_menu)
+        # Loads Create Notifications Menu GUI
+        self.create_notifications_menu = CreateNotificationsMenu(self, self.icon, self.database)
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
             self, self.icon, self.database, start_notifications.run,
             self.schedule_menu.start, stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
-            self, self.icon, self.database, self.create_apps_menu)
+            self, self.icon, self.database, self.create_apps_menu, self.create_notifications_menu)
 
         # Makes the connections between buttons and methods
         connect(self, {
@@ -121,6 +127,7 @@ class Gui(QMainWindow):
             "config_button": self.config_menu.loadShow,
             "schedule_menu_button": self.schedule_menu.loadShow
         })
+        load_schedule_notifications_from_db(fr"{os.getcwd()}\assets\default.png", self.database)
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
         stray = Stray(self.title, pil, (self.schedule_menu.start,  # type: ignore
@@ -128,6 +135,7 @@ class Gui(QMainWindow):
                                         self.config_menu.loadShow, self.show,
                                         self.hide, sys.exit))
         stray.create_menu()
+        import psutil; print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
         sys.exit()
 
     @property
@@ -150,7 +158,7 @@ def main(argv: list[str]):
     login = LoginSystem()
     if login.exec_() == QDialog.DialogCode.Accepted:
         print(
-            f"{get_time()} - Opening Stray...")
+            f"{get_time_status('INFO')} - Opening Stray...")
 
         msg = msgBox(login)
         QTimer.singleShot(3*1000, lambda: msg.done(0))

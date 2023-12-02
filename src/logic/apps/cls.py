@@ -11,7 +11,7 @@ from PyQt5 import uic
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
 from utils.setters import set_text, connect
-from utils.others import get_time_log, get_text
+from utils.others import get_time_log, get_text, get_time_status
 
 from logic import database as l_database
 
@@ -104,6 +104,6 @@ class AppsMenu(SubWindow):
         else:
             self.o_thread.execute(self.o_thread.program(), [
                 fr"> {cwd_log}\logs\log-{format_date_all}.log"])
-        format_date_all = format_date_all.replace("_", " ")
+        format_date_all = get_time_status('INFO | Apps')
         print(
-            f"[{format_date_all}] - {name} (run)")
+            f"{format_date_all} - {name} (run)")

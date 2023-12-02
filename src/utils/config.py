@@ -2,6 +2,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=cyclic-import
 # pylint: disable=import-error
+from collections import deque
 from typing import Any
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
@@ -43,7 +44,7 @@ def set_config(element: ElementType, title: str | None = None, icon: QIcon | Non
 
 
 def set_multiple_config(element: ElementType, icon: QIcon,\
-        properties: list[Any] | None = None, **kwargs):
+        properties: list[Any] | None | deque[Any] = None, **kwargs):
     """
     Set the configuration for multiple elements.
 
@@ -62,8 +63,8 @@ def set_multiple_config(element: ElementType, icon: QIcon,\
 
     """
     if not properties:
-        properties = [getattr(element, obj) for obj in props(
-            element) if "menu" in obj and not "button" in obj]
+        properties = deque([getattr(element, obj) for obj in props(
+            element) if "menu" in obj and not "button" in obj])
 
     titles = ()
     sizes = ()

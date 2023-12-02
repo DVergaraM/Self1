@@ -11,6 +11,7 @@ from utils.setters import connect
 
 from logic import database as l_database
 from logic.createApps import cls as createApps
+from logic.createNotifications import cls as createNotifications
 
 
 class CreateMenu(SubWindow):
@@ -25,7 +26,8 @@ class CreateMenu(SubWindow):
     """
 
     def __init__(self, parent: ElementType, icon: QIcon, database: l_database.BrainDatabase,
-                     create_app: createApps.CreateAppsMenu):
+                 create_app: createApps.CreateAppsMenu,
+                 create_notification: createNotifications.CreateNotificationsMenu):
         """
         Initializes a new instance of the `CreateMenu` class.
 
@@ -44,6 +46,7 @@ class CreateMenu(SubWindow):
         self._my_parent = parent
         self.database = database
         self.createApps = create_app
+        self.createNotifications = create_notification
         uic.loadUi(fr"{cwd}logic\create\create_menu.ui", self)
         set_config(self,
                    "Notification Menu", self.icon, (760, 680))
@@ -54,7 +57,8 @@ class CreateMenu(SubWindow):
         """
         connect(self, {
             "exit_button": self.close,
-            "create_apps_menu": self.createApps.loadShow
+            "create_apps_menu": self.createApps.loadShow,
+            "create_notifications_menu": self.createNotifications.loadShow
         })
         self.show()
 

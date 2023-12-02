@@ -3,6 +3,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 # pylint: disable=duplicate-code
+from collections import deque
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
@@ -38,7 +39,7 @@ class ChangeCredentials(QDialog):
         DB_PATH_LOGIN = fr"{cwd}login.db"
         database = BrainDatabase(DB_PATH_CONFIG)
         self.db_login = LoginDatabase(DB_PATH_LOGIN)
-        icon, _ = database.get_config()
+        icon, _ = deque(database.get_config())
         self.icon = QIcon(icon)
         set_config(self, "Change Password", self.icon, (760, 680))
         text_changed_connect(self, {

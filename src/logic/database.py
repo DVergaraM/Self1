@@ -9,6 +9,7 @@
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-public-methods
 # pylint: disable=too-many-instance-attributes
+from collections import deque
 from typing import Any, Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
@@ -66,14 +67,13 @@ def create_brain_tables(conn: Connection):
                 )
                 """)
     cur.execute("""
-                CREATE TABLE IF NOT EXISTS Notifications AS
-                    SELECT Urls.id as "id",
-                    Urls.name as "name",
-                    Urls.url as "url",
-                    Icons.path as "path"
-                        FROM Urls, Icons
-                    WHERE(Urls.id == Icons.id) and (Urls.name == Icons.name)
-                    """)
+                CREATE TABLE IF NOT EXISTS Notifications(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    time VARCHAR(10) NOT NULL,
+                    title VARCHAR(50) NOT NULL,
+                    message VARCHAR(100) NOT NULL,
+                    launch VARCHAR(250) NOT NULL
+                    )""")
     conn.commit()
     cur.close()
     del cur
@@ -206,11 +206,16 @@ class BrainDatabase(ParentDatabase):
         self.app_path_actual = 0
         self.create_apps_menu_actual = 0
         self.delete_task_menu_actual = 0
-        self.apps_paths = self.fetch_all_apps_paths()
-        self.apps_names = self.fetch_all_apps_names()
-        self.apps_ids = self.fetch_all_apps_ids()
-        self.tasks_menu_time = self.fetch_all_tasks_time()
-        self.tasks_menu_url = self.fetch_all_tasks_url()
+        self.notifications_menu_actual = 0
+        self.apps_paths = deque(self.fetch_all_apps_paths())
+        self.apps_names = deque(self.fetch_all_apps_names())
+        self.apps_ids = deque(self.fetch_all_apps_ids())
+        self.tasks_menu_time = deque(self.fetch_all_tasks_time())
+        self.tasks_menu_url = deque(self.fetch_all_tasks_url())
+        self.notifications_times = deque(self.fetch_all_notifications_times())
+        self.notifications_titles = deque(self.fetch_all_notifications_titles())
+        self.notifications_messages = deque(self.fetch_all_notifications_messages())
+        self.notifications_launches = deque(self.fetch_all_notifications_launches())
 
     def fetch_all_apps_paths(self):
         "Get all Applications directories"
@@ -316,9 +321,11 @@ class BrainDatabase(ParentDatabase):
             conn.commit()
             QMessageBox.information(
                 element, 'Database', 'Information added to database')
+            print(f"{others.get_time_status('INFO | Database')} - Information added to database")
             return cur.lastrowid
         QMessageBox.warning(
             element, 'Error', 'Data already in database')
+        print(f"{others.get_time_status('ERROR')} - Data already in database")
         return None
 
     def delete_log_apps(self, log: tuple[str, str], element: ElementType):
@@ -409,6 +416,7 @@ class BrainDatabase(ParentDatabase):
         conn.commit()
         QMessageBox.information(element, "Information",
                                 "Your config has been saved")
+        print(f"{others.get_time_status('INFO')} - Your config has been saved")
         others.update_window(element)
         return cur.lastrowid
 
@@ -480,9 +488,9 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         result = cur.fetchone()
-        if result is not None:
-            return result
-        return (f"{os.getcwd()}/assets/default.png", "Second Brain")
+        if result:
+            return deque(result)
+        return deque([f"{os.getcwd()}/assets/default.png", "Second Brain"])
 
     def create_task(self, log: otuple_str, element: ElementType = None):  # type: ignore
         """
@@ -518,13 +526,13 @@ class BrainDatabase(ParentDatabase):
                 QMessageBox.information(
                     element, 'Database', 'Information added to database')
             else:
-                print("[INFO] - Information added to database")
+                print(f"{others.get_time_status('INFO')} - Information added to database")
             return cur.lastrowid
         if element:
             QMessageBox.warning(
                 element, 'Error', 'Data already in database')
         else:
-            print("[WARN] - Data already in database")
+            print(f"{others.get_time_status('ERROR')} - Data already in database")
         return None
 
     def remove_task(self, time: str, element: ElementType | None = None) -> bool:  # type: ignore
@@ -548,7 +556,7 @@ class BrainDatabase(ParentDatabase):
         cur.execute(sql)
         results = cur.fetchall()
 
-        for result in results:  # type: ignore
+        for result in deque(results):  # type: ignore
             if result[0] == time:
                 sql = """
                 DELETE FROM Tasks WHERE time = ?
@@ -560,39 +568,9 @@ class BrainDatabase(ParentDatabase):
                         QMessageBox.information(
                             element, "Information", "Task removed")
                     else:
-                        print("[INFO] - Task removed")
+                        print(f"{others.get_time_status('INFO')} - Task removed")
                     return True
-                print("[WARN] - No rows were deleted")
-        return False
-
-    def delete_task(self, job: Any, element: ElementType):
-        """
-        Deletes a task from the database.
-
-        :param task: The task to delete.
-        :type task: str
-
-        :return: True if the task was deleted successfully, False otherwise.
-        :rtype: bool
-        """
-        conn = self.connection
-        cur = conn.cursor()
-        sql = """
-        SELECT method_name, COUNT(*) FROM Tasks
-        GROUP BY method_name HAVING COUNT(*) > 1
-        """
-        cur.execute(sql)
-        results = cur.fetchall()
-        if 0 < len(results) < 2:
-            sql = """
-            DELETE FROM Tasks WHERE job = ?
-            """
-            cur.execute(sql, (job,))
-            conn.commit()
-            QMessageBox.information(
-                element, "Information", "Task deleted from database")
-            return True
-        QMessageBox.warning(element, "Warning", "There's no Task in Database")
+                print(f"{others.get_time_status('WARN')} - No rows were deleted")
         return False
 
     def fetch_all_tasks_time(self):
@@ -661,6 +639,196 @@ class BrainDatabase(ParentDatabase):
         "Moves left in the Apps list"
         self.delete_task_menu_actual -= 1
         self.delete_task_menu_actual %= len(self.tasks_menu_time)
+
+    def fetch_all_notifications(self):
+        """
+        Fetches all notifications from the database.
+
+        :return: A list of all notifications.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time, title, message, launch FROM Notifications
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+    
+    def fetch_all_notifications_times(self):
+        """
+        Fetches all notifications from the database.
+
+        :return: A list of all notifications.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time FROM Notifications
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+    
+    def fetch_all_notifications_titles(self):
+        """
+        Fetches all notifications from the database.
+
+        :return: A list of all notifications.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT title FROM Notifications
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+
+    def fetch_all_notifications_launches(self):
+        """
+        Fetches all notifications from the database.
+
+        :return: A list of all notifications.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT launch FROM Notifications
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+
+    def fetch_all_notifications_messages(self):
+        """
+        Fetches all notifications from the database.
+
+        :return: A list of all notifications.
+        :rtype: list
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT message FROM Notifications
+        """
+        cur.execute(sql)
+        return cur.fetchall()
+
+    def get_current_notifications_time(self):
+        "Get the current Notification Time"
+        if len(self.notifications_times) != 0:
+            return self.notifications_times[self.notifications_menu_actual]
+        raise IndexError("There are no items in database to look for")
+    
+    def get_current_notifications_title(self):
+        "Get the current Notification Title"
+        if len(self.notifications_titles) != 0:
+            return self.notifications_titles[self.notifications_menu_actual]
+        raise IndexError("There are no items in database to look for")
+
+    def get_current_notifications_message(self):
+        "Get the current Notification Message"
+        if len(self.notifications_messages) != 0:
+            return self.notifications_messages[self.notifications_menu_actual]
+        raise IndexError("There are no items in database to look for")
+
+    def get_current_notifications_launch(self):
+        "Get the current Notification Launch"
+        if len(self.notifications_launches) != 0:
+            return self.notifications_launches[self.notifications_menu_actual]
+        raise IndexError("There are no items in database to look for")
+
+    def notifications_menu_right(self):
+        "Moves right in the Notifications list"
+        self.notifications_menu_actual += 1
+        self.notifications_menu_actual %= len(self.notifications_titles)
+
+    def notifications_menu_left(self):
+        "Moves left in the Notifications list"
+        self.notifications_menu_actual -= 1
+        self.notifications_menu_actual %= len(self.notifications_titles)
+        
+    def delete_notification(self, time: str, title: str, message: str, launch: str = "", **kwargs):
+        """
+        Deletes a notification from the database.
+
+        :param time: The time of the notification.
+        :type time: str
+        :param title: The title of the notification.
+        :type title: str
+        :param message: The message of the notification.
+        :type message: str
+        :param launch: The launch of the notification, by default "".
+        :type launch: str, optional
+
+        :return: None
+        :rtype: None
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time, title, message, launch FROM Notifications
+        WHERE time = ? AND title = ? AND message = ? AND launch = ?
+        """
+        cur.execute(sql, (time, title, message, launch))
+        result = cur.fetchone()
+        if result:
+            sql = """
+            DELETE FROM Notifications WHERE time = ? AND title = ? AND message = ? AND launch = ?
+            """
+            cur.execute(sql, (time, title, message, launch))
+            conn.commit()
+            if "element" in kwargs:
+                QMessageBox.information(
+                    kwargs["element"], "Information", "Notification deleted from database")
+            else:
+                print(f"{others.get_time_status('INFO')} - Notification deleted from database")
+            return None
+        if "element" in kwargs:
+            QMessageBox.warning(kwargs["element"], "Warning",
+                                "There's no Notification in Database")
+        else:
+            print(f"{others.get_time_status('WARN')} - There's no Notification in Database") 
+        return None
+    
+    def add_notification(self, time: str, title: str, message: str, launch: str, **kwargs):
+        """
+        Adds a notification to the database.
+
+        :param time: The time of the notification.
+        :type time: str
+        :param title: The title of the notification.
+        :type title: str
+        :param message: The message of the notification.
+        :type message: str
+        :param launch: The launch of the notification.
+        :type launch: str
+
+        :return: None
+        :rtype: None
+        """
+        conn = self.connection
+        cur = conn.cursor()
+        sql = """
+        SELECT time, title, message, launch FROM Notifications
+        WHERE launch = ? AND time = ?
+        """
+        cur.execute(sql, (launch, time))
+        result = cur.fetchone()
+        if not result:
+            sql = """
+            INSERT INTO Notifications(time, title, message, launch)
+            VALUES(?, ?, ?, ?)
+            """
+            cur.execute(sql, (time, title, message, launch))
+            conn.commit()
+            if "element" in kwargs:
+                QMessageBox.information(
+                    kwargs["element"], "Information", "Notification added to database")
+            else:
+                print(f"{others.get_time_status('INFO')} - Notification added to database")
+        return None
 
 
 class LoginDatabase(ParentDatabase):

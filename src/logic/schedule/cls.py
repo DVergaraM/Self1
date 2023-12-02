@@ -2,17 +2,17 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
+from collections import deque
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QEvent
 from PyQt5 import uic
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
-from utils.others import get_text, get_time
+from utils.others import get_text, get_time, get_time_status
 from utils.setters import connect, set_text
 
-from logic import database as l_database
-from logic import MQThread
+from logic import (MQThread, database as l_database)
 from logic.deleteTask.cls import DeleteTaskMenu as Manager
 from logic.schedule.schedule import Schedule as LogicSchedule
 
@@ -103,12 +103,12 @@ class ScheduleMenu(SubWindow):
         """
         Loads the tasks from the database.
         """
-        tasks = self.schedule.database.fetch_all_tasks()  # type: ignore
+        tasks = deque(self.schedule.database.fetch_all_tasks()) # type: ignore
         for task in tasks:
             self.schedule.add_task(task[0], task[1])
-        print(f"{get_time()} - Tasks loaded")
+        print(f"{get_time_status('INFO | Schedule')} - Tasks loaded")
 
-    def closeEvent(self, event: QEvent):
+    def _closeEvent(self, event: QEvent):
         """
         Overrides the `closeEvent` method of the `QWidget` class.
 

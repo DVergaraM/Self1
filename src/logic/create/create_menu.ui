@@ -55,7 +55,7 @@
                 <bool>false</bool>
             </property>
         </widget>
-        <widget class="QPushButton" name="notification_create_menu">
+        <widget class="QPushButton" name="create_notifications_menu">
             <property name="geometry">
                 <rect>
                     <x>236</x>

@@ -1,5 +1,6 @@
 "Setters module from Utils module"
 # pylint: disable=no-name-in-module
+from collections import deque
 from utils import ElementType, attribute, method
 
 
@@ -73,7 +74,7 @@ def connect(element: ElementType, objs: tuple[attribute, method] | dict[attribut
 
 
 def text_changed_connect(element: ElementType,
-                       objs: tuple[attribute, method] | dict[method, list[attribute]]) -> None:
+                       objs: tuple[attribute, method] | dict[method, list[attribute] | deque[attribute]]) -> None:
     """
     Connects a button with a method depending on a QLineEdit.
 
@@ -93,7 +94,7 @@ def text_changed_connect(element: ElementType,
             obj = getattr(element, attr)
             obj.textChanged.connect(meth)
     elif isinstance(objs, dict) and all(isinstance(meth, method) and
-                                        isinstance(lst, list) for meth, lst in objs.items()):
+                                        isinstance(lst, (list, deque)) for meth, lst in objs.items()):
         for meth, lst in objs.items():
             for attr in lst:
                 if hasattr(element, attr):

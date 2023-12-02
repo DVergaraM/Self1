@@ -14,7 +14,7 @@ import pytz
 import schedule as _schedule
 import validators
 from logic import MQThread
-from utils.others import get_time
+from utils.others import get_time, get_time_status
 
 
 ArgsType = TypeVar("ArgsType", Tuple[Any], list[Any], None, Any, str)
@@ -80,12 +80,12 @@ class Schedule:
                 job = _schedule.every().day.at(time).do(
                     self.run_task, method, args if args else [], time)
                 self._tasks.append((time, method, job))
-                print(f"{get_time()} - Added method")
+                print(f"{get_time_status('INFO | Schedule')} - Added method")
             else:
                 job = _schedule.every().day.at(time).do(
                     self.run_task, self.open_web, [method], time)
                 self._tasks.append((time, self.open_web, job))
-                print(f"{get_time()} - Added URL")
+                print(f"{get_time_status('INFO | Schedule')} - Added URL")
             self._amount_tasks += 1
             return True
         return False
@@ -113,7 +113,7 @@ class Schedule:
                         args = ", ".join([str(arg) for arg in args])
                     self.database.create_task(
                         (time, method.__name__, args, str(job)))
-                    print("Added task method to database")
+                    print(f"{get_time_status('INFO | Schedule')} - Added method")
                 else:
                     args = []  # type: ignore
                     args.append(method)  # type: ignore
@@ -121,6 +121,7 @@ class Schedule:
                         self.run_task, self.open_web, args, time)
                     args = ", ".join(args)  # type: ignore
                     self.database.create_task((time, method, args, str(job)))
+                    print(f"{get_time_status('INFO | Schedule')} - Added URL")
 
     def remove_task(self, method_name: Union[str, Callable]) -> bool:
         """
@@ -137,10 +138,7 @@ class Schedule:
                 _schedule.cancel_job(t[2])
                 self._tasks.remove(t)
                 self._amount_tasks -= 1
-                print(f"{get_time()} - Removed")
                 return True
-
-        print(f"{get_time()} - Still")
         return False
 
     def remove_task_database(self, time: Any) -> bool:
