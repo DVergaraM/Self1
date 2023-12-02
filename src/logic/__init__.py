@@ -6,6 +6,8 @@
 # pylint: disable=no-member
 # pylint: disable=not-callable
 # pylint: disable=too-many-arguments
+# pylint: disable=bare-except
+# pylint: disable=lost-exception
 from typing import Callable, Any
 import os
 from itertools import count
@@ -341,20 +343,32 @@ def App(argv: list[str]):
     return app
 
 def load_schedule_notifications_from_db(icon: str, database: BrainDatabase):
+    """
+    Load schedule notifications from the database.
+
+    :param icon: The icon for the notifications.
+    :type icon: str
+    :param database: The BrainDatabase object representing the database.
+    :type database: BrainDatabase
+
+    :return: True if the notifications are loaded successfully, False otherwise.
+    :rtype: bool
+    :raises Exception: An error occurred while loading notifications.
+    """
     try:
         notifications = deque(database.fetch_all_notifications())
 
         for notification in notifications:
-            notification = deque(notification)
+            time, title, message, launch, *_ = deque(notification)
             display_notification = Notification(
-                "Second Brain", notification[1],
-                notification[2], icon,
-                notification[3], "short")
-            _schedule.every().day.at(notification[0]).do(
+                "Second Brain", title,
+                message, icon,
+                launch, "short")
+            _schedule.every().day.at(time).do(
                 display_notification.run)
     except:
         print(
-            f"{get_time_status('ERROR')} - An error ocurred while loading notifications")
+            f"{get_time_status('ERROR')} - An error occurred while loading notifications")
         return False
     finally:
         print(f"{get_time_status('INFO')} - Notifications loaded successfully")

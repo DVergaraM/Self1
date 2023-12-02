@@ -14,7 +14,7 @@ import pytz
 import schedule as _schedule
 import validators
 from logic import MQThread
-from utils.others import get_time, get_time_status
+from utils.others import get_time_status
 
 
 ArgsType = TypeVar("ArgsType", Tuple[Any], list[Any], None, Any, str)

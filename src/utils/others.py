@@ -2,10 +2,10 @@
 # pylint: disable=import-outside-toplevel
 import time
 import os
-import psutil
-from hashlib import sha256
 from typing import Any, Tuple
+from hashlib import sha256
 from datetime import datetime
+import psutil
 
 from . import ElementType, attribute
 
@@ -214,6 +214,7 @@ def get_time():
     format_time = f"{date.hour}:{date.minute}:{date.second}]"
     return format_date + format_time
 
+
 def get_time_status(status: str):
     """
     Returns the current time in the format of [day-month-year hour:minute:second].
@@ -227,25 +228,49 @@ def get_time_status(status: str):
     # [{format_date + format_time} - {status}]
     return format_date + format_time + f" - {status}]"
 
+
 def elapsed_since(start):
+    """
+    Calculates the elapsed time since the given start time.
+
+    Parameters:
+    start (float): The start time in seconds.
+
+    Returns:
+    str: The elapsed time in the format "HH:MM:SS".
+    """
     return time.strftime("%H:%M:%S", time.gmtime(time.time() - start))
 
 
 def get_process_memory():
+    """
+    Returns the memory usage of the current process.
+
+    Returns:
+        int: The memory usage in bytes.
+    """
     process = psutil.Process(os.getpid())
     return process.memory_info().rss
 
 
 def track(func):
+    """
+    Decorator that tracks the memory consumption and execution time of a function.
+
+    Args:
+        func: The function to be tracked.
+
+    Returns:
+        The wrapped function.
+
+    """
     def wrapper(*args, **kwargs):
         mem_before = get_process_memory()
         start = time.time()
         result = func(*args, **kwargs)
         elapsed_time = elapsed_since(start)
         mem_after = get_process_memory()
-        print("{}: memory before: {:,}, after: {:,}, consumed: {:,}; exec time: {}".format(
-            func.__name__,
-            mem_before, mem_after, mem_after - mem_before,
-            elapsed_time))
+        print(f"{func.__name__}: memory before: {mem_before:,}, after: {mem_after:,},\
+            consumed: {(mem_after - mem_before):,}; exec time: {elapsed_time}")
         return result
     return wrapper

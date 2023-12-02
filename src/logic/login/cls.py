@@ -13,7 +13,7 @@ from logic.register import cls as reg
 from logic.changeCredentials import cls as cred
 from utils import cwd
 from utils.config import set_config
-from utils.others import compare, update_window, get_text, sha, track
+from utils.others import compare, update_window, get_text, sha
 from utils.setters import text_changed_connect, connect, enable_button
 
 

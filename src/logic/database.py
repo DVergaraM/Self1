@@ -10,7 +10,7 @@
 # pylint: disable=too-many-public-methods
 # pylint: disable=too-many-instance-attributes
 from collections import deque
-from typing import Any, Callable
+from typing import Callable
 from sqlite3 import connect, Connection, DatabaseError
 import os
 from PyQt5.QtWidgets import QMessageBox
@@ -654,7 +654,7 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
-    
+
     def fetch_all_notifications_times(self):
         """
         Fetches all notifications from the database.
@@ -669,7 +669,7 @@ class BrainDatabase(ParentDatabase):
         """
         cur.execute(sql)
         return cur.fetchall()
-    
+
     def fetch_all_notifications_titles(self):
         """
         Fetches all notifications from the database.
@@ -720,7 +720,7 @@ class BrainDatabase(ParentDatabase):
         if len(self.notifications_times) != 0:
             return self.notifications_times[self.notifications_menu_actual]
         raise IndexError("There are no items in database to look for")
-    
+
     def get_current_notifications_title(self):
         "Get the current Notification Title"
         if len(self.notifications_titles) != 0:
@@ -748,7 +748,7 @@ class BrainDatabase(ParentDatabase):
         "Moves left in the Notifications list"
         self.notifications_menu_actual -= 1
         self.notifications_menu_actual %= len(self.notifications_titles)
-        
+
     def delete_notification(self, time: str, title: str, message: str, launch: str = "", **kwargs):
         """
         Deletes a notification from the database.
@@ -789,9 +789,9 @@ class BrainDatabase(ParentDatabase):
             QMessageBox.warning(kwargs["element"], "Warning",
                                 "There's no Notification in Database")
         else:
-            print(f"{others.get_time_status('WARN')} - There's no Notification in Database") 
+            print(f"{others.get_time_status('WARN')} - There's no Notification in Database")
         return None
-    
+
     def add_notification(self, time: str, title: str, message: str, launch: str, **kwargs):
         """
         Adds a notification to the database.
@@ -828,7 +828,6 @@ class BrainDatabase(ParentDatabase):
                     kwargs["element"], "Information", "Notification added to database")
             else:
                 print(f"{others.get_time_status('INFO')} - Notification added to database")
-        return None
 
 
 class LoginDatabase(ParentDatabase):

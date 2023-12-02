@@ -2,7 +2,6 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
-from collections import deque
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon

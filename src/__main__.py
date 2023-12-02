@@ -2,10 +2,12 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=import-error
+# pylint: disable=too-many-statements
 from collections import deque
 import os
 import sys
 from io import BytesIO
+import psutil
 from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QTimer
 from PyQt5 import uic
@@ -26,7 +28,7 @@ from logic.notification.cls import NotificationMenu
 from logic.schedule.cls import ScheduleMenu
 
 from utils.config import set_config
-from utils.others import get_time, get_time_status
+from utils.others import get_time_status
 from utils.setters import connect
 
 cwd = fr"{os.getcwd()}\src\\"
@@ -84,7 +86,7 @@ class Gui(QMainWindow):
             self.title, "Pop-Ups", "Notification System ON", icon, duration="short")  # type: ignore
         # Creates a Windows Pop-Up that displays that the system is off
         stop_notifications = Notification(self.title,  # type: ignore
-                                          "Pop-Ups", "Notification System OFF", icon, duration='short')  # type: ignore
+            "Pop-Ups", "Notification System OFF", icon, duration='short')  # type: ignore
         # Thread for running the "Start Notifications" Pop-Up
         start_thread = MQThread(start_notifications.run, False)
         # Thread for running the "Stop Notifications" Pop-Up
@@ -109,14 +111,16 @@ class Gui(QMainWindow):
         self.create_apps_menu = CreateAppsMenu(
             self, self.icon, self.database, self.apps_menu)
         # Loads Create Notifications Menu GUI
-        self.create_notifications_menu = CreateNotificationsMenu(self, self.icon, self.database)
+        self.create_notifications_menu = CreateNotificationsMenu(
+            self, self.icon, self.database)
         # Loads Notification Menu GUI
         self.notification_menu = NotificationMenu(
             self, self.icon, self.database, start_notifications.run,
             self.schedule_menu.start, stop_thread, self.apps_menu)
         # Loads Create Menu GUI
         self.create_menu = CreateMenu(
-            self, self.icon, self.database, self.create_apps_menu, self.create_notifications_menu)
+            self, self.icon, self.database,
+            self.create_apps_menu, self.create_notifications_menu)
 
         # Makes the connections between buttons and methods
         connect(self, {
@@ -127,7 +131,8 @@ class Gui(QMainWindow):
             "config_button": self.config_menu.loadShow,
             "schedule_menu_button": self.schedule_menu.loadShow
         })
-        load_schedule_notifications_from_db(fr"{os.getcwd()}\assets\default.png", self.database)
+        load_schedule_notifications_from_db(
+            fr"{os.getcwd()}\assets\default.png", self.database)
 
         # Creates the System Tray [Stray] with some buttons and runs as main thread of the program
         stray = Stray(self.title, pil, (self.schedule_menu.start,  # type: ignore
@@ -135,7 +140,6 @@ class Gui(QMainWindow):
                                         self.config_menu.loadShow, self.show,
                                         self.hide, sys.exit))
         stray.create_menu()
-        import psutil; print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
         sys.exit()
 
     @property
@@ -145,6 +149,13 @@ class Gui(QMainWindow):
 
     def __repr__(self):
         return "Gui()"
+
+
+def get_mem():
+    """
+    Returns the memory usage of the current process in megabytes.
+    """
+    return psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
 
 
 def main(argv: list[str]):
@@ -163,6 +174,7 @@ def main(argv: list[str]):
         msg = msgBox(login)
         QTimer.singleShot(3*1000, lambda: msg.done(0))
         _ = Gui()
+        print(get_mem())
         sys.exit(app.exec_())
 
 

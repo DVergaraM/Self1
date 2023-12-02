@@ -2,6 +2,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
+# pylint: disable=too-many-arguments
 from PyQt5.QtGui import QIcon
 from PyQt5 import uic
 

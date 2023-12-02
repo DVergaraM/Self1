@@ -9,7 +9,7 @@ from PyQt5 import uic
 
 from utils import cwd, SubWindow, ElementType
 from utils.config import set_config
-from utils.others import get_text, get_time, get_time_status
+from utils.others import get_text, get_time_status
 from utils.setters import connect, set_text
 
 from logic import (MQThread, database as l_database)
