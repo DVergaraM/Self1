@@ -2,7 +2,6 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 # pylint: disable=invalid-name
-from collections import deque
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtGui import QIcon
@@ -61,7 +60,7 @@ class LoginSystem(QDialog):
         attrs = ("username_input", "password_input")
         i_username, i_password = sha(self, attrs) # type: ignore
 
-        login = deque(self.db_login.fetch_all_logins(i_username, i_password))
+        login = self.db_login.fetch_all_logins(i_username, i_password)
 
         if 0 < len(login) < 2:
             self.accept()

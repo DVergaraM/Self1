@@ -366,10 +366,9 @@ def load_schedule_notifications_from_db(icon: str, database: BrainDatabase):
                 launch, "short")
             _schedule.every().day.at(time).do(
                 display_notification.run)
+        print(f"{get_time_status('INFO')} - Notifications loaded successfully")
+        return True
     except:
         print(
             f"{get_time_status('ERROR')} - An error occurred while loading notifications")
         return False
-    finally:
-        print(f"{get_time_status('INFO')} - Notifications loaded successfully")
-        return True
